@@ -26,22 +26,32 @@ First, you need to set-up Google Cloud Console with dialogflow and Google TTS:
 
 1. Dialogflow: https://socialrobotics.atlassian.net/wiki/spaces/CBSR/pages/2205155343/Getting+a+google+dialogflow+key 
 2. TTS: https://console.cloud.google.com/apis/api/texttospeech.googleapis.com/ 
+2a. note: you need to set-up a paid account with a credit card. You get $300,- free tokens, which is more then enough
+for testing this agent. So in practice it will not cost anything.
 3. Create a keyfile as instructed in (1) and save it conf/dialogflow/google_keyfile.json
+3a. note: never share the keyfile online. 
 
-Second, you need an openAI key:
-4. Generate your personal openai api key here: https://platform.openai.com/api-keys
-5. Either add your openai key to your systems variables or
+Secondly you need to configure your dialogflow agent.
+4. In your empty dialogflow agent do the following things:
+4a. remove all default intents
+4b. go to settings -> import and export -> and import the resources/droomrobot_dialogflow_agent.zip into your
+dialogflow agent. That gives all the necessary intents and entities that are part of this example (and many more)
+
+Thirdly, you need an openAI key:
+5. Generate your personal openai api key here: https://platform.openai.com/api-keys
+6. Either add your openai key to your systems variables or
 create a .openai_env file in the conf/openai folder and add your key there like this:
 OPENAI_API_KEY="your key"
 
-Third, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to be running:
+Forth, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to be running:
 
-6. pip install --upgrade social-interaction-cloud[dialogflow,google-tts,openai-gpt,alphamini]
-7. run: conf/redis/redis-server.exe conf/redis/redis.conf
-8. run in new terminal: run-dialogflow 
-9. run in new terminal: run-google-tts
-10. run in new terminal: run-gpt
-11. Run this script
+7. pip install --upgrade -e .[dialogflow,google-tts,openai-gpt,alphamini]
+8. run: conf/redis/redis-server.exe conf/redis/redis.conf
+9. run in new terminal: run-dialogflow 
+10. run in new terminal: run-google-tts
+11. run in new terminal: run-gpt
+12. add in the main: the ip address, id, and password of the alphamini and the ip-address of the redis server (= ip address of you laptop)
+13. Run this script
 """
 
 
@@ -77,9 +87,7 @@ class Droomrobot:
         self.dialogflow.connect(self.desktop.mic)
 
         # flag to signal when the app should listen (i.e. transmit to dialogflow)
-        self.can_listen = True
         self.request_id = np.random.randint(10000)
-        self.is_yesno = False
 
 
         # Initialize TTS
@@ -179,7 +187,7 @@ class Droomrobot:
         return gpt_response.response
 
     def run(self):
-        # self.say("Hallo, ik ben de droomrobot en ik ben hier voor jou.")
+        self.say("Hallo, ik ben de droomrobot en ik ben hier voor jou.")
         likes_animals = self.ask_yesno("Hou je van dieren?")
         print(likes_animals)
         if "yes" in likes_animals:
@@ -201,7 +209,7 @@ class Droomrobot:
 
 
 if __name__ == '__main__':
-    droomrobot = Droomrobot(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago", redis_ip="192.168.178.84",
+    droomrobot = Droomrobot(mini_ip="xxx.xxx.xxx.xxx", mini_id="00xxx", mini_password="alphago", redis_ip="yyy.yyy.yyy.yyy",
                             google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
                             openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")))
     droomrobot.run()
