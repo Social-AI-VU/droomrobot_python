@@ -28,7 +28,7 @@ How to get a key? See https://socialrobotics.atlassian.net/wiki/spaces/CBSR/page
 
 Second, you need an openAI key:
 Generate your personal openai api key here: https://platform.openai.com/api-keys
-Either add your openai key to your systems variables (and comment the next line out) or
+Either add your openai key to your systems variables or
 create a .openai_env file in the conf/openai folder and add your key there like this:
 OPENAI_API_KEY="your key"
 
