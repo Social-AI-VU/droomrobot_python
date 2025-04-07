@@ -1,4 +1,5 @@
 import json
+import os
 from os.path import abspath, join
 from os import environ
 
@@ -83,6 +84,7 @@ class Droomrobot:
         self.dialogflow = Dialogflow(ip="localhost", conf=dialogflow_conf)
         # flag to signal when the app should listen (i.e. transmit to dialogflow)
         self.request_id = np.random.randint(10000)
+        self.transcript = ""
 
         print("SETUP DIALOGFLOW COMPLETE \n")
 
@@ -96,17 +98,17 @@ class Droomrobot:
         print("TTS INITIALIZED \n")
 
         self.mini = Alphamini(
-            ip="10.0.0.155",
-            mini_id="00199",
-            mini_password="alphago",
-            redis_ip="10.0.0.107",
+            ip=mini_ip,
+            mini_id=mini_id,
+            mini_password=mini_password,
+            redis_ip=redis_ip,
             speaker_conf=MiniSpeakersConf(sample_rate=init_reply.sample_rate),
         )
         print("SETUP MINI COMPLETE \n")
 
         # connect the output of Minimicrophone as the input of DialogflowComponent
         self.dialogflow.connect(self.mini.mic)
-        self.dialogflow.register_callback(on_dialog)
+        self.dialogflow.register_callback(self.on_dialog)
 
         print("SETUP MIC COMPLETE \n")
 
@@ -133,12 +135,12 @@ class Droomrobot:
         history = []
         try:
             for i in range(100000):
-                transcript = ""
+                self.transcript = ""
                 reply = self.dialogflow.request(GetIntentRequest(self.request_id), timeout=50)
 
                 print(reply.intent)
                 if reply.intent == "Default Fallback Intent" or reply.intent == None:
-                    input = self.personalize(input, 8, transcript)
+                    input = self.personalize(input, 8, self.transcript)
                 else:
                     input = reply.fulfillment_message
 
@@ -155,23 +157,15 @@ class Droomrobot:
             print("Stop the dialogflow component 2.")
             self.dialogflow.stop()
 
-
-
-
-
-        
-        
-
-def on_dialog(message):
+    def on_dialog(self, message):
         if message.response:
             if message.response.recognition_result.is_final:
                 print("Transcript:", message.response.recognition_result.transcript)
-                global transcript
-                transcript = message.response.recognition_result.transcript 
+                self.transcript = message.response.recognition_result.transcript
 
         
 if __name__ == '__main__':
-    droomrobot = Droomrobot(mini_ip="10.0.0.155", mini_id="00199", mini_password="alphago", redis_ip="10.0.0.107",
-                            google_keyfile_path=abspath(join("..", "..", "conf", "dialogflow", "google_tts_keyfile.json")),
-                            openai_key_path=abspath(join("..", "..", "conf", "openai", ".openai_env")))
+    droomrobot = Droomrobot(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago", redis_ip="192.168.178.84",
+                            google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
+                            openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")))
     droomrobot.run()
