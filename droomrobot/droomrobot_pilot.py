@@ -104,7 +104,7 @@ class Droomrobot:
         )
         print("SETUP MINI COMPLETE \n")
 
-        # connect the output of DesktopMicrophone as the input of DialogflowComponent
+        # connect the output of Minimicrophone as the input of DialogflowComponent
         self.dialogflow.connect(self.mini.mic)
         self.dialogflow.register_callback(on_dialog)
 
