@@ -48,7 +48,7 @@ OPENAI_API_KEY="your key"
 
 Forth, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to be running:
 
-7. pip install --upgrade -e .[dialogflow,google-tts,openai-gpt,alphamini]
+7. pip install --upgrade social_interaction_cloud[dialogflow,google-tts,openai-gpt,alphamini]
 8. run: conf/redis/redis-server.exe conf/redis/redis.conf
 9. run in new terminal: run-dialogflow 
 10. run in new terminal: run-google-tts
