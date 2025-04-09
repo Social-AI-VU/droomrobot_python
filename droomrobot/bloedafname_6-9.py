@@ -225,9 +225,9 @@ class Droomrobot:
                                f'Bijvoorbeeld bij de vraag: "wat is je lievelingsdier?" '
                                f'en de reactie "mijn lievelingsdier is een hond" '
                                f'filter je "hond" als key entity uit. '
-                               f'of bijvoorbeeld "wat is je superkracht?" en de reactie '
-                               f'is "mijn superkracht is heel hard rennen"'
-                               f'filter je "heel hard rennen" er uit.'
+                               # f'of bijvoorbeeld "wat is je superkracht?" en de reactie '
+                               # f'is "mijn superkracht is heel hard rennen"'
+                               # f'filter je "heel hard rennen" er uit.'
                                f'Als robot heb je net het volgende gevraagt {question}'
                                f'Dit is de reactie van het kind {reply.response.query_result.query_text}'
                                f'Return alleen de key entity string terug.'))
@@ -238,7 +238,7 @@ class Droomrobot:
 
     def get_article(self, word):
         gpt_response = self.gpt.request(
-            GPTRequest(f'Retourneer het lidwoord van {word}'))
+            GPTRequest(f'Retourneer het lidwoord van {word}. Retouneer alleen het lidwoord zelf bijv. "de" of "het" en geen andere informatie.'))
         return gpt_response.response
 
     def personalize(self, robot_input, user_age, user_input):
@@ -271,7 +271,7 @@ class Droomrobot:
         self.say(f'Hallo, ik ben {robot_name} de droomrobot!')
         self.say('Wat fijn dat ik je mag helpen vandaag.')
         self.say('Wat is jouw naam?')
-        sleep(4)
+        sleep(3)
         self.say(f'{child_name}, wat een leuke naam.')
         self.say('En hoe oud ben je?')
         sleep(3)
@@ -283,11 +283,11 @@ class Droomrobot:
         self.say('Het heet een droomreis.')
         self.say('Met een droomreis kun je aan iets fijns denken terwijl je hier bent.')
         self.say('Dat helpt je om rustig en sterk te blijven.')
-        self.say('Ik zal het trucje even voor doen.')
-        self.say('Ik ga het liefst in gedachten naar de wolken.')
-        self.say('Kijk maar eens in mijn ogen, daar zie je wat ik bedoel.')
-        self.say('cool he.')
-        self.say('Maar het hoeft niet de wolken te zijn. Iedereen heeft een eigen fijne plek.')
+        #self.say('Ik zal het trucje even voor doen.')
+        #self.say('Ik ga het liefst in gedachten naar de wolken.')
+        #self.say('Kijk maar eens in mijn ogen, daar zie je wat ik bedoel.')
+        #self.say('cool he.')
+        #self.say('Maar het hoeft niet de wolken te zijn. Iedereen heeft een eigen fijne plek.')
         self.say('Laten we nu samen bedenken wat jouw fijne plek is.')
         self.say('Je kan bijvoorbeeld in gedachten naar het strand, het bos, de speeltuin of de ruimte.')
 
