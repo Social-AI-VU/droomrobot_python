@@ -1,5 +1,4 @@
 import json
-import os
 from os.path import abspath, join
 from os import environ
 
@@ -165,7 +164,7 @@ class Droomrobot:
 
         
 if __name__ == '__main__':
-    droomrobot = Droomrobot(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago", redis_ip="192.168.178.84",
-                            google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
-                            openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")))
+    droomrobot = Droomrobot(mini_ip="xxx.xxx.xxx.xxx", mini_id="00xxx", mini_password="alphago", redis_ip="yyy.yyy.yyy.yyy",
+                            google_keyfile_path=abspath(join("..", "..", "conf", "dialogflow", "google_keyfile.json")),
+                            openai_key_path=abspath(join("..", "..", "conf", "openai", ".openai_env")))
     droomrobot.run()

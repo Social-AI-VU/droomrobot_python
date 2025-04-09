@@ -210,6 +210,6 @@ class Droomrobot:
 
 if __name__ == '__main__':
     droomrobot = Droomrobot(mini_ip="xxx.xxx.xxx.xxx", mini_id="00xxx", mini_password="alphago", redis_ip="yyy.yyy.yyy.yyy",
-                            google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
-                            openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")))
+                            google_keyfile_path=abspath(join("..", "..", "conf", "dialogflow", "google_keyfile.json")),
+                            openai_key_path=abspath(join("..", "..", "conf", "openai", ".openai_env")))
     droomrobot.run()
