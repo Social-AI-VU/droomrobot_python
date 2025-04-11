@@ -236,10 +236,45 @@ class Droomrobot:
             attempts += 1
         return None
 
+    def ask_opinion_llm(self, question, max_attempts=2):
+        attempts = 0
+
+        while attempts < max_attempts:
+            # ask question
+            tts_reply = self.tts.request(GetSpeechRequest(text=question,
+                                                          voice_name=self.google_tts_voice_name,
+                                                          ssml_gender=self.google_tts_voice_gender))
+            self.mini.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+
+            # listen for answer
+            reply = self.dialogflow.request(GetIntentRequest(self.request_id))
+
+            # Return entity
+            if reply.response.query_result.query_text:
+                print(f'transcript is {reply.response.query_result.query_text}')
+                gpt_response = self.gpt.request(
+                    GPTRequest(f'Je bent een sociale robot die praat met een kind tussen de 6 en 9 jaar oud. '
+                               f'De robot stelt een vraag over een interesse van het kind.'
+                               f'Jouw taak is om de mening van het kind er uit te filteren'
+                               f'Bijvoorbeeld bij de vraag: "hoe goed is het gegaan?" '
+                               f'en de reactie "het ging niet zo goed" '
+                               f'filter je "negative" als opinion er uit. '
+                               # f'of bijvoorbeeld "wat is je superkracht?" en de reactie '
+                               # f'is "mijn superkracht is heel hard rennen"'
+                               # f'filter je "heel hard rennen" er uit.'
+                               f'Als robot heb je net het volgende gevraagt {question}'
+                               f'Dit is de reactie van het kind {reply.response.query_result.query_text}'
+                               f'Return alleen de opinion string (positive/negative) terug.'))
+                print(f'response is {gpt_response.response}')
+                return gpt_response.response
+            attempts += 1
+        return None
+
     def get_article(self, word):
         gpt_response = self.gpt.request(
             GPTRequest(f'Retourneer het lidwoord van {word}. Retouneer alleen het lidwoord zelf bijv. "de" of "het" en geen andere informatie.'))
         return gpt_response.response
+
 
     def personalize(self, robot_input, user_age, user_input):
         gpt_response = self.gpt.request(
@@ -335,7 +370,7 @@ class Droomrobot:
         self.say('Misschien ben je er alleen of is er iemand bij je.')
         self.say('Kijk maar welke mooie kleuren je allemaal om je heen ziet.')
         self.say('Misschien wel groen, of paars, of regenboog kleuren.')
-        self.say('En merk maar hoe fijn jij op deze plek voelt.')
+        self.say('En merk maar hoe fijn jij je op deze plek voelt.')
         self.say('En stel je dan nu voor, dat je in jouw droomreis een superheld bent.')
         self.say('Met een speciale kracht.')
         self.say('Jij mag kiezen.')
@@ -398,7 +433,7 @@ class Droomrobot:
         self.play_audio('resources/audio/breath_in.wav')
         self.say('en rustig uit.')
         self.play_audio('resources/audio/breath_out.wav')
-        self.say('Stel je maar voor dat je bij {droomplek_lidwoord} {droomplek} bent.')
+        self.say(f'Stel je maar voor dat je bij {droomplek_lidwoord} {droomplek} bent.')
         self.say('Kijk maar weer naar alle mooie kleuren die om je heen zijn en merk hoe fijn je je voelt op deze plek.')
         self.say('Luister maar naar alle fijne geluiden op die plek.')
         # Sound should be here but this is not possible with the LLM generated content
@@ -424,8 +459,8 @@ class Droomrobot:
         ### AFSCHEID
         #TODO: add bloedprikken_outro_6
         self.say('Wat heb je jezelf goed geholpen om alles makkelijker te maken.')
-        ging_goed = self.ask_open("Hoe goed is het gegaan?")
-        if 'goed' in ging_goed:
+        ging_goed = self.ask_opinion_llm("Hoe goed is het gegaan?")
+        if 'positive' in ging_goed:
             self.say('Wat fijn! je hebt jezelf echt goed geholpen.')
         else:
             self.say('Dat geeft niets.')
@@ -522,9 +557,9 @@ class Droomrobot:
 
 
 if __name__ == '__main__':
-    droomrobot = Droomrobot(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago",
-                            redis_ip="192.168.178.84",
-                            google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
+    droomrobot = Droomrobot(mini_ip="10.0.0.144", mini_id="00010", mini_password="alphago",
+                            redis_ip="10.0.0.141",
+                            google_keyfile_path=abspath(join("..", "conf", "dialogflow", "dialogflow_keyfile.json")),
                             openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")),
                             default_speaking_rate=0.8)
     droomrobot.run('Tessa', 8)

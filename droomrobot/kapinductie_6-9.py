@@ -61,7 +61,7 @@ Forth, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to b
 class Droomrobot:
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
                  google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
-                 google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE",
+                 google_tts_voice_name="nl-NL-Chirp3-HD-Leda", google_tts_voice_gender="FEMALE",
                  openai_key_path=None, default_speaking_rate=1.0):
         # Generate your personal openai api key here: https://platform.openai.com/api-keys
         # Either add your openai key to your systems variables (and comment the next line out) or
@@ -117,7 +117,8 @@ class Droomrobot:
         reply = self.tts.request(GetSpeechRequest(text=text,
                                                   voice_name=self.google_tts_voice_name,
                                                   ssml_gender=self.google_tts_voice_gender,
-                                                  speaking_rate=speaking_rate))
+                                                  speaking_rate=speaking_rate,
+                                                  ))
         self.mini.speaker.request(AudioRequest(reply.waveform, reply.sample_rate))
 
     def play_audio(self, audio_file):
@@ -231,6 +232,40 @@ class Droomrobot:
                                f'Als robot heb je net het volgende gevraagt {question}'
                                f'Dit is de reactie van het kind {reply.response.query_result.query_text}'
                                f'Return alleen de key entity string terug.'))
+                print(f'response is {gpt_response.response}')
+                return gpt_response.response
+            attempts += 1
+        return None
+    
+    def ask_opinion_llm(self, question, max_attempts=2):
+        attempts = 0
+
+        while attempts < max_attempts:
+            # ask question
+            tts_reply = self.tts.request(GetSpeechRequest(text=question,
+                                                          voice_name=self.google_tts_voice_name,
+                                                          ssml_gender=self.google_tts_voice_gender))
+            self.mini.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+
+            # listen for answer
+            reply = self.dialogflow.request(GetIntentRequest(self.request_id))
+
+            # Return entity
+            if reply.response.query_result.query_text:
+                print(f'transcript is {reply.response.query_result.query_text}')
+                gpt_response = self.gpt.request(
+                    GPTRequest(f'Je bent een sociale robot die praat met een kind tussen de 6 en 9 jaar oud. '
+                               f'De robot stelt een vraag over een interesse van het kind.'
+                               f'Jouw taak is om de mening van het kind er uit te filteren'
+                               f'Bijvoorbeeld bij de vraag: "hoe goed is het gegaan?" '
+                               f'en de reactie "het ging niet zo goed" '
+                               f'filter je "negative" als opinion er uit. '
+                               # f'of bijvoorbeeld "wat is je superkracht?" en de reactie '
+                               # f'is "mijn superkracht is heel hard rennen"'
+                               # f'filter je "heel hard rennen" er uit.'
+                               f'Als robot heb je net het volgende gevraagt {question}'
+                               f'Dit is de reactie van het kind {reply.response.query_result.query_text}'
+                               f'Return alleen de opinion string (positive/negative) terug.'))
                 print(f'response is {gpt_response.response}')
                 return gpt_response.response
             attempts += 1
@@ -373,8 +408,8 @@ class Droomrobot:
         ### AFSCHEID
         ## geen afscheid want het kind slaapt?
         self.say('Wat heb je jezelf goed geholpen om alles makkelijker te maken.')
-        ervaring = self.ask_yesno('Hoe goed is het gegaan?')
-        if 'yes' in ervaring:
+        ging_goed = self.ask_opinion_llm("Hoe goed is het gegaan?")
+        if 'positive' in ging_goed:
             self.say('Wat fijn! Je hebt jezelf echt goed geholpen.')
         else:
             self.say('Ik vind dat je echt goed je best hebt gedaan.')
@@ -573,7 +608,7 @@ class Droomrobot:
 
 if __name__ == '__main__':
     droomrobot = Droomrobot(mini_ip="10.0.0.155", mini_id="00199", mini_password="alphago",
-                            redis_ip="10.0.0.108",
+                            redis_ip="10.0.0.107",
                             google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
                             openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")),
                             default_speaking_rate=0.8)

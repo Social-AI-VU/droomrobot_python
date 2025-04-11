@@ -201,6 +201,40 @@ class Droomrobot:
                 return reply.response.query_result.query_text
             attempts += 1
         return None
+    
+    def ask_opinion_llm(self, question, max_attempts=2):
+        attempts = 0
+
+        while attempts < max_attempts:
+            # ask question
+            tts_reply = self.tts.request(GetSpeechRequest(text=question,
+                                                          voice_name=self.google_tts_voice_name,
+                                                          ssml_gender=self.google_tts_voice_gender))
+            self.mini.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+
+            # listen for answer
+            reply = self.dialogflow.request(GetIntentRequest(self.request_id))
+
+            # Return entity
+            if reply.response.query_result.query_text:
+                print(f'transcript is {reply.response.query_result.query_text}')
+                gpt_response = self.gpt.request(
+                    GPTRequest(f'Je bent een sociale robot die praat met een kind tussen de 6 en 9 jaar oud. '
+                               f'De robot stelt een vraag over een interesse van het kind.'
+                               f'Jouw taak is om de mening van het kind er uit te filteren'
+                               f'Bijvoorbeeld bij de vraag: "hoe goed is het gegaan?" '
+                               f'en de reactie "het ging niet zo goed" '
+                               f'filter je "negative" als opinion er uit. '
+                               # f'of bijvoorbeeld "wat is je superkracht?" en de reactie '
+                               # f'is "mijn superkracht is heel hard rennen"'
+                               # f'filter je "heel hard rennen" er uit.'
+                               f'Als robot heb je net het volgende gevraagt {question}'
+                               f'Dit is de reactie van het kind {reply.response.query_result.query_text}'
+                               f'Return alleen de opinion string (positive/negative) terug.'))
+                print(f'response is {gpt_response.response}')
+                return gpt_response.response
+            attempts += 1
+        return None
 
     def ask_entity_llm(self, question, max_attempts=2):
         attempts = 0
@@ -296,7 +330,7 @@ class Droomrobot:
         #                             'droom_plek',
         #                             'droom_plek')
 
-        droomplek = self.ask_entity_llm('Wat zou jij willen doen?')
+        droomplek = self.ask_entity_llm('Wat zou jij willen doen?') ## wellicht "kies uit raceauto racen, naar een waterpretpark of als dolfijn in de zee zwemmen"
 
         if droomplek:
             if 'raceauto' in droomplek:
@@ -358,7 +392,7 @@ class Droomrobot:
                 self.say('Als je zometeen aan de beurt bent, ga ik je helpen om weer naar de zee te gaan in gedachten.')
         
         ## INTERVENTIE
-
+        sleep(5)
         self.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een droomreis maken.')
         self.say('Omdat je net al zo goed hebt geoefend zul je zien dat het nu nog beter en makkelijker gaat.')
         self.say('Je mag weer goed gaan zitten en je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.')
@@ -380,8 +414,8 @@ class Droomrobot:
         
         ## AFSCHEID/OUTRO
         self.say('Wat heb je jezelf goed geholpen om alles makkelijker te maken.')
-        ervaring = self.ask_yesno('Hoe goed is het gegaan?')
-        if 'yes' in ervaring:
+        ging_goed = self.ask_opinion_llm("Hoe goed is het gegaan?")
+        if 'positive' in ging_goed:
             self.say('Wat fijn! Je hebt jezelf echt goed geholpen.')
         else:
             self.say('Ik vind dat je echt goed je best hebt gedaan.')
@@ -404,6 +438,7 @@ class Droomrobot:
             self.say(personalized_response)
         else:
             self.say("Oke, super.")
+        ## maar wat als het kind rustig zegt.
         self.say('Wat mij altijd goed helpt is om in gedachten te denken dat de sonde een race auto is die lekker snel en makkelijk door een tunnel rijdt.')
 
 
@@ -622,8 +657,8 @@ class Droomrobot:
 
 
 if __name__ == '__main__':
-    droomrobot = Droomrobot(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago",
-                            redis_ip="192.168.178.84",
+    droomrobot = Droomrobot(mini_ip="172.20.10.11", mini_id="00199", mini_password="alphago",
+                            redis_ip="172.20.10.10",
                             google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
                             openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")),
                             default_speaking_rate=0.8)
