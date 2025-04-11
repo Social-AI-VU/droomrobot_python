@@ -296,6 +296,7 @@ class Droomrobot:
         #                             {'droom_plek': 1},
         #                             'droom_plek',
         #                             'droom_plek')
+        # self.mini.animation.request(MiniActionRequest("018"))
 
         droomplek = self.ask_entity_llm('Wat is een plek waar jij je fijn voelt?')
 
@@ -371,6 +372,19 @@ class Droomrobot:
 
         ### AFSCHEID
         ## geen afscheid want het kind slaapt?
+        self.say('Wat heb je jezelf goed geholpen om alles makkelijker te maken.')
+        ervaring = self.ask_yesno('Hoe goed is het gegaan?')
+        if 'yes' in ervaring:
+            self.say('Wat fijn! Je hebt jezelf echt goed geholpen.')
+        else:
+            self.say('Ik vind dat je echt goed je best hebt gedaan.')
+            self.say('En kijk welke stapjes je allemaal al goed gelukt zijn.')
+            self.say('Je hebt goed geluisterd naar mijn stem.')
+        
+        self.say('En weet je wat nu zo fijn is, hoe vaker je deze droomreis oefent, hoe makkelijker het wordt.')
+        self.say('Je kunt dit ook zonder mij oefenen.')
+        self.say('Je hoeft alleen maar je ogen dicht te doen en terug te denken aan jouw plek in gedachten.')
+        self.say('Ik ben benieuwd hoe goed je het de volgende keer gaat doen. Je doet het op jouw eigen manier, en dat is precies goed.')
 
 
 
@@ -558,8 +572,8 @@ class Droomrobot:
 
 
 if __name__ == '__main__':
-    droomrobot = Droomrobot(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago",
-                            redis_ip="192.168.178.84",
+    droomrobot = Droomrobot(mini_ip="10.0.0.155", mini_id="00199", mini_password="alphago",
+                            redis_ip="10.0.0.108",
                             google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
                             openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")),
                             default_speaking_rate=0.8)
