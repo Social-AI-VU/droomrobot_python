@@ -8,6 +8,7 @@ import numpy as np
 from sic_framework.core.message_python2 import AudioRequest
 from sic_framework.devices.alphamini import Alphamini
 from sic_framework.devices.common_mini.mini_speaker import MiniSpeakersConf
+from sic_framework.devices.desktop import Desktop
 from sic_framework.services.dialogflow.dialogflow import (
     Dialogflow,
     DialogflowConf,
@@ -62,7 +63,8 @@ class Droomrobot:
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
                  google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
                  google_tts_voice_name="nl-NL-Chirp3-HD-Leda", google_tts_voice_gender="FEMALE",
-                 openai_key_path=None, default_speaking_rate=1.0):
+                 openai_key_path=None, default_speaking_rate=1.0,
+                 computer_test_mode=False):
         # Generate your personal openai api key here: https://platform.openai.com/api-keys
         # Either add your openai key to your systems variables (and comment the next line out) or
         # create a .openai_env file in the conf/openai folder and add your key there like this:
@@ -97,18 +99,26 @@ class Droomrobot:
                                                        ssml_gender=self.google_tts_voice_gender))
         print("TTS INITIALIZED \n")
 
-        self.mini_id = mini_id
-        self.mini = Alphamini(
-            ip=mini_ip,
-            mini_id=self.mini_id,
-            mini_password=mini_password,
-            redis_ip=redis_ip,
-            speaker_conf=MiniSpeakersConf(sample_rate=init_reply.sample_rate),
-        )
-        print("SETUP MINI COMPLETE \n")
+        if not computer_test_mode:
+            self.mini_id = mini_id
+            self.mini = Alphamini(
+                ip=mini_ip,
+                mini_id=self.mini_id,
+                mini_password=mini_password,
+                redis_ip=redis_ip,
+                speaker_conf=MiniSpeakersConf(sample_rate=init_reply.sample_rate),
+            )
+            self.speaker = self.mini.speaker
+            self.mic = self.mini.mic
+            print("SETUP MINI COMPLETE \n")
+        else:
+            desktop = Desktop()
+            self.speaker = desktop.speakers
+            self.mic = desktop.mic
+            print("SETUP COMPUTER COMPLETE \n")
 
         # connect the output of Minimicrophone as the input of DialogflowComponent
-        self.dialogflow.connect(self.mini.mic)
+        self.dialogflow.connect(self.mic)
         self.dialogflow.register_callback(self.on_dialog)
 
         print("SETUP MIC COMPLETE \n")
@@ -119,7 +129,7 @@ class Droomrobot:
                                                   ssml_gender=self.google_tts_voice_gender,
                                                   speaking_rate=speaking_rate,
                                                   ))
-        self.mini.speaker.request(AudioRequest(reply.waveform, reply.sample_rate))
+        self.speaker.request(AudioRequest(reply.waveform, reply.sample_rate))
 
     def play_audio(self, audio_file):
         with wave.open(audio_file, 'rb') as wf:
@@ -132,7 +142,7 @@ class Droomrobot:
             if sample_width != 2:
                 raise ValueError("WAV file is not 16-bit audio. Sample width = {} bytes.".format(sample_width))
 
-            self.mini.speaker.request(AudioRequest(wf.readframes(n_frames), framerate))
+            self.speaker.request(AudioRequest(wf.readframes(n_frames), framerate))
 
     def ask_yesno(self, question, max_attempts=2):
         attempts = 0
@@ -141,7 +151,7 @@ class Droomrobot:
             tts_reply = self.tts.request(GetSpeechRequest(text=question,
                                                           voice_name=self.google_tts_voice_name,
                                                           ssml_gender=self.google_tts_voice_gender))
-            self.mini.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+            self.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
 
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, {'answer_yesno': 1}))
@@ -167,7 +177,7 @@ class Droomrobot:
             tts_reply = self.tts.request(GetSpeechRequest(text=question,
                                                           voice_name=self.google_tts_voice_name,
                                                           ssml_gender=self.google_tts_voice_gender))
-            self.mini.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+            self.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
 
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, context))
@@ -190,7 +200,7 @@ class Droomrobot:
             tts_reply = self.tts.request(GetSpeechRequest(text=question,
                                                           voice_name=self.google_tts_voice_name,
                                                           ssml_gender=self.google_tts_voice_gender))
-            self.mini.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+            self.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
 
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
@@ -211,7 +221,7 @@ class Droomrobot:
             tts_reply = self.tts.request(GetSpeechRequest(text=question,
                                                           voice_name=self.google_tts_voice_name,
                                                           ssml_gender=self.google_tts_voice_gender))
-            self.mini.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+            self.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
 
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
@@ -245,7 +255,7 @@ class Droomrobot:
             tts_reply = self.tts.request(GetSpeechRequest(text=question,
                                                           voice_name=self.google_tts_voice_name,
                                                           ssml_gender=self.google_tts_voice_gender))
-            self.mini.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+            self.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
 
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
@@ -611,5 +621,5 @@ if __name__ == '__main__':
                             redis_ip="10.0.0.107",
                             google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
                             openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")),
-                            default_speaking_rate=0.8)
+                            default_speaking_rate=0.8, computer_test_mode=False)
     droomrobot.run('Tessa', 8)
