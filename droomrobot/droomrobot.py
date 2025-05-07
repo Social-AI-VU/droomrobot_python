@@ -368,7 +368,7 @@ class Droomrobot:
          #PlayActionResponse.resultCode: Return code
 
          """
-        
+
         # action_name: Action file name, you can get the actions supported by the robot through GetActionList
         action: PlayAction = PlayAction(action_name=action_name)
         # response: PlayActionResponse
