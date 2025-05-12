@@ -24,7 +24,7 @@ class Bloedafname6:
 
         # INTRODUCTIE
         self.droomrobot.say(f'Hallo, ik ben {robot_name} de droomrobot!')
-        self.droomrobot.animate(AnimationType.ACTION, "random_short3")
+        # self.droomrobot.animate(AnimationType.ACTION, "random_short3")
         self.droomrobot.say('Wat fijn dat ik je mag helpen vandaag.')
         self.droomrobot.say('Wat is jouw naam?')
         sleep(3)
@@ -39,11 +39,11 @@ class Bloedafname6:
         self.droomrobot.say('Het heet een droomreis.')
         self.droomrobot.say('Met een droomreis kun je aan iets fijns denken terwijl je hier bent.')
         self.droomrobot.say('Dat helpt je om rustig en sterk te blijven.')
-        #self.droomrobot.say('Ik zal het trucje even voor doen.')
-        #self.droomrobot.say('Ik ga het liefst in gedachten naar de wolken.')
-        #self.droomrobot.say('Kijk maar eens in mijn ogen, daar zie je wat ik bedoel.')
-        #self.droomrobot.say('cool he.')
-        #self.droomrobot.say('Maar het hoeft niet de wolken te zijn. Iedereen heeft een eigen fijne plek.')
+        self.droomrobot.say('Ik zal het trucje even voor doen.')
+        self.droomrobot.say('Ik ga het liefst in gedachten naar de wolken.')
+        self.droomrobot.say('Kijk maar eens in mijn ogen, daar zie je wat ik bedoel.')
+        self.droomrobot.say('cool he.')
+        self.droomrobot.say('Maar het hoeft niet de wolken te zijn. Iedereen heeft een eigen fijne plek.')
         self.droomrobot.say('Laten we nu samen bedenken wat jouw fijne plek is.')
         self.droomrobot.say('Je kan bijvoorbeeld in gedachten naar het strand, het bos, de speeltuin of de ruimte.')
 
@@ -75,7 +75,7 @@ class Bloedafname6:
         self.droomrobot.say('Ga even lekker zitten zoals jij dat fijn vindt.')
         sleep(1)
         zit_goed = self.droomrobot.ask_yesno("Zit je zo goed?")
-        if 'yes' in zit_goed:
+        if zit_goed and 'yes' in zit_goed:
             self.droomrobot.say('En nu je lekker bent gaan zitten.')
         else:
             self.droomrobot.say('Het zit vaak het lekkerste als je stevig gaat zitten.')
@@ -95,7 +95,7 @@ class Bloedafname6:
         self.droomrobot.say('En stel je dan nu voor, dat je in jouw droomreis een superheld bent.')
         self.droomrobot.say('Met een speciale kracht.')
         self.droomrobot.say('Jij mag kiezen.')
-        superkracht = self.droomrobot.ask_entity_llm('Welke kracht kies je vandaag?')
+        superkracht = self.droomrobot.ask_entity_llm('Welke kracht kies je vandaag?') # TODO: dialogflow entity gebruiken hier of speciale prompt
         if superkracht:
             superkracht_question = self.droomrobot.generate_question(child_age, "Welke superkracht zou je willen?", superkracht)
             superkracht_child_response = self.droomrobot.ask_open(superkracht_question)
