@@ -309,7 +309,7 @@ class Droomrobot:
 
 
 
-    def run(self, child_name: str, child_age: int, robot_name: str="Hero"):
+    def run(self, child_name: str, child_age: int, robot_name: str="de droomrobot"):
 
         # INTRODUCTIE
         self.say(f'Hallo, ik ben {robot_name} de droomrobot!')
@@ -351,14 +351,14 @@ class Droomrobot:
                 self.dolfijn(child_name, child_age)
             # else:
             #     self.nieuwe_droomplek(droomplek, child_name, child_age)
-        else:
-            droomplek = 'raceauto'  # default
-            self.droomplek_not_recognized(child_name, child_age)
+            else:
+                droomplek = 'raceauto'  # default
+                self.droomplek_not_recognized(child_name, child_age)
         droomplek_lidwoord = self.get_article(droomplek)
 
         # SAMEN OEFENEN
         self.say('Laten we alvast gaan oefenen om samen een mooie droomreis te maken, zodat het je zometeen gaat helpen bij het sonde inbrengen.')
-        self.say('De sonde is een soort zacht rietje \pau=50\ die je gaat helpen om je goed te voelen.')
+        self.say('De sonde is een soort zacht rietje die je gaat helpen om je goed te voelen.')
         self.say('Ga even lekker zitten zoals jij dat fijn vindt.')
         sleep(1)
         zit_goed = self.ask_yesno("Zit je zo goed?")

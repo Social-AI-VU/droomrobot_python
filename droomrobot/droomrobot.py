@@ -121,9 +121,9 @@ class Droomrobot:
             self.speaker = self.mini.speaker
             self.mic = self.mini.mic
 
-            print("Initializing alphamini API")
-            self.mini_api = None
-            asyncio.create_task(self._initialize_alphamini_api())
+            # print("Initializing alphamini API")
+            # self.mini_api = None
+            # asyncio.create_task(self._initialize_alphamini_api())
 
             print("SETUP MINI COMPLETE \n")
         else:
@@ -371,7 +371,8 @@ class Droomrobot:
         #
         # if mini_api:
         # action_name: Action file name, you can get the actions supported by the robot through GetActionList
-        await MiniSdk.connect(self.mini_api)
+        mini_api: WiFiDevice = await MiniSdk.get_device_by_name(self.mini_id, 10)
+        await MiniSdk.connect(mini_api)
         action: PlayAction = PlayAction(action_name=action_name)
         # response: PlayActionResponse
         # (resultType, response) = await action.execute()
