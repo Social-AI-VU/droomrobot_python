@@ -303,6 +303,12 @@ class Droomrobot:
                 f'Retourneer het lidwoord van {word}. Retouneer alleen het lidwoord zelf bijv. "de" of "het" en geen andere informatie.'))
         return gpt_response.response
 
+    def get_adjective(self, word):
+        gpt_response = self.gpt.request(
+            GPTRequest(
+                f'Retourneer het bijvoeglijk naamwoord van {word}. Retourneer alleen het bijvoeglijk naamwoord zelf bijv. "oranje" of "zachte" en geen andere informatie.'))
+        return gpt_response.response
+
     def personalize(self, robot_input, user_age, user_input):
         gpt_response = self.gpt.request(
             GPTRequest(f'Je bent een sociale robot die praat met een kind van {str(user_age)} jaar oud.'
