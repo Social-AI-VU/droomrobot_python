@@ -13,7 +13,7 @@ class Bloedafname6:
                  google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE",
                  openai_key_path=None, default_speaking_rate=1.0,
                  computer_test_mode=False):
-        
+
         self.droomrobot = Droomrobot(mini_ip, mini_id, mini_password, redis_ip,
                                 google_keyfile_path, sample_rate_dialogflow_hertz, dialogflow_language,
                                 google_tts_voice_name, google_tts_voice_gender,
@@ -23,8 +23,8 @@ class Bloedafname6:
     def run(self, child_name: str, child_age: int, robot_name: str="Hero"):
 
         # INTRODUCTIE
+        self.droomrobot.animate(AnimationType.ACTION, "009")
         self.droomrobot.say(f'Hallo, ik ben {robot_name} de droomrobot!')
-        # self.droomrobot.animate(AnimationType.ACTION, "random_short3")
         self.droomrobot.say('Wat fijn dat ik je mag helpen vandaag.')
         self.droomrobot.say('Wat is jouw naam?')
         sleep(3)

@@ -8,7 +8,9 @@ from time import sleep
 
 import numpy as np
 import mini.mini_sdk as MiniSdk
+from mini import MouthLampColor, MouthLampMode
 from mini.apis.api_action import PlayAction
+from mini.apis.api_expression import SetMouthLamp
 from mini.dns.dns_browser import WiFiDevice
 from sic_framework.core.message_python2 import AudioRequest
 from sic_framework.devices.alphamini import Alphamini
@@ -120,7 +122,8 @@ class Droomrobot:
             self.mic = self.mini.mic
 
             print("Initializing alphamini API")
-            asyncio.run(self._initialize_alphamini_api())
+            self.mini_api = None
+            asyncio.create_task(self._initialize_alphamini_api())
 
             print("SETUP MINI COMPLETE \n")
         else:
@@ -213,8 +216,10 @@ class Droomrobot:
                                                           ssml_gender=self.google_tts_voice_gender))
             self.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
 
+            asyncio.run(self._animation_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL))
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
+            asyncio.run(self._animation_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH))
 
             print("The detected intent:", reply.intent)
 
@@ -338,25 +343,13 @@ class Droomrobot:
         asyncio.run(self._disconnect_alphamini_api())
 
     async def _initialize_alphamini_api(self):
-        print("Initializing alphamini api")
-        self.mini_api: WiFiDevice = await MiniSdk.get_device_by_name(self.mini_id, 10)
-        print(f"Following device found for id {self.mini_id}: {self.mini_api}")
-        if self.mini_api:
-            print("Going to connect")
-            await MiniSdk.connect(self.mini_api)
-            print("Connected")
-            print("Going to stand up")
-            await self._animimation_action("009")  # RESET Animation
-            print("Done with animation")
-        else:
-            print('Error: could not connect to alphamini API')
+        self.mini: WiFiDevice = await MiniSdk.get_device_by_name(self.mini_id, 10)
 
     @staticmethod
     async def _disconnect_alphamini_api():
         await MiniSdk.release()
 
-    @staticmethod
-    async def _animimation_action(action_name):
+    async def _animimation_action(self, action_name):
         """Perform an action demo
 
          Control the robot to execute a local (built-in/custom) action with a specified name and wait for the execution result to reply
@@ -368,9 +361,48 @@ class Droomrobot:
          #PlayActionResponse.resultCode: Return code
 
          """
-
+        # mini_api: WiFiDevice = await MiniSdk.get_device_by_name(self.mini_id, 10)
+        #
+        # if mini_api:
         # action_name: Action file name, you can get the actions supported by the robot through GetActionList
+        await MiniSdk.connect(self.mini_api)
         action: PlayAction = PlayAction(action_name=action_name)
         # response: PlayActionResponse
         # (resultType, response) = await action.execute()
         await action.execute()
+
+    async def _animation_mouth_lamp(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000):
+        # mode: mouth light mode, 0: normal mode, 1: breathing mode
+
+        # color: mouth light color, 1: red, 2: green, 3: blue
+
+        # duration: duration, in milliseconds, -1 means always on
+
+        # breath_duration: The duration of one blink, in milliseconds
+
+        """Test setting mouth light
+
+        Set the robot's mouth light to normal mode, green and always on for 3s, and wait for the reply result
+
+        When mode=NORMAL, the duration parameter works, indicating how long it will stay on
+
+        When mode=BREATH, the breath_duration parameter works, indicating how often to breathe
+
+        #SetMouthLampResponse.isSuccess: Is it successful
+
+        #SetMouthLampResponse.resultCode: Return code
+
+        """
+        mini_api: WiFiDevice = await MiniSdk.get_device_by_name(self.mini_id, 10)
+
+        if mini_api:
+            # action_name: Action file name, you can get the actions supported by the robot through GetActionList
+            await MiniSdk.connect(mini_api)
+            if mode == MouthLampMode.BREATH:
+                mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.BREATH,
+                                                               breath_duration=breath_duration)
+            else:
+                mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.NORMAL, duration=duration)
+
+            await mouth_lamp_action.execute()
+
