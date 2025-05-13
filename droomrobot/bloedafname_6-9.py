@@ -20,7 +20,7 @@ class Bloedafname6:
                                 openai_key_path, default_speaking_rate,
                                 computer_test_mode)
 
-    def run(self, child_name: str, child_age: int, robot_name: str="Hero"):
+    def run(self, child_name: str, child_age: int, robot_name: str="de droomrobot"):
 
         # INTRODUCTIE
         self.droomrobot.animate(AnimationType.ACTION, "009")

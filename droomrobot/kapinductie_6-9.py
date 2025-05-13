@@ -310,7 +310,7 @@ class Droomrobot:
 
 
 
-    def run(self, child_name: str, child_age: int, robot_name: str="Hero"):
+    def run(self, child_name: str, child_age: int, robot_name: str="de droomrobot"):
 
         # INTRODUCTIE
         self.say(f'Hallo, ik ben {robot_name} de droomrobot!')
@@ -354,9 +354,9 @@ class Droomrobot:
                 self.ruimte(child_name, child_age)
             # else:
             #     self.nieuwe_droomplek(droomplek, child_name, child_age)
-        else:
-            droomplek = 'strand'  # default
-            self.droomplek_not_recognized(child_name, child_age)
+            else:
+                droomplek = 'strand'  # default
+                self.droomplek_not_recognized(child_name, child_age)
         droomplek_lidwoord = self.get_article(droomplek)
 
         # SAMEN OEFENEN
@@ -560,7 +560,7 @@ class Droomrobot:
         self.say('Voel maar hoe makkelijk de schommel met je mee beweegt, heen en weer, heen en weer.')
         self.say('De schommel gaat precies zo hoog als dat jij het fijn vindt.')
         self.say('Jij hebt namelijk alle controle.')
-        self.say('Het kan ook een lekker kriebelend gevoel in je buik geven.')
+        self.say('Het kan ook een lekker kriebellend gevoel in je buik geven.')
         self.say('En terwijl je zo lekker aan het schommelen bent, voel je de zachte warme wind op je gezicht.')
         self.say('Merk maar hoe lekker rustig je lichaam wordt en hoe veilig en fijn jij je voelt op het strand.')
         self.say('Je hoort de golven van de zee, terwijl je lekker blijft schommelen.')
