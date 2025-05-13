@@ -6,7 +6,7 @@ from sic_framework.services.openai_gpt.gpt import GPTRequest
 from droomrobot import Droomrobot, AnimationType
 
 
-class Bloedafname6:
+class Bloedafname4:
     
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
                  google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",

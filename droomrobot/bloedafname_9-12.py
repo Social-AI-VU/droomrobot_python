@@ -6,7 +6,7 @@ from sic_framework.services.openai_gpt.gpt import GPTRequest
 from droomrobot import Droomrobot, AnimationType
 
 
-class Bloedafname6:
+class Bloedafname9:
 
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
                  google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
@@ -45,8 +45,8 @@ class Bloedafname6:
         self.droomrobot.say('En het grappige is dat als je denkt aan iets fijns, dat jij je dan ook fijner gaat voelen.')
         self.droomrobot.say('Ik zal het even voordoen.')
         self.droomrobot.say('Ik ga het liefst in gedachten naar de wolken, lekker relaxed zweven.')
-        self.droomrobot.say('Kijk maar eens in mijn ogen, dan zie je wat ik bedoel.')
-        self.droomrobot.say('cool he.')
+        # self.droomrobot.say('Kijk maar eens in mijn ogen, dan zie je wat ik bedoel.')
+        # self.droomrobot.say('cool he.')
         self.droomrobot.say('Maar het hoeft niet de wolken te zijn. Iedereen heeft een eigen fijne plek.')
         self.droomrobot.say('Laten we nu samen bedenken wat jouw fijne plek is.')
         self.droomrobot.say('Je kan bijvoorbeeld in gedachten naar het strand, het bos, of op vakantie.')
