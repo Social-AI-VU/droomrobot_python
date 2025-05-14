@@ -62,7 +62,7 @@ Forth, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to b
 class Droomrobot:
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
                  google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
-                 google_tts_voice_name="nl-NL-Chirp3-HD-Leda", google_tts_voice_gender="FEMALE",
+                 google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE",
                  openai_key_path=None, default_speaking_rate=1.0,
                  computer_test_mode=False):
         # Generate your personal openai api key here: https://platform.openai.com/api-keys
@@ -617,8 +617,8 @@ class Droomrobot:
 
 
 if __name__ == '__main__':
-    droomrobot = Droomrobot(mini_ip="10.0.0.155", mini_id="00199", mini_password="alphago",
-                            redis_ip="10.0.0.107",
+    droomrobot = Droomrobot(mini_ip="10.0.0.148", mini_id="00010", mini_password="alphago",
+                            redis_ip="10.0.0.142",
                             google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
                             openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")),
                             default_speaking_rate=0.8, computer_test_mode=False)
