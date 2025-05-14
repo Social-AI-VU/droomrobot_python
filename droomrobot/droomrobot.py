@@ -216,10 +216,10 @@ class Droomrobot:
                                                           ssml_gender=self.google_tts_voice_gender))
             self.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
 
-            asyncio.run(self._animation_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL))
+            # asyncio.run(self._animation_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL))
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
-            asyncio.run(self._animation_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH))
+            # asyncio.run(self._animation_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH))
 
             print("The detected intent:", reply.intent)
 
