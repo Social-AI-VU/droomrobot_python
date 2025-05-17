@@ -1,10 +1,13 @@
 import asyncio
 import json
+import queue
 import wave
 from enum import Enum
 from os.path import abspath, join
 from os import environ
-from time import sleep
+from pathlib import Path
+from threading import Thread
+from time import sleep, strftime
 
 import numpy as np
 import mini.mini_sdk as MiniSdk
@@ -65,9 +68,11 @@ Forth, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to b
 13. Run this script
 """
 
+
 class AnimationType(Enum):
     ACTION = 1
     EXPRESSION = 2
+
 
 class Droomrobot:
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
@@ -116,10 +121,11 @@ class Droomrobot:
                 mini_id=self.mini_id,
                 mini_password=mini_password,
                 redis_ip=redis_ip,
-                speaker_conf=MiniSpeakersConf(sample_rate=init_reply.sample_rate),
+                speaker_conf=MiniSpeakersConf(sample_rate=init_reply.sample_rate)
             )
             self.speaker = self.mini.speaker
             self.mic = self.mini.mic
+            self.device_name = "alphamini"
 
             # print("Initializing alphamini API")
             # self.mini_api = None
@@ -130,6 +136,7 @@ class Droomrobot:
             desktop = Desktop()
             self.speaker = desktop.speakers
             self.mic = desktop.mic
+            self.device_name = "computer"
             print("SETUP COMPUTER COMPLETE \n")
 
         # connect the output of Minimicrophone as the input of DialogflowComponent
@@ -138,12 +145,58 @@ class Droomrobot:
 
         print("SETUP MIC COMPLETE \n")
 
-    def say(self, text, speaking_rate=1.0):
-        reply = self.tts.request(GetSpeechRequest(text=text,
-                                                  voice_name=self.google_tts_voice_name,
-                                                  ssml_gender=self.google_tts_voice_gender,
-                                                  speaking_rate=speaking_rate))
+        self.log_queue = None
+        self.log_thread = None
+
+    def start_logging(self, log_id):
+        folder = Path("logs")
+        folder.mkdir(parents=True, exist_ok=True)
+        log_path = folder / f"{log_id}.log"
+        self.log_queue = queue.Queue()
+        self.log_thread = Thread(target=self.log_writer, args=(log_path,), daemon=True)
+        self.log_thread.start()
+
+        timestamp = strftime("%Y-%m-%d %H:%M:%S")
+        self.log_queue.put(f'[{timestamp}] ### START NEW LOG ###')
+
+    def stop_logging(self):
+        if self.log_queue:
+            self.log_queue.put(None)
+        if self.log_thread:
+            self.log_thread.join()
+
+    def log_writer(self, log_path):
+        with open(log_path, 'a', encoding='utf-8') as f:
+            while True:
+                item = self.log_queue.get()
+                if item is None:
+                    break  # Exit signal
+                f.write(item + '\n')
+                f.flush()
+
+    def log_utterance(self, speaker, text):
+        if self.log_queue:
+            timestamp = strftime("%Y-%m-%d %H:%M:%S")
+            self.log_queue.put(f"[{timestamp}] {speaker}: {text}")
+
+    def log_recognition_result(self, recognition_result):
+        if self.log_queue:
+            timestamp = strftime("%Y-%m-%d %H:%M:%S")
+            self.log_queue.put(f"[{timestamp}] recognition result: {recognition_result}")
+
+    def say(self, text, speaking_rate=None):
+        if speaking_rate:
+            reply = self.tts.request(GetSpeechRequest(text=text,
+                                                      voice_name=self.google_tts_voice_name,
+                                                      ssml_gender=self.google_tts_voice_gender,
+                                                      speaking_rate=speaking_rate))
+        else:
+            reply = self.tts.request(GetSpeechRequest(text=text,
+                                                      voice_name=self.google_tts_voice_name,
+                                                      ssml_gender=self.google_tts_voice_gender))
+
         self.speaker.request(AudioRequest(reply.waveform, reply.sample_rate))
+        self.log_utterance(speaker='robot', text=text)
 
     def play_audio(self, audio_file):
         with wave.open(audio_file, 'rb') as wf:
@@ -157,64 +210,64 @@ class Droomrobot:
                 raise ValueError("WAV file is not 16-bit audio. Sample width = {} bytes.".format(sample_width))
 
             self.speaker.request(AudioRequest(wf.readframes(n_frames), framerate))
+            self.log_utterance(speaker='robot', text=f'plays {audio_file}')
 
-    def ask_yesno(self, question, max_attempts=2):
+    def ask_yesno(self, question, max_attempts=2, speaking_rate=None):
         attempts = 0
         while attempts < max_attempts:
             # ask question
-            tts_reply = self.tts.request(GetSpeechRequest(text=question,
-                                                          voice_name=self.google_tts_voice_name,
-                                                          ssml_gender=self.google_tts_voice_gender))
-            self.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+            self.say(question, speaking_rate=speaking_rate)
 
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, {'answer_yesno': 1}))
-
             print("The detected intent:", reply.intent)
 
             # return answer
             if reply.intent:
+                self.log_recognition_result(f'context: answer_yesno, recognized_intent: {str(reply.intent)}')
                 if "yesno_yes" in reply.intent:
                     return "yes"
                 elif "yesno_no" in reply.intent:
                     return "no"
                 elif "yesno_dontknow" in reply.intent:
                     return "dontknow"
+
+            self.log_recognition_result(f'context: answer_yesno, recognized_intent: None')
             attempts += 1
+        self.log_recognition_result(f'context: answer_yesno, intent recognition failed')
         return None
 
-    def ask_entity(self, question, context, target_intent, target_entity, max_attempts=2):
+    def ask_entity(self, question, context, target_intent, target_entity, max_attempts=2, speaking_rate=None):
         attempts = 0
 
         while attempts < max_attempts:
             # ask question
-            tts_reply = self.tts.request(GetSpeechRequest(text=question,
-                                                          voice_name=self.google_tts_voice_name,
-                                                          ssml_gender=self.google_tts_voice_gender))
-            self.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+            self.say(question, speaking_rate=speaking_rate)
 
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, context))
-
             print("The detected intent:", reply.intent)
 
             # Return entity
             if reply.intent:
+                self.log_recognition_result(f'context: {context}, target_intent: {target_intent}, '
+                                            f'target_entity: {target_entity}, recognized_intent: {str(reply.intent)}')
                 if target_intent in reply.intent:
                     if reply.response.query_result.parameters and target_entity in reply.response.query_result.parameters:
                         return reply.response.query_result.parameters[target_entity]
             attempts += 1
+            self.log_recognition_result(f'context: {context}, target_intent: {target_intent}, '
+                                        f'target_entity: {target_entity}, recognized_intent: None')
+
+        self.log_recognition_result(f'context: {context}, intent recognition failed')
         return None
 
-    def ask_open(self, question, max_attempts=2):
+    def ask_open(self, question, max_attempts=2, speaking_rate=None):
         attempts = 0
 
         while attempts < max_attempts:
             # ask question
-            tts_reply = self.tts.request(GetSpeechRequest(text=question,
-                                                          voice_name=self.google_tts_voice_name,
-                                                          ssml_gender=self.google_tts_voice_gender))
-            self.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+            self.say(question, speaking_rate=speaking_rate)
 
             # asyncio.run(self._animation_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL))
             # listen for answer
@@ -229,15 +282,12 @@ class Droomrobot:
             attempts += 1
         return None
 
-    def ask_entity_llm(self, question, max_attempts=2):
+    def ask_entity_llm(self, question, max_attempts=2, speaking_rate=None):
         attempts = 0
 
         while attempts < max_attempts:
             # ask question
-            tts_reply = self.tts.request(GetSpeechRequest(text=question,
-                                                          voice_name=self.google_tts_voice_name,
-                                                          ssml_gender=self.google_tts_voice_gender))
-            self.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+            self.say(question, speaking_rate=speaking_rate)
 
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
@@ -259,19 +309,19 @@ class Droomrobot:
                                f'Dit is de reactie van het kind {reply.response.query_result.query_text}'
                                f'Return alleen de key entity string terug.'))
                 print(f'response is {gpt_response.response}')
+
+                self.log_recognition_result(f'llm extracted entity: {gpt_response.response}')
                 return gpt_response.response
             attempts += 1
+        self.log_recognition_result('llm extracted entity: None')
         return None
 
-    def ask_opinion_llm(self, question, max_attempts=2):
+    def ask_opinion_llm(self, question, max_attempts=2, speaking_rate=None):
         attempts = 0
 
         while attempts < max_attempts:
             # ask question
-            tts_reply = self.tts.request(GetSpeechRequest(text=question,
-                                                          voice_name=self.google_tts_voice_name,
-                                                          ssml_gender=self.google_tts_voice_gender))
-            self.speaker.request(AudioRequest(tts_reply.waveform, tts_reply.sample_rate))
+            self.say(question, speaking_rate=speaking_rate)
 
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
@@ -293,8 +343,10 @@ class Droomrobot:
                                f'Dit is de reactie van het kind {reply.response.query_result.query_text}'
                                f'Return alleen de opinion string (positive/negative) terug.'))
                 print(f'response is {gpt_response.response}')
+                self.log_recognition_result(f'llm extracted sentiment: {gpt_response.response}')
                 return gpt_response.response
             attempts += 1
+        self.log_recognition_result('llm extracted sentiment: None')
         return None
 
     def get_article(self, word):
@@ -332,18 +384,23 @@ class Droomrobot:
         return gpt_response.response
 
     def animate(self, animation_type: AnimationType, animation_id: str):
-        if animation_type == AnimationType.ACTION:
-            asyncio.run(self._animimation_action(animation_id))
-        elif animation_type == AnimationType.EXPRESSION:
-            pass
+
+        if 'computer' in self.device_name:
+            print(f"Animation simulation: {animation_id}")
         else:
-            print("Error: expression type not recognized")
+            if animation_type == AnimationType.ACTION:
+                asyncio.run(self._animimation_action(animation_id))
+            elif animation_type == AnimationType.EXPRESSION:
+                pass
+            else:
+                print("Error: expression type not recognized")
 
     def on_dialog(self, message):
         if message.response:
             if message.response.recognition_result.is_final:
-                print("Transcript:", message.response.recognition_result.transcript)
                 self.transcript = message.response.recognition_result.transcript
+                self.log_utterance(speaker='child', text=self.transcript)
+                print("Transcript:", self.transcript)
 
     def disconnect(self):
         asyncio.run(self._disconnect_alphamini_api())

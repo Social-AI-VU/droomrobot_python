@@ -23,8 +23,9 @@ class Bloedafname6:
                                      openai_key_path, default_speaking_rate,
                                      computer_test_mode)
 
-    def run(self, child_name: str, child_age: int):
+    def run(self, participant_id: str, child_name: str, child_age: int):
 
+        self.droomrobot.start_logging(participant_id)
         # INTRODUCTIE
         self.droomrobot.animate(AnimationType.ACTION, "009")
         self.droomrobot.say(f'Hallo, ik ben de droomrobot!')
@@ -243,6 +244,7 @@ class Bloedafname6:
         self.droomrobot.say('Je doet het op jouw eigen manier, en dat is precies goed.')
         self.droomrobot.say('Ik ga nu een ander kindje helpen, net zoals ik jou nu heb geholpen.')
         self.droomrobot.say('Misschien zien we elkaar de volgende keer!')
+        self.droomrobot.stop_logging()
 
     def strand(self, child_name: str, child_age: int):
         self.droomrobot.say('Ah, het strand! Ik kan de golven bijna horen en het zand onder mijn voeten voelen.')
@@ -320,5 +322,5 @@ if __name__ == '__main__':
                                 redis_ip="10.0.0.142",
                                 google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
                                 openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")),
-                                default_speaking_rate=0.8, computer_test_mode=False)
-    bloedafname6.run('Fleur', 8)
+                                default_speaking_rate=0.8, computer_test_mode=True)
+    bloedafname6.run('999', 'Fleur', 8)
