@@ -1,9 +1,15 @@
+from enum import Enum
 from os.path import abspath, join
 from time import sleep
 
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
 from droomrobot import Droomrobot, AnimationType
+
+
+class InteractionPart(Enum):
+    INTRODUCTION = 1
+    INTERVENTION = 2
 
 
 class Bloedafname9:
@@ -20,10 +26,17 @@ class Bloedafname9:
                                      openai_key_path, default_speaking_rate,
                                      computer_test_mode)
 
-    def run(self, participant_id, child_name: str, child_age: int):
-
+    def run(self, participant_id: str, interaction_part: InteractionPart, child_name: str, child_age: int):
         self.droomrobot.start_logging(participant_id)
-        # INTRODUCTIE
+        if interaction_part == InteractionPart.INTRODUCTION:
+            self.introductie(child_name, child_age)
+        elif interaction_part == InteractionPart.INTERVENTION:
+            self.interventie(child_name)
+        else:
+            print("Interaction part not recognized")
+        self.droomrobot.stop_logging()
+
+    def introductie(self, child_name: str, child_age: int):
         self.droomrobot.animate(AnimationType.ACTION, "009")
         self.droomrobot.say(f'Hallo, ik ben de droomrobot!')
         self.droomrobot.say('Wat fijn dat ik je mag helpen vandaag.')
@@ -190,8 +203,7 @@ class Bloedafname9:
         self.droomrobot.say(
             'Als je zometeen aan de beurt bent, ga ik je helpen om weer een reis met je fantasie te maken.')
 
-        ### INTERVENTIE
-        sleep(5)
+    def interventie(self, child_name: str):
         self.droomrobot.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een reis door je fantasie maken.')
         self.droomrobot.say(
             'Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter en makkelijker gaat.')
@@ -268,7 +280,6 @@ class Bloedafname9:
         self.droomrobot.say('Je doet het op jouw eigen manier, en dat is precies goed.')
         self.droomrobot.say('Ik ga nu een ander kindje helpen, net zoals ik jou nu heb geholpen.')
         self.droomrobot.say('Misschien zien we elkaar de volgende keer!')
-        self.droomrobot.stop_logging()
 
     def strand(self, child_name: str, child_age: int):
         self.droomrobot.say('Ah, het strand! Ik kan de golven bijna horen en het zand onder mijn voeten voelen.')
@@ -342,4 +353,8 @@ if __name__ == '__main__':
                                 google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
                                 openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")),
                                 default_speaking_rate=0.8, computer_test_mode=False)
-    bloedafname9.run('999', 'Sofie', 10)
+
+    bloedafname9.run(participant_id='999',
+                     interaction_part=InteractionPart.INTRODUCTION,
+                     child_name='Fleur',
+                     child_age=8)
