@@ -12,6 +12,12 @@ class InteractionPart(Enum):
     INTERVENTION = 2
 
 
+class ChildGender(Enum):
+    GIRL = 1
+    BOY = 2
+    OTHER = 3
+
+
 class Bloedafname9:
 
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
@@ -26,7 +32,15 @@ class Bloedafname9:
                                      openai_key_path, default_speaking_rate,
                                      computer_test_mode)
 
-    def run(self, participant_id: str, interaction_part: InteractionPart, child_name: str, child_age: int):
+    def run(self, participant_id: str, interaction_part: InteractionPart, child_name: str, child_age: int, child_gender: ChildGender):
+        self.participant_id = participant_id
+        self.interaction_part = interaction_part
+        self.user_model = {
+            'child_name': child_name,
+            'child_age': child_age,
+            'child_gender': child_gender,
+        }
+
         self.droomrobot.start_logging(participant_id)
         if interaction_part == InteractionPart.INTRODUCTION:
             self.introductie(child_name, child_age)
@@ -70,7 +84,7 @@ class Bloedafname9:
         # self.droomrobot.say('cool he.')
         self.droomrobot.say('Maar het hoeft niet de wolken te zijn. Iedereen heeft een eigen fijne plek.')
         self.droomrobot.say('Laten we nu samen bedenken wat jouw fijne plek is.')
-        self.droomrobot.say('Je kan bijvoorbeeld in gedachten naar het strand, het bos, of op vakantie.')
+        self.droomrobot.say('Je kan bijvoorbeeld in gedachten naar het strand, het bos, op vakantie of wat anders.')
 
         # droomplek = self.droomrobot.ask_entity('Wat is een plek waar jij je fijn voelt? Het strand, het bos, de speeltuin of de ruimte?',
         #                             {'droom_plek': 1},
@@ -94,7 +108,7 @@ class Bloedafname9:
         droomplek_lidwoord = self.droomrobot.get_article(droomplek)
 
         # SAMEN OEFENEN
-        self.droomrobot.say(f'Laten we alvast oefenen om samen een reis in je fantasie te maken, zodat het je zometeen gaat helpen bij het bloedprikken.')
+        self.droomrobot.say(f'Oke {child_name}, laten we alvast oefenen om samen een reis in je fantasie te maken, zodat het je zometeen gaat helpen bij het bloedprikken.')
         self.droomrobot.say('Ga even lekker zitten zoals jij dat fijn vindt.')
         sleep(1)
         zit_goed = self.droomrobot.ask_yesno("Zit je goed zo?")
@@ -130,7 +144,7 @@ class Bloedafname9:
         sleep(0.7)
         self.droomrobot.say('En stel je dan nu voor, dat er een luchtballon is op jouw fijne plek.', speaking_rate=0.75)
         sleep(0.7)
-        self.droomrobot.say('Die speciaal op jou staat te wachten.', speaking_rate=0.75)
+        self.droomrobot.say(f'Die speciaal op jou staat te wachten, {child_name}.', speaking_rate=0.75)
         sleep(0.7)
         self.droomrobot.say('Kijk maar eens welke kleur jouw luchtballon heeft.', speaking_rate=0.75)
         sleep(0.7)
@@ -155,7 +169,7 @@ class Bloedafname9:
         self.droomrobot.say('en blaas langzaam uit door je mond.', speaking_rate=0.75)
         self.droomrobot.play_audio('resources/audio/breath_out.wav')
         sleep(0.7)
-        self.droomrobot.say('Goed zo, dat gaat al heel goed.', speaking_rate=0.75)
+        self.droomrobot.say(f'Goed zo {child_name}, dat gaat al heel goed.', speaking_rate=0.75)
         self.droomrobot.say(
             'En terwijl je zo goed aan het ademen bent, stel je voor dat er een klein, warm lichtje op je arm verschijnt.', speaking_rate=0.75)
         sleep(0.7)
@@ -226,7 +240,7 @@ class Bloedafname9:
         kleur = self.droomrobot.ask_entity_llm('Welke kleur heeft jouw lichtje?')
         self.droomrobot.say('Mooi. Dan gaan we nu oefenen met de droomreis.')
         sleep(0.7)
-        self.droomrobot.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een reis door je fantasie maken.')
+        self.droomrobot.say(f'Wat fijn dat ik je weer mag helpen {child_name}, we gaan weer samen een reis door je fantasie maken.')
         self.droomrobot.say(
             'Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter en makkelijker gaat.')
         self.droomrobot.say(
@@ -293,9 +307,15 @@ class Bloedafname9:
             self.droomrobot.say('Dat geeft niets.')
             self.droomrobot.say('Je hebt goed je best gedaan.')
             self.droomrobot.say('En kijk welke stapjes je allemaal al goed gelukt zijn.')
-            self.droomrobot.say(f'je kon al goed een {kleur} lichtje uitzoeken.')  # weet niet of het zo goed gaat met '
+        self.droomrobot.say(f'je kon al goed een {kleur} lichtje uitzoeken.')  # weet niet of het zo goed gaat met '
         self.droomrobot.say('En weet je wat nu zo fijn is, hoe vaker je dit truukje oefent, hoe makkelijker het wordt.')
         self.droomrobot.say('Je kunt dit ook zonder mij oefenen.')
+        if self.user_model['child_gender'] == ChildGender.GIRL:
+            self.droomrobot.say(f'je bent echt een sterke meid.')
+        elif self.user_model['child_gender'] == ChildGender.BOY:
+            self.droomrobot.say(f'je bent echt een sterke kerel.')
+        else:
+            self.droomrobot.say(f'je bent echt al sterk.')
         self.droomrobot.say('Je hoeft alleen maar je ogen dicht te doen en op reis te gaan in je fantasie.')
         self.droomrobot.say('Dan word je lichaam vanzelf wel rustig en voel jij je fijn.')
         self.droomrobot.say('Ik ben benieuwd hoe goed je het de volgende keer gaat doen.')
@@ -343,7 +363,8 @@ class Bloedafname9:
             GPTRequest(f'Je bent een sociale robot die praat met een kind van {str(child_age)} jaar oud.'
                        f'Het kind ligt in het ziekenhuis.'
                        f'Jij bent daar om het kind af te leiden met een leuk gesprek. '
-                       f'Gebruik alleen positief taalgebruik.'
+                       f'Gebruik alleen positief taalgebruik dat past bij de leeftijd van het kind.'
+                       f'Praat tegen het kind als een robot vriend.'
                        f'Het gesprek gaat over een fijne plek voor het kind en wat je daar kunt doen.'
                        f'Jouw taak is het genereren van twee zinnen over die plek.'
                        f'De eerste zin is een observatie die de plek typeert'
@@ -379,4 +400,5 @@ if __name__ == '__main__':
     bloedafname9.run(participant_id='999',
                      interaction_part=InteractionPart.INTRODUCTION,
                      child_name='Fleur',
-                     child_age=8)
+                     child_age=8,
+                     child_gender=ChildGender.GIRL)
