@@ -37,8 +37,14 @@ class Bloedafname6:
         self.droomrobot.stop_logging()
 
     def introductie(self, child_name: str, child_age: int):
-        # INTRODUCTIE
         self.droomrobot.animate(AnimationType.ACTION, "009")
+        self.droomrobot.say(
+            f'Hallo, ik ben hier op school om te oefenen om een goede droomrobot te zijn voor kinderen in het ziekenhuis')
+        self.droomrobot.say('Wat fijn dat jij mij wilt helpen')
+        self.droomrobot.say('We doen alsof we in het ziekenhuis zijn en ik jouw kom helpen')
+        self.droomrobot.say('Laten we gelijk beginnen. Hier gaan we.')
+        sleep(0.7)
+
         self.droomrobot.say(f'Hallo, ik ben de droomrobot!')
         self.droomrobot.say('Wat fijn dat ik je mag helpen vandaag.')
         self.droomrobot.say('Wat is jouw naam?')
@@ -185,6 +191,21 @@ class Bloedafname6:
         self.droomrobot.say('Als je zometeen aan de beurt bent, ga ik je helpen om het lichtje weer samen aan te zetten, zodat je weer die superheld bent.')
 
     def interventie(self, child_name: str):
+        self.droomrobot.animate(AnimationType.ACTION, "009")
+        self.droomrobot.say('Hoi, wat fijn dat jij mij ook wilt helpen met oefenen.')
+        sleep(0.7)
+        self.droomrobot.say('En hoe heet jij?')
+        sleep(3)
+        self.droomrobot.say(f'{child_name}, wat leuk je te ontmoeten.')
+        self.droomrobot.say('We doen zo even alsof jij al hebt geoefend hebt net')
+        self.droomrobot.say('Maar daar heb ik nog wel even een plek nodig die jij fijn vind.')
+        droomplek = self.droomrobot.ask_entity_llm(
+            'Waar voel jij je fijn? Bijvoorbeeld het strand, het bos, de speeltuin of de ruimte?')
+        droomplek_lidwoord = self.droomrobot.get_article(droomplek)
+        self.droomrobot.say('Er kwam ook een gekleurd lichtje voor in mijn verhaal.')
+        kleur = self.droomrobot.ask_entity_llm('Welke kleur heeft jouw lichtje?')
+        self.droomrobot.say('Mooi. Dan gaan we nu oefenen met de droomreis.')
+        sleep(0.7)
         self.droomrobot.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een droomreis maken.')
         self.droomrobot.say('Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter, en makkelijker gaat.')
         self.droomrobot.say('Je mag weer goed gaan zitten en je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.')
@@ -197,8 +218,6 @@ class Bloedafname6:
         self.droomrobot.play_audio('resources/audio/breath_in.wav')
         self.droomrobot.say('en rustig uit.', speaking_rate=0.75)
         self.droomrobot.play_audio('resources/audio/breath_out.wav')
-        droomplek_lidwoord = "het"
-        droomplek = "strand"
         self.droomrobot.say(f'Stel je maar voor dat je bij {droomplek_lidwoord} {droomplek} bent.', speaking_rate=0.75)
         sleep(0.7)
         self.droomrobot.say('Kijk maar weer naar alle mooie kleuren die om je heen zijn, en merk hoe fijn je je voelt op deze plek.', speaking_rate=0.75)
@@ -244,7 +263,6 @@ class Bloedafname6:
             self.droomrobot.say('Dat geeft niets.')
             self.droomrobot.say('Je hebt goed je best gedaan.')
             self.droomrobot.say('En kijk welke stapjes je allemaal al goed gelukt zijn.')
-            kleur = "roze"
             self.droomrobot.say(f'je kon al goed een {kleur} lichtje uitzoeken.')
         self.droomrobot.say('En weet je wat nu zo fijn is, hoe vaker je dit truukje oefent, hoe makkelijker het wordt.')
         self.droomrobot.say('Je kunt dit ook zonder mij oefenen.')

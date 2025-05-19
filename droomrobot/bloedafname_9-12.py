@@ -38,6 +38,13 @@ class Bloedafname9:
 
     def introductie(self, child_name: str, child_age: int):
         self.droomrobot.animate(AnimationType.ACTION, "009")
+        self.droomrobot.say(
+            f'Hallo, ik ben hier op school om te oefenen om een goede droomrobot te zijn voor kinderen in het ziekenhuis')
+        self.droomrobot.say('Wat fijn dat jij mij wilt helpen')
+        self.droomrobot.say('We doen alsof we in het ziekenhuis zijn en ik jouw kom helpen')
+        self.droomrobot.say('Laten we gelijk beginnen. Hier gaan we.')
+        sleep(0.7)
+        
         self.droomrobot.say(f'Hallo, ik ben de droomrobot!')
         self.droomrobot.say('Wat fijn dat ik je mag helpen vandaag.')
         self.droomrobot.say('Wat is jouw naam?')
@@ -204,6 +211,21 @@ class Bloedafname9:
             'Als je zometeen aan de beurt bent, ga ik je helpen om weer een reis met je fantasie te maken.')
 
     def interventie(self, child_name: str):
+        self.droomrobot.animate(AnimationType.ACTION, "009")
+        self.droomrobot.say('Hoi, wat fijn dat jij mij ook wilt helpen met oefenen.')
+        sleep(0.7)
+        self.droomrobot.say('En hoe heet jij?')
+        sleep(3)
+        self.droomrobot.say(f'{child_name}, wat leuk je te ontmoeten.')
+        self.droomrobot.say('We doen zo even alsof jij al hebt geoefend hebt net')
+        self.droomrobot.say('Maar daar heb ik nog wel even een plek nodig die jij fijn vind.')
+        droomplek = self.droomrobot.ask_entity_llm(
+            'Waar voel jij je fijn? Bijvoorbeeld het strand, het bos, de speeltuin of de ruimte?')
+        droomplek_lidwoord = self.droomrobot.get_article(droomplek)
+        self.droomrobot.say('Er kwam ook een gekleurd lichtje voor in mijn verhaal.')
+        kleur = self.droomrobot.ask_entity_llm('Welke kleur heeft jouw lichtje?')
+        self.droomrobot.say('Mooi. Dan gaan we nu oefenen met de droomreis.')
+        sleep(0.7)
         self.droomrobot.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een reis door je fantasie maken.')
         self.droomrobot.say(
             'Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter en makkelijker gaat.')
