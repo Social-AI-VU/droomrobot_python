@@ -69,6 +69,17 @@ Forth, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to b
 """
 
 
+class InteractionPart(Enum):
+    INTRODUCTION = 1
+    INTERVENTION = 2
+
+
+class ChildGender(Enum):
+    GIRL = 1
+    BOY = 2
+    OTHER = 3
+
+
 class AnimationType(Enum):
     ACTION = 1
     EXPRESSION = 2
@@ -121,7 +132,8 @@ class Droomrobot:
                 mini_id=self.mini_id,
                 mini_password=mini_password,
                 redis_ip=redis_ip,
-                speaker_conf=MiniSpeakersConf(sample_rate=init_reply.sample_rate)
+                speaker_conf=MiniSpeakersConf(sample_rate=init_reply.sample_rate),
+                bypass_install=True
             )
             self.speaker = self.mini.speaker
             self.mic = self.mini.mic
@@ -158,7 +170,7 @@ class Droomrobot:
 
         timestamp = strftime("%Y-%m-%d %H:%M:%S")
         self.log_queue.put(f'[{timestamp}] ### START NEW LOG ###')
-        self.log_queue.put(init_data)
+        self.log_queue.put(', '.join(f"{k}: {v}" for k, v in init_data.items()))
 
     def stop_logging(self):
         if self.log_queue:
@@ -283,7 +295,7 @@ class Droomrobot:
             attempts += 1
         return None
 
-    def ask_entity_llm(self, question, max_attempts=2, speaking_rate=None):
+    def ask_entity_llm(self, question, strict=False, max_attempts=2, speaking_rate=None):
         attempts = 0
 
         while attempts < max_attempts:
@@ -293,6 +305,12 @@ class Droomrobot:
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
 
+            strict_instruction = ''
+            if strict_instruction:
+                strict_instruction = (f'Zorg ervoor dat de entity gerelateerd aan de vraag. '
+                                      f'Is dat niet het geval return dan "none"'
+                                      f'Bijvoorbeeld als de reactie is "lust er iemand nog koffie"'
+                                      f'dan is "koffie" niet gerelateerd aan de vraag.')
             # Return entity
             if reply.response.query_result.query_text:
                 print(f'transcript is {reply.response.query_result.query_text}')
@@ -303,16 +321,18 @@ class Droomrobot:
                                f'Bijvoorbeeld bij de vraag: "wat is je lievelingsdier?" '
                                f'en de reactie "mijn lievelingsdier is een hond" '
                                f'filter je "hond" als key entity uit. '
+                               f'{strict_instruction}'
                                # f'of bijvoorbeeld "wat is je superkracht?" en de reactie '
                                # f'is "mijn superkracht is heel hard rennen"'
                                # f'filter je "heel hard rennen" er uit.'
                                f'Als robot heb je net het volgende gevraagt {question}'
                                f'Dit is de reactie van het kind {reply.response.query_result.query_text}'
-                               f'Return alleen de key entity string terug.'))
+                               f'Return alleen de key entity string terug (of none).'))
                 print(f'response is {gpt_response.response}')
 
                 self.log_recognition_result(f'llm extracted entity: {gpt_response.response}')
-                return gpt_response.response
+                if gpt_response.response != 'none':
+                    return gpt_response.response
             attempts += 1
         self.log_recognition_result('llm extracted entity: None')
         return None

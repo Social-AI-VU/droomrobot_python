@@ -4,18 +4,7 @@ from time import sleep
 
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
-from droomrobot import Droomrobot, AnimationType
-
-
-class InteractionPart(Enum):
-    INTRODUCTION = 1
-    INTERVENTION = 2
-
-
-class ChildGender(Enum):
-    GIRL = 1
-    BOY = 2
-    OTHER = 3
+from core import Droomrobot, AnimationType, InteractionPart, ChildGender
 
 
 class Bloedafname4:
@@ -173,7 +162,7 @@ class Bloedafname4:
         sleep(0.7)
         self.droomrobot.say('Is het geel, oranje, of misschien jouw lievelingskleur?', speaking_rate=0.75)
         sleep(0.7)
-        self.user_model['kleur'] = self.droomrobot.ask_entity_llm('Welke kleur heeft jouw lichtje?')
+        self.user_model['kleur'] = self.droomrobot.ask_entity_llm('Welke kleur heeft jouw lichtje?', strict=True)
         sleep(0.7)
         self.droomrobot.say(f'{self.user_model['kleur']}, wat goed.', speaking_rate=0.75)
         sleep(0.7)
@@ -217,6 +206,7 @@ class Bloedafname4:
         self.droomrobot.say('Je zult zien dat dit je gaat helpen.')
         self.droomrobot.say(
             'Als je zometeen aan de beurt bent, ga ik je helpen om het lichtje weer samen aan te zetten, zodat je weer die superheld bent.')
+        self.droomrobot.say('Tot straks, doei!')
 
     def interventie(self):
         self.droomrobot.animate(AnimationType.ACTION, "009")
@@ -226,12 +216,11 @@ class Bloedafname4:
         sleep(3)
         self.droomrobot.say(f'{self.user_model['child_name']}, wat leuk je te ontmoeten.')
         self.droomrobot.say('We doen zo even alsof jij al hebt geoefend hebt net')
-        self.droomrobot.say('Maar daar heb ik nog wel even een plek nodig die jij fijn vind.')
-        self.user_model['droomplek'] = self.droomrobot.ask_entity_llm(
-            'Waar voel jij je fijn? Bijvoorbeeld het strand, het bos, de speeltuin of de ruimte?')
+        self.droomrobot.say('Maar daar heb ik nog wel even een plek nodig die jij fijn vind. Bijvoorbeeld het strand, het bos, de speeltuin, de ruimte of wat anders')
+        self.user_model['droomplek'] = self.droomrobot.ask_entity_llm('Waar voel jij je fijn?')
         self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
         self.droomrobot.say('Er kwam ook een gekleurd lichtje voor in mijn verhaal.')
-        self.user_model['kleur'] = self.droomrobot.ask_entity_llm('Welke kleur heeft jouw lichtje?')
+        self.user_model['kleur'] = self.droomrobot.ask_entity_llm('Welke kleur heeft jouw lichtje?', strict=True)
         self.droomrobot.say('Mooi. Dan gaan we nu oefenen met de droomreis.')
         sleep(0.7)
         self.droomrobot.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een droomreis maken.')
@@ -266,13 +255,13 @@ class Bloedafname4:
         self.droomrobot.say('en blaas rustig uit via je mond.', speaking_rate=0.75)
         self.droomrobot.play_audio('resources/audio/breath_out.wav')
         sleep(0.7)
-        self.droomrobot.say('Je lichtje verschijnt weer op je arm, in precies de kleur die je nodig hebt.', speaking_rate=0.75)
+        self.droomrobot.say(f'Je {self.user_model['kleur']} lichtje verschijnt weer op je arm, in precies de kleur die je nodig hebt.', speaking_rate=0.75)
         sleep(0.7)
         self.droomrobot.say('Zie het lichtje steeds sterker worden.', speaking_rate=0.75)
         sleep(0.7)
         self.droomrobot.say('Zo word jij weer een superheld, en kun je jezelf helpen.', speaking_rate=0.75)
         sleep(0.7)
-        self.droomrobot.say('En als je het nodig hebt, stel je voor dat je lichtje nog helderder gaat schijnen.', speaking_rate=0.75)
+        self.droomrobot.say(f'En als je het nodig hebt, stel je voor dat je {self.user_model['kleur']} lichtje nog helderder gaat schijnen.', speaking_rate=0.75)
         sleep(0.7)
         self.droomrobot.say('Dat betekent dat jouw kracht helemaal opgeladen is.', speaking_rate=0.75)
         sleep(0.7)
@@ -289,16 +278,16 @@ class Bloedafname4:
         sleep(0.7)
         self.droomrobot.say('Merk maar hoe goed jij jezelf kunt helpen, je bent echt een superheld.', speaking_rate=0.75)
         sleep(0.7)
-        self.droomrobot.say('En nu je lichtje goed aan staat, kan jij weer verder spelen op je fijne plek.', speaking_rate=0.75)
+        self.droomrobot.say(f'En nu je {self.user_model['kleur']} lichtje goed aan staat, kan jij weer verder spelen op je fijne plek.', speaking_rate=0.75)
 
         ### AFSCHEID
-        sleep(1)
-        self.droomrobot.say(f'{self.user_model['child_name']}, Wat heb je jezelf goed geholpen om alles makkelijker te maken.')
+        sleep(3)
+        self.droomrobot.say('Dat was het weer.')
         ging_goed = self.droomrobot.ask_opinion_llm("Hoe goed is het gegaan?")
         if 'positive' in ging_goed:
-            self.droomrobot.say('Wat fijn! je hebt jezelf echt goed geholpen.')
+            self.droomrobot.say(f'Wat fijn! je hebt jezelf echt goed geholpen, {self.user_model['child_name']}')
         else:
-            self.droomrobot.say('Dat geeft niets.')
+            self.droomrobot.say('Dat geeft niet.')
             self.droomrobot.say('Je hebt goed je best gedaan.')
             self.droomrobot.say('En kijk welke stapjes je allemaal al goed gelukt zijn.')
         self.droomrobot.say(f'je kon al goed een {self.user_model['kleur']} lichtje uitzoeken.')
@@ -310,12 +299,13 @@ class Bloedafname4:
             self.droomrobot.say(f'je bent echt een sterke kerel.')
         else:
             self.droomrobot.say(f'je bent echt al sterk.')
-        self.droomrobot.say('Je hoeft alleen maar je ogen dicht te doen en aan je lichtje te denken.')
+        self.droomrobot.say(f'Je hoeft alleen maar je ogen dicht te doen en aan je {self.user_model['kleur']} lichtje te denken.')
         self.droomrobot.say('Dan word jij weer een superheld met extra kracht.')
         self.droomrobot.say('Ik ben benieuwd hoe goed je het de volgende keer gaat doen.')
         self.droomrobot.say('Je doet het op jouw eigen manier, en dat is precies goed.')
         self.droomrobot.say('Ik ga nu een ander kindje helpen, net zoals ik jou nu heb geholpen.')
         self.droomrobot.say('Misschien zien we elkaar de volgende keer!')
+        self.droomrobot.say('Doei')
 
     def strand(self):
         self.droomrobot.say('Ah, het strand! Ik kan de golven bijna horen en het zand onder mijn voeten voelen.')
@@ -394,17 +384,3 @@ class Bloedafname4:
         self.droomrobot.say('Weetje wat. Ik vind het stand echt super leuk.')
         self.droomrobot.say('Laten we naar het strand gaan als droomplek.')
         self.strand()
-
-
-if __name__ == '__main__':
-    bloedafname4 = Bloedafname4(mini_ip="10.0.0.148", mini_id="00010", mini_password="alphago",
-                                redis_ip="10.0.0.142",
-                                google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
-                                openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")),
-                                default_speaking_rate=0.8, computer_test_mode=False)
-
-    bloedafname4.run(participant_id='999',
-                     interaction_part=InteractionPart.INTRODUCTION,
-                     child_name='Fleur',
-                     child_age=8,
-                     child_gender=ChildGender.GIRL)
