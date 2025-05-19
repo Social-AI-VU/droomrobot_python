@@ -148,7 +148,7 @@ class Droomrobot:
         self.log_queue = None
         self.log_thread = None
 
-    def start_logging(self, log_id):
+    def start_logging(self, log_id, init_data: dict):
         folder = Path("logs")
         folder.mkdir(parents=True, exist_ok=True)
         log_path = folder / f"{log_id}.log"
@@ -158,6 +158,7 @@ class Droomrobot:
 
         timestamp = strftime("%Y-%m-%d %H:%M:%S")
         self.log_queue.put(f'[{timestamp}] ### START NEW LOG ###')
+        self.log_queue.put(init_data)
 
     def stop_logging(self):
         if self.log_queue:

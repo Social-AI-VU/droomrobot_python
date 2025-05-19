@@ -34,18 +34,22 @@ class Bloedafname4:
 
 
     def run(self, participant_id: str, interaction_part: InteractionPart, child_name: str, child_age: int, child_gender: ChildGender):
-        self.participant_id = participant_id
-        self.interaction_part = interaction_part
         self.user_model = {
             'child_name': child_name,
             'child_age': child_age,
             'child_gender': child_gender,
+
         }
 
-        self.droomrobot.start_logging(participant_id)
-        if self.interaction_part == InteractionPart.INTRODUCTION:
+        self.droomrobot.start_logging(participant_id, {
+            'participant_id': participant_id,
+            'interaction_part': interaction_part,
+            'child_age': child_age,
+            'child_gender': child_gender,
+        })
+        if interaction_part == InteractionPart.INTRODUCTION:
             self.introductie()
-        elif self.interaction_part == InteractionPart.INTERVENTION:
+        elif interaction_part == InteractionPart.INTERVENTION:
             self.interventie()
         else:
             print("Interaction part not recognized")
