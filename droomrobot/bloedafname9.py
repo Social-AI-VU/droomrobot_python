@@ -230,9 +230,10 @@ class Bloedafname9:
         droomplek = self.droomrobot.ask_entity_llm(
             'Waar voel jij je fijn?')
         droomplek_lidwoord = self.droomrobot.get_article(droomplek)
+        self.droomrobot.say(f'{droomplek_lidwoord} {droomplek}, leuk!')
         self.droomrobot.say('Er kwam ook een gekleurd lichtje voor in mijn verhaal.')
         kleur = self.droomrobot.ask_entity_llm('Welke kleur heeft jouw lichtje?', strict=True)
-        self.droomrobot.say('Mooi. Dan gaan we nu oefenen met de droomreis.')
+        self.droomrobot.say(f'{kleur} Mooi. Dan gaan we nu oefenen met de droomreis.')
         sleep(0.7)
         self.droomrobot.say(f'Wat fijn dat ik je weer mag helpen {child_name}, we gaan weer samen een reis door je fantasie maken.')
         self.droomrobot.say(

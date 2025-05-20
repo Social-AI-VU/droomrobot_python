@@ -219,9 +219,10 @@ class Bloedafname4:
         self.droomrobot.say('Maar daar heb ik nog wel even een plek nodig die jij fijn vind. Bijvoorbeeld het strand, het bos, de speeltuin, de ruimte of wat anders')
         self.user_model['droomplek'] = self.droomrobot.ask_entity_llm('Waar voel jij je fijn?')
         self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
+        self.droomrobot.say(f'{self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']}, leuk!')
         self.droomrobot.say('Er kwam ook een gekleurd lichtje voor in mijn verhaal.')
         self.user_model['kleur'] = self.droomrobot.ask_entity_llm('Welke kleur heeft jouw lichtje?', strict=True)
-        self.droomrobot.say('Mooi. Dan gaan we nu oefenen met de droomreis.')
+        self.droomrobot.say(f'{self.user_model['kleur']} Mooi. Dan gaan we nu oefenen met de droomreis.')
         sleep(0.7)
         self.droomrobot.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een droomreis maken.')
         self.droomrobot.say(
