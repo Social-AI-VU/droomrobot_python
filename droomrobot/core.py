@@ -113,7 +113,6 @@ class Droomrobot:
         self.dialogflow = Dialogflow(ip="localhost", conf=dialogflow_conf)
         # flag to signal when the app should listen (i.e. transmit to dialogflow)
         self.request_id = np.random.randint(10000)
-        self.transcript = ""
         print('Complete')
 
         print("\n SETTING UP TTS")
@@ -129,6 +128,7 @@ class Droomrobot:
 
         if not computer_test_mode:
             print("\n SETTING UP ALPHAMINI")
+            print("Connecting to SIC on alphamini")
             self.mini_id = mini_id
             self.mini = Alphamini(
                 ip=mini_ip,
@@ -142,15 +142,14 @@ class Droomrobot:
             self.mic = self.mini.mic
             self.device_name = "alphamini"
 
+            print("Connecting to miniSDK")
             # Create asyncio event loop to keep connection open to miniSDK.
             self.background_loop = asyncio.new_event_loop()
             self.background_thread = Thread(target=self._start_loop, daemon=True)
             self.background_thread.start()
-
-            # print("Initializing alphamini API")
             self.mini_api = None
             future = asyncio.run_coroutine_threadsafe(self._connect_once(), self.background_loop)
-            future.result()
+            future.result()  # blocks result
 
         else:
             print("\n SETTING UP COMPUTER")
@@ -163,21 +162,12 @@ class Droomrobot:
         print("\n SETTING UP MIC CONNECTION")
         # connect the output of Minimicrophone as the input of DialogflowComponent
         self.dialogflow.connect(self.mic)
-        self.dialogflow.register_callback(self.on_dialog)
+        self.dialogflow.register_callback(self._on_dialog)
         print("Complete")
 
 
         self.log_queue = None
         self.log_thread = None
-
-    def _start_loop(self):
-        asyncio.set_event_loop(self.background_loop)
-        self.background_loop.run_forever()
-
-    async def _connect_once(self):
-        if not self.mini_api:
-            self.mini_api = await MiniSdk.get_device_by_name(self.mini_id, 10)
-            await MiniSdk.connect(self.mini_api)
 
     def start_logging(self, log_id, init_data: dict):
         folder = Path("logs")
@@ -429,23 +419,6 @@ class Droomrobot:
                        f'De woordenschat en het taalniveau moeten op B2 niveau zijn.'))
         return gpt_response.response
 
-    # def animate(self, animation_type: AnimationType, animation_id: str, run_async=False):
-    #
-    #     if 'computer' in self.device_name:
-    #         print(f"Animation simulation: {animation_id}")
-    #     else:
-    #         if animation_type == AnimationType.ACTION:
-    #             if run_async:
-    #                 def runner():
-    #                     asyncio.run(self._animation_action(animation_id))
-    #                 Thread(target=runner, daemon=True).start()
-    #             else:
-    #                 asyncio.run(self._animation_action(animation_id))
-    #         elif animation_type == AnimationType.EXPRESSION:
-    #             pass
-    #         else:
-    #             print("Error: expression type not recognized")
-
     def animate(self, animation_type: AnimationType, animation_id: str, run_async=False):
         if 'computer' in self.device_name:
             print(f"Animation simulation: {animation_id}")
@@ -465,23 +438,36 @@ class Droomrobot:
             if not run_async:
                 future.result()
 
-    def on_dialog(self, message):
-        if message.response:
-            if message.response.recognition_result.is_final:
-                self.transcript = message.response.recognition_result.transcript
-                self.log_utterance(speaker='child', text=self.transcript)
-                print("Transcript:", self.transcript)
-
     def disconnect(self):
-        asyncio.run(self._disconnect_alphamini_api())
-        self.background_thread.join(5)
+        # Disconnect from miniSDK
+        future = asyncio.run_coroutine_threadsafe(self._disconnect_alphamini_api(), self.background_loop)
+        future.result()
+        # Schedule loop shutdown
+        self.background_loop.call_soon_threadsafe(self.background_loop.stop)
+        # Wait for the thread to finish
+        self.background_thread.join()
+
+    def _on_dialog(self, message):
+        if message.response:
+            transcript = message.response.recognition_result.transcript
+            print("Transcript:", transcript)
+            if message.response.recognition_result.is_final:
+                self.log_utterance(speaker='child', text=transcript)
+
+    def _start_loop(self):
+        asyncio.set_event_loop(self.background_loop)
+        self.background_loop.run_forever()
+
+    async def _connect_once(self):
+        if not self.mini_api:
+            self.mini_api = await MiniSdk.get_device_by_name(self.mini_id, 10)
+            await MiniSdk.connect(self.mini_api)
 
     @staticmethod
     async def _disconnect_alphamini_api():
         await MiniSdk.release()
 
     async def _animation_action(self, action_name):
-        # await self._connect_once()
         action: PlayAction = PlayAction(action_name=action_name)
         await action.execute()
 
