@@ -240,8 +240,10 @@ class Droomrobot:
             # ask question
             self.say(question, speaking_rate=speaking_rate)
 
+            self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, {'answer_yesno': 1}))
+            self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
             print("The detected intent:", reply.intent)
 
             # return answer
@@ -265,9 +267,10 @@ class Droomrobot:
         while attempts < max_attempts:
             # ask question
             self.say(question, speaking_rate=speaking_rate)
-
+            self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, context))
+            self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
             print("The detected intent:", reply.intent)
 
             # Return entity
@@ -317,11 +320,13 @@ class Droomrobot:
             # ask question
             self.say(question, speaking_rate=speaking_rate)
 
+            self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
+            self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             strict_instruction = ''
-            if strict_instruction:
+            if strict:
                 strict_instruction = (f'Zorg ervoor dat de entity gerelateerd aan de vraag. '
                                       f'Is dat niet het geval return dan "none"'
                                       f'Bijvoorbeeld als de reactie is "lust er iemand nog koffie"'
@@ -359,8 +364,10 @@ class Droomrobot:
             # ask question
             self.say(question, speaking_rate=speaking_rate)
 
+            self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
+            self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             # Return entity
             if reply.response.query_result.query_text:
