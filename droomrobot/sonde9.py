@@ -44,13 +44,12 @@ class Sonde9:
 
     def introductie(self, child_name: str, child_age: int):
         # INTRODUCTIE
+        self.droomrobot.animate(AnimationType.ACTION, "009")
         self.droomrobot.say(f'Hallo, ik ben de droomrobot!')
         self.droomrobot.say('Wat fijn dat ik je mag helpen vandaag.')
-        self.droomrobot.say('Wat is jouw naam?')
-        sleep(3)
+        self.droomrobot.ask_fake('Wat is jouw naam?', 3)
         self.droomrobot.say(f'{child_name}, wat een leuke naam.')
-        self.droomrobot.say('En hoe oud ben je?')
-        sleep(3)
+        self.droomrobot.ask_fake('En hoe oud ben je?', 3)
         self.droomrobot.say(
             f'{str(child_age)} jaar. Oh wat goed, dan kan ik je een truukje leren om alles in het ziekenhuis makkelijker te maken.')
         self.droomrobot.say('Dat truukje werkt bij veel kinderen heel goed.')

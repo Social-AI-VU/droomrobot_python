@@ -64,9 +64,9 @@ if __name__ == '__main__':
                                  openai_key_path=abspath(join("../conf", "openai", ".openai_env")),
                                  default_speaking_rate=0.8, computer_test_mode=False)
 
-    pilot_manager.run_pilot(participant_id='998',
+    pilot_manager.run_pilot(participant_id='9999',
                             script_id=ScriptId.SONDE,
-                            interaction_part=InteractionPart.INTERVENTION,
+                            interaction_part=InteractionPart.INTRODUCTION,
                             child_name='Bas',
                             child_age=10,
                             droomplek='waterglijbaan',

@@ -95,14 +95,16 @@ class Droomrobot:
         # Either add your openai key to your systems variables (and comment the next line out) or
         # create a .openai_env file in the conf/openai folder and add your key there like this:
         # OPENAI_API_KEY="your key"
+        print("\n SETTING UP OPENAI")
         if openai_key_path:
             load_dotenv(openai_key_path)
 
         # Setup GPT client
         conf = GPTConf(openai_key=environ["OPENAI_API_KEY"])
         self.gpt = GPT(conf=conf)
-        print("SETUP OPENAI COMPLETE \n")
+        print('Complete')
 
+        print("\n SETTING UP DIALOGFLOW")
         # set up the config for dialogflow
         dialogflow_conf = DialogflowConf(keyfile_json=json.load(open(google_keyfile_path)),
                                          sample_rate_hertz=sample_rate_dialogflow_hertz, language=dialogflow_language)
@@ -112,9 +114,9 @@ class Droomrobot:
         # flag to signal when the app should listen (i.e. transmit to dialogflow)
         self.request_id = np.random.randint(10000)
         self.transcript = ""
+        print('Complete')
 
-        print("SETUP DIALOGFLOW COMPLETE \n")
-
+        print("\n SETTING UP TTS")
         # setup the tts service
         self.google_tts_voice_name = google_tts_voice_name
         self.google_tts_voice_gender = google_tts_voice_gender
@@ -123,9 +125,10 @@ class Droomrobot:
         init_reply = self.tts.request(GetSpeechRequest(text="Ik ben aan het initializeren",
                                                        voice_name=self.google_tts_voice_name,
                                                        ssml_gender=self.google_tts_voice_gender))
-        print("TTS INITIALIZED \n")
+        print('Complete')
 
         if not computer_test_mode:
+            print("\n SETTING UP ALPHAMINI")
             self.mini_id = mini_id
             self.mini = Alphamini(
                 ip=mini_ip,
@@ -139,26 +142,42 @@ class Droomrobot:
             self.mic = self.mini.mic
             self.device_name = "alphamini"
 
-            # print("Initializing alphamini API")
-            # self.mini_api = None
-            # asyncio.create_task(self._initialize_alphamini_api())
+            # Create asyncio event loop to keep connection open to miniSDK.
+            self.background_loop = asyncio.new_event_loop()
+            self.background_thread = Thread(target=self._start_loop, daemon=True)
+            self.background_thread.start()
 
-            print("SETUP MINI COMPLETE \n")
+            # print("Initializing alphamini API")
+            self.mini_api = None
+            future = asyncio.run_coroutine_threadsafe(self._connect_once(), self.background_loop)
+            future.result()
+
         else:
+            print("\n SETTING UP COMPUTER")
             desktop = Desktop()
             self.speaker = desktop.speakers
             self.mic = desktop.mic
             self.device_name = "computer"
-            print("SETUP COMPUTER COMPLETE \n")
+        print("Complete")
 
+        print("\n SETTING UP MIC CONNECTION")
         # connect the output of Minimicrophone as the input of DialogflowComponent
         self.dialogflow.connect(self.mic)
         self.dialogflow.register_callback(self.on_dialog)
+        print("Complete")
 
-        print("SETUP MIC COMPLETE \n")
 
         self.log_queue = None
         self.log_thread = None
+
+    def _start_loop(self):
+        asyncio.set_event_loop(self.background_loop)
+        self.background_loop.run_forever()
+
+    async def _connect_once(self):
+        if not self.mini_api:
+            self.mini_api = await MiniSdk.get_device_by_name(self.mini_id, 10)
+            await MiniSdk.connect(self.mini_api)
 
     def start_logging(self, log_id, init_data: dict):
         folder = Path("logs")
@@ -282,10 +301,10 @@ class Droomrobot:
             # ask question
             self.say(question, speaking_rate=speaking_rate)
 
-            # asyncio.run(self._animation_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL))
+            self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
-            # asyncio.run(self._animation_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH))
+            self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             print("The detected intent:", reply.intent)
 
@@ -294,6 +313,12 @@ class Droomrobot:
                 return reply.response.query_result.query_text
             attempts += 1
         return None
+
+    def ask_fake(self, question, duration, speaking_rate=None):
+        self.say(question, speaking_rate=speaking_rate)
+        self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+        sleep(duration)
+        self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
     def ask_entity_llm(self, question, strict=False, max_attempts=2, speaking_rate=None):
         attempts = 0
@@ -404,17 +429,41 @@ class Droomrobot:
                        f'De woordenschat en het taalniveau moeten op B2 niveau zijn.'))
         return gpt_response.response
 
-    def animate(self, animation_type: AnimationType, animation_id: str):
+    # def animate(self, animation_type: AnimationType, animation_id: str, run_async=False):
+    #
+    #     if 'computer' in self.device_name:
+    #         print(f"Animation simulation: {animation_id}")
+    #     else:
+    #         if animation_type == AnimationType.ACTION:
+    #             if run_async:
+    #                 def runner():
+    #                     asyncio.run(self._animation_action(animation_id))
+    #                 Thread(target=runner, daemon=True).start()
+    #             else:
+    #                 asyncio.run(self._animation_action(animation_id))
+    #         elif animation_type == AnimationType.EXPRESSION:
+    #             pass
+    #         else:
+    #             print("Error: expression type not recognized")
 
+    def animate(self, animation_type: AnimationType, animation_id: str, run_async=False):
         if 'computer' in self.device_name:
             print(f"Animation simulation: {animation_id}")
         else:
             if animation_type == AnimationType.ACTION:
-                asyncio.run(self._animimation_action(animation_id))
-            elif animation_type == AnimationType.EXPRESSION:
-                pass
-            else:
-                print("Error: expression type not recognized")
+                future = asyncio.run_coroutine_threadsafe(self._animation_action(animation_id), self.background_loop)
+                if not run_async:
+                    future.result()
+
+    def set_mouth_lamp(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000,
+                       run_async=False):
+        if 'computer' in self.device_name:
+            print(f"Set mouth lamp: {color} {mode} {duration} {breath_duration}")
+        else:
+            future = asyncio.run_coroutine_threadsafe(self._mouth_lamp_expression(color, mode, duration, breath_duration),
+                                                      self.background_loop)
+            if not run_async:
+                future.result()
 
     def on_dialog(self, message):
         if message.response:
@@ -425,38 +474,18 @@ class Droomrobot:
 
     def disconnect(self):
         asyncio.run(self._disconnect_alphamini_api())
-
-    async def _initialize_alphamini_api(self):
-        self.mini: WiFiDevice = await MiniSdk.get_device_by_name(self.mini_id, 10)
+        self.background_thread.join(5)
 
     @staticmethod
     async def _disconnect_alphamini_api():
         await MiniSdk.release()
 
-    async def _animimation_action(self, action_name):
-        """Perform an action demo
-
-         Control the robot to execute a local (built-in/custom) action with a specified name and wait for the execution result to reply
-
-         Action name can be obtained with GetActionList
-
-         #PlayActionResponse.isSuccess: Is it successful
-
-         #PlayActionResponse.resultCode: Return code
-
-         """
-        # mini_api: WiFiDevice = await MiniSdk.get_device_by_name(self.mini_id, 10)
-        #
-        # if mini_api:
-        # action_name: Action file name, you can get the actions supported by the robot through GetActionList
-        mini_api: WiFiDevice = await MiniSdk.get_device_by_name(self.mini_id, 10)
-        await MiniSdk.connect(mini_api)
+    async def _animation_action(self, action_name):
+        # await self._connect_once()
         action: PlayAction = PlayAction(action_name=action_name)
-        # response: PlayActionResponse
-        # (resultType, response) = await action.execute()
         await action.execute()
 
-    async def _animation_mouth_lamp(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000):
+    async def _mouth_lamp_expression(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000):
         # mode: mouth light mode, 0: normal mode, 1: breathing mode
 
         # color: mouth light color, 1: red, 2: green, 3: blue
@@ -478,16 +507,10 @@ class Droomrobot:
         #SetMouthLampResponse.resultCode: Return code
 
         """
-        mini_api: WiFiDevice = await MiniSdk.get_device_by_name(self.mini_id, 10)
-
-        if mini_api:
-            # action_name: Action file name, you can get the actions supported by the robot through GetActionList
-            await MiniSdk.connect(mini_api)
-            if mode == MouthLampMode.BREATH:
-                mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.BREATH,
-                                                               breath_duration=breath_duration)
-            else:
-                mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.NORMAL, duration=duration)
-
-            await mouth_lamp_action.execute()
+        if mode == MouthLampMode.BREATH:
+            mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.BREATH,
+                                                           breath_duration=breath_duration)
+        else:
+            mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.NORMAL, duration=duration)
+        await mouth_lamp_action.execute()
 
