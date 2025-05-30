@@ -42,6 +42,8 @@ class Kapinductie9:
         self.droomrobot.stop_logging()
 
     def introductie(self, child_name: str, child_age: int):
+        self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say(f'Hallo, ik ben de droomrobot!')
         self.droomrobot.say('Wat fijn dat ik je mag helpen vandaag.')
         self.droomrobot.say('Wat is jouw naam?')
@@ -132,6 +134,8 @@ class Kapinductie9:
 
     def interventie(self, child_name: str, droomplek: str):
         ### INTERVENTIE
+        self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een droomreis maken.')
         self.droomrobot.say(
             'Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter en makkelijker gaat.')

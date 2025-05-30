@@ -45,6 +45,8 @@ class Sonde9:
     def introductie(self, child_name: str, child_age: int):
         # INTRODUCTIE
         self.droomrobot.animate(AnimationType.ACTION, "009")
+        self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say(f'Hallo, ik ben de droomrobot!')
         self.droomrobot.say('Wat fijn dat ik je mag helpen vandaag.')
         self.droomrobot.ask_fake('Wat is jouw naam?', 3)
@@ -63,8 +65,8 @@ class Sonde9:
         self.droomrobot.say('Met je fantasie kun je aan iets fijns denken terwijl je hier bent, als een soort droom.')
         self.droomrobot.say('Ik zal het trucje even voor doen.')
         self.droomrobot.say('Ik ga in mijn droomreis het liefst in gedachten naar de wolken.')
-        # self.droomrobot.say('Kijk maar eens in mijn ogen, daar zie je wat ik bedoel.')
-        # self.droomrobot.say('Cool hé')
+        # self.droomrobot.say('Kijk maar eens in mijn ogen, daar zie je wat ik bedoel.') ## not really possible with current expressions
+        # self.droomrobot.say('Cool hé') 
         self.droomrobot.say(
             'En wat nu zo handig is aan dit truukje is dat het je ook kan helpen met het inbrengen van de sonde.')
 
@@ -149,6 +151,8 @@ class Sonde9:
         self.droomrobot.say(f'Tot straks, {child_name}.')
 
     def interventie(self, child_name: str, droomplek: str, kleur: str):
+        self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een reis door je fantasie maken.')
         self.droomrobot.say(
             'Omdat je net al zo goed hebt geoefend zul je zien dat het nu nog beter en makkelijker gaat.')

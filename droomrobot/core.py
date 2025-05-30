@@ -13,7 +13,7 @@ import numpy as np
 import mini.mini_sdk as MiniSdk
 from mini import MouthLampColor, MouthLampMode
 from mini.apis.api_action import PlayAction
-from mini.apis.api_expression import SetMouthLamp
+from mini.apis.api_expression import SetMouthLamp, PlayExpression
 from mini.dns.dns_browser import WiFiDevice
 from sic_framework.core.message_python2 import AudioRequest
 from sic_framework.devices.alphamini import Alphamini
@@ -430,10 +430,10 @@ class Droomrobot:
         if 'computer' in self.device_name:
             print(f"Animation simulation: {animation_id}")
         else:
-            if animation_type == AnimationType.ACTION:
-                future = asyncio.run_coroutine_threadsafe(self._animation_action(animation_id), self.background_loop)
-                if not run_async:
-                    future.result()
+            future = asyncio.run_coroutine_threadsafe(self._animation_action(animation_id, animation_type), self.background_loop)
+            if not run_async:
+                future.result()
+                
 
     def set_mouth_lamp(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000,
                        run_async=False):
@@ -474,9 +474,13 @@ class Droomrobot:
     async def _disconnect_alphamini_api():
         await MiniSdk.release()
 
-    async def _animation_action(self, action_name):
-        action: PlayAction = PlayAction(action_name=action_name)
-        await action.execute()
+    async def _animation_action(self, action_name, animation_type):
+        if animation_type == AnimationType.ACTION:
+            action: PlayAction = PlayAction(action_name=action_name)
+            await action.execute()
+        elif animation_type == AnimationType.EXPRESSION:
+            action: PlayExpression = PlayExpression(express_name=action_name)
+            await action.execute()
 
     async def _mouth_lamp_expression(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000):
         # mode: mouth light mode, 0: normal mode, 1: breathing mode
