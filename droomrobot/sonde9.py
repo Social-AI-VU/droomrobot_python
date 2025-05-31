@@ -149,6 +149,7 @@ class Sonde9:
         self.droomrobot.say(f'Tot straks, {child_name}.')
 
     def interventie(self, child_name: str, droomplek: str, kleur: str):
+        self.droomrobot.animate(AnimationType.ACTION, "009")
         self.droomrobot.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een reis door je fantasie maken.')
         self.droomrobot.say(
             'Omdat je net al zo goed hebt geoefend zul je zien dat het nu nog beter en makkelijker gaat.')
@@ -215,7 +216,7 @@ class Sonde9:
             'Wat mij altijd goed helpt is om in gedachten te denken dat de sonde door een waterglijbaan gaat, lekker snel en makkelijk.')
 
     def dolfijn(self, child_name: str, child_age: int):
-        self.droomrobot.say('Dat vind ik dol fijn.')
+        self.droomrobot.say('Dat vind ik dol, fijn.')
         self.droomrobot.say(
             'Ik vind het altijd heerlijk om door het water te zwemmen op zoek naar schatten onder water.')
         motivation = self.droomrobot.ask_open(f'Hou jij van snel of rustig zwemmen?')
