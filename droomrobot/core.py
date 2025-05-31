@@ -150,7 +150,7 @@ class Droomrobot:
             self.mini_api = None
             future = asyncio.run_coroutine_threadsafe(self._connect_once(), self.background_loop)
             future.result()  # blocks result
-
+            self.animate(AnimationType.ACTION, "009")  # Wake up
         else:
             print("\n SETTING UP COMPUTER")
             desktop = Desktop()
