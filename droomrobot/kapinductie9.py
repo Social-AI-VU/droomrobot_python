@@ -43,7 +43,7 @@ class Kapinductie9:
 
     def introductie(self, child_name: str, child_age: int):
         self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
-        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile expression
         self.droomrobot.say(f'Hallo, ik ben de droomrobot!')
         self.droomrobot.say('Wat fijn dat ik je mag helpen vandaag.')
         self.droomrobot.say('Wat is jouw naam?')

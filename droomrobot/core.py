@@ -427,6 +427,7 @@ class Droomrobot:
         return gpt_response.response
 
     def animate(self, animation_type: AnimationType, animation_id: str, run_async=False):
+        # run_async for synchronised animation and text.
         if 'computer' in self.device_name:
             print(f"Animation simulation: {animation_id}")
         else:
