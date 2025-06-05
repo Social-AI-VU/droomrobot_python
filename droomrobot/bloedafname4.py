@@ -22,7 +22,8 @@ class Bloedafname4:
                                      computer_test_mode)
 
 
-    def run(self, participant_id: str, interaction_part: InteractionPart, child_name: str, child_age: int, child_gender: ChildGender):
+    def run(self, participant_id: str, interaction_part: InteractionPart, child_name: str, child_age: int, child_gender: ChildGender,
+        droomplek='strand', kleur='blauw'):
         self.user_model = {
             'child_name': child_name,
             'child_age': child_age,
@@ -39,18 +40,15 @@ class Bloedafname4:
         if interaction_part == InteractionPart.INTRODUCTION:
             self.introductie()
         elif interaction_part == InteractionPart.INTERVENTION:
-            self.interventie()
+            self.interventie(child_name=child_name, droomplek=droomplek, kleur=kleur)
         else:
             print("Interaction part not recognized")
         self.droomrobot.stop_logging()
 
     def introductie(self):
         self.droomrobot.animate(AnimationType.ACTION, "009")
-        self.droomrobot.say(f'Hallo, ik ben hier op school om te oefenen om een goede droomrobot te zijn voor kinderen in het ziekenhuis')
-        self.droomrobot.say('Wat fijn dat jij mij wilt helpen')
-        self.droomrobot.say('We doen alsof we in het ziekenhuis zijn en ik jouw kom helpen')
-        self.droomrobot.say('Laten we gelijk beginnen. Hier gaan we.')
-        sleep(0.7)
+        self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say(f'Hallo, ik ben de droomrobot!')
         self.droomrobot.say('Wat fijn dat ik je mag helpen vandaag.')
         self.droomrobot.say('Hoe heet jij?')
@@ -73,7 +71,11 @@ class Bloedafname4:
         #self.droomrobot.say('cool he.')
         #self.droomrobot.say('Maar het hoeft niet de wolken te zijn. Iedereen heeft een eigen fijne plek.')
         self.droomrobot.say('Nu mag jij kiezen waar je heen wil in gedachten. Bijvoorbeeld het strand, het bos, de speeltuin, de ruimte of wat anders')
-        self.user_model['droomplek'] = self.droomrobot.ask_entity_llm('Waar voel jij je fijn?')
+        self.user_model['droomplek'] = self.droomrobot.ask_entity('Wat is een plek waar jij je fijn voelt? Het strand, het bos, de speeltuin of de ruimte?',
+                                    {'droomplek': 1},
+                                    'droomplek',
+                                    'droomplek')
+        #self.user_model['droomplek'] = self.droomrobot.ask_entity_llm('Waar voel jij je fijn?')
 
         if self.user_model['droomplek']:
             if 'strand' in self.user_model['droomplek']:
@@ -208,22 +210,13 @@ class Bloedafname4:
             'Als je zometeen aan de beurt bent, ga ik je helpen om het lichtje weer samen aan te zetten, zodat je weer die superheld bent.')
         self.droomrobot.say('Tot straks, doei!')
 
-    def interventie(self):
-        self.droomrobot.animate(AnimationType.ACTION, "009")
-        self.droomrobot.say('Hoi, wat fijn dat jij mij ook wilt helpen met oefenen.')
-        sleep(0.7)
-        self.droomrobot.say('En hoe heet jij?')
-        sleep(3)
-        self.droomrobot.say(f'{self.user_model['child_name']}, wat leuk je te ontmoeten.')
-        self.droomrobot.say('We doen zo even alsof jij al hebt geoefend hebt net')
-        self.droomrobot.say('Maar daar heb ik nog wel even een plek nodig die jij fijn vind. Bijvoorbeeld het strand, het bos, de speeltuin, de ruimte of wat anders')
-        self.user_model['droomplek'] = self.droomrobot.ask_entity_llm('Waar voel jij je fijn?')
+    def interventie(self, child_name: str, droomplek: str, kleur: str):
+        self.user_model['droomplek'] = droomplek
         self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
-        self.droomrobot.say(f'{self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']}, leuk!')
-        self.droomrobot.say('Er kwam ook een gekleurd lichtje voor in mijn verhaal.')
-        self.user_model['kleur'] = self.droomrobot.ask_entity_llm('Welke kleur heeft jouw lichtje?', strict=True)
-        self.droomrobot.say(f'{self.user_model['kleur']} Mooi. Dan gaan we nu oefenen met de droomreis.')
-        sleep(0.7)
+        self.user_model['kleur'] = kleur
+        self.droomrobot.animate(AnimationType.ACTION, "009")
+        self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een droomreis maken.')
         self.droomrobot.say(
             'Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter en makkelijker gaat.')
