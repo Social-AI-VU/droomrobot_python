@@ -58,8 +58,8 @@ class PilotManager:
 
 
 if __name__ == '__main__':
-    pilot_manager = PilotManager(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago",
-                                 redis_ip="192.168.178.84",
+    pilot_manager = PilotManager(mini_ip="192.168.1.37", mini_id="00167", mini_password="alphago",
+                                 redis_ip="192.168.1.180",
                                  google_keyfile_path=abspath(join("../conf", "dialogflow", "google_keyfile.json")),
                                  openai_key_path=abspath(join("../conf", "openai", ".openai_env")),
                                  default_speaking_rate=0.8, computer_test_mode=False)

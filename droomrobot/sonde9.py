@@ -44,7 +44,6 @@ class Sonde9:
 
     def introductie(self, child_name: str, child_age: int):
         # INTRODUCTIE
-        self.droomrobot.animate(AnimationType.ACTION, "009")
         self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand up
         self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say(f'Hallo, ik ben de droomrobot!')
@@ -66,7 +65,7 @@ class Sonde9:
         self.droomrobot.say('Ik zal het trucje even voor doen.')
         self.droomrobot.say('Ik ga in mijn droomreis het liefst in gedachten naar de wolken.')
         # self.droomrobot.say('Kijk maar eens in mijn ogen, daar zie je wat ik bedoel.') ## not really possible with current expressions
-        # self.droomrobot.say('Cool hé') 
+        # self.droomrobot.say('Cool hé')
         self.droomrobot.say(
             'En wat nu zo handig is aan dit truukje is dat het je ook kan helpen met het inbrengen van de sonde.')
 
@@ -219,7 +218,7 @@ class Sonde9:
             'Wat mij altijd goed helpt is om in gedachten te denken dat de sonde door een waterglijbaan gaat, lekker snel en makkelijk.')
 
     def dolfijn(self, child_name: str, child_age: int):
-        self.droomrobot.say('Dat vind ik dol fijn.')
+        self.droomrobot.say('Dat vind ik dol, fijn.')
         self.droomrobot.say(
             'Ik vind het altijd heerlijk om door het water te zwemmen op zoek naar schatten onder water.')
         motivation = self.droomrobot.ask_open(f'Hou jij van snel of rustig zwemmen?')
