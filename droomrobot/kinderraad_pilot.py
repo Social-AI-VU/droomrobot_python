@@ -1,6 +1,13 @@
 from enum import Enum
 from os.path import abspath, join
 
+from droomrobot.bloedafname4 import Bloedafname4
+from droomrobot.bloedafname6 import Bloedafname6
+from droomrobot.bloedafname9 import Bloedafname9
+from droomrobot.kapinductie4 import Kapinductie4
+from droomrobot.kapinductie6 import Kapinductie6
+from droomrobot.sonde4 import Sonde4
+from droomrobot.sonde6 import Sonde6
 from sonde9 import Sonde9
 from kapinductie9 import Kapinductie9
 from core import InteractionPart
@@ -9,6 +16,7 @@ from core import InteractionPart
 class ScriptId(Enum):
     SONDE = 1
     KAPINDUCTIE = 2
+    BLOEDAFNAME = 3
 
 
 class PilotManager:
@@ -35,26 +43,81 @@ class PilotManager:
                   child_name: str, child_age: int, droomplek='raceauto', kleur='blauw'):
 
         if script_id == ScriptId.SONDE:
-            pilot_script = Sonde9(mini_ip=self.mini_ip, mini_id=self.mini_id, mini_password=self.mini_password,
-                                  redis_ip=self.redis_ip, google_keyfile_path=self.google_keyfile_path,
-                                  openai_key_path=self.openai_key_path,
-                                  default_speaking_rate=self.default_speaking_rate,
-                                  computer_test_mode=self.computer_test_mode)
+            if child_age <= 6:
+                pilot_script = Sonde4(mini_ip=self.mini_ip, mini_id=self.mini_id, mini_password=self.mini_password,
+                                      redis_ip=self.redis_ip, google_keyfile_path=self.google_keyfile_path,
+                                      openai_key_path=self.openai_key_path,
+                                      default_speaking_rate=self.default_speaking_rate,
+                                      computer_test_mode=self.computer_test_mode)
+            elif 6 < child_age <= 9:
+                pilot_script = Sonde6(mini_ip=self.mini_ip, mini_id=self.mini_id, mini_password=self.mini_password,
+                                      redis_ip=self.redis_ip, google_keyfile_path=self.google_keyfile_path,
+                                      openai_key_path=self.openai_key_path,
+                                      default_speaking_rate=self.default_speaking_rate,
+                                      computer_test_mode=self.computer_test_mode)
+            else:
+                pilot_script = Sonde9(mini_ip=self.mini_ip, mini_id=self.mini_id, mini_password=self.mini_password,
+                                      redis_ip=self.redis_ip, google_keyfile_path=self.google_keyfile_path,
+                                      openai_key_path=self.openai_key_path,
+                                      default_speaking_rate=self.default_speaking_rate,
+                                      computer_test_mode=self.computer_test_mode)
+
             pilot_script.run(participant_id=participant_id, interaction_part=interaction_part, child_name=child_name,
                              child_age=child_age, droomplek=droomplek, kleur=kleur)
 
         elif script_id == ScriptId.KAPINDUCTIE:
-            pilot_script = Kapinductie9(mini_ip=self.mini_ip, mini_id=self.mini_id, mini_password=self.mini_password,
-                                        redis_ip=self.redis_ip, google_keyfile_path=self.google_keyfile_path,
-                                        openai_key_path=self.openai_key_path,
-                                        default_speaking_rate=self.default_speaking_rate,
-                                        computer_test_mode=self.computer_test_mode)
+            if child_age <= 6:
+                pilot_script = Kapinductie4(mini_ip=self.mini_ip, mini_id=self.mini_id,
+                                            mini_password=self.mini_password,
+                                            redis_ip=self.redis_ip, google_keyfile_path=self.google_keyfile_path,
+                                            openai_key_path=self.openai_key_path,
+                                            default_speaking_rate=self.default_speaking_rate,
+                                            computer_test_mode=self.computer_test_mode)
+            elif 6 < child_age <= 9:
+                pilot_script = Kapinductie6(mini_ip=self.mini_ip, mini_id=self.mini_id,
+                                            mini_password=self.mini_password,
+                                            redis_ip=self.redis_ip, google_keyfile_path=self.google_keyfile_path,
+                                            openai_key_path=self.openai_key_path,
+                                            default_speaking_rate=self.default_speaking_rate,
+                                            computer_test_mode=self.computer_test_mode)
+            else:
+                pilot_script = Kapinductie9(mini_ip=self.mini_ip, mini_id=self.mini_id,
+                                            mini_password=self.mini_password,
+                                            redis_ip=self.redis_ip, google_keyfile_path=self.google_keyfile_path,
+                                            openai_key_path=self.openai_key_path,
+                                            default_speaking_rate=self.default_speaking_rate,
+                                            computer_test_mode=self.computer_test_mode)
+
             pilot_script.run(participant_id=participant_id, interaction_part=interaction_part, child_name=child_name,
                              child_age=child_age, droomplek=droomplek)
+        elif script_id == ScriptId.BLOEDAFNAME:
+            if child_age <= 6:
+                pilot_script = Bloedafname4(mini_ip=self.mini_ip, mini_id=self.mini_id,
+                                            mini_password=self.mini_password,
+                                            redis_ip=self.redis_ip, google_keyfile_path=self.google_keyfile_path,
+                                            openai_key_path=self.openai_key_path,
+                                            default_speaking_rate=self.default_speaking_rate,
+                                            computer_test_mode=self.computer_test_mode)
+            elif 6 < child_age <= 9:
+                pilot_script = Bloedafname6(mini_ip=self.mini_ip, mini_id=self.mini_id,
+                                            mini_password=self.mini_password,
+                                            redis_ip=self.redis_ip, google_keyfile_path=self.google_keyfile_path,
+                                            openai_key_path=self.openai_key_path,
+                                            default_speaking_rate=self.default_speaking_rate,
+                                            computer_test_mode=self.computer_test_mode)
+            else:
+                pilot_script = Bloedafname9(mini_ip=self.mini_ip, mini_id=self.mini_id,
+                                            mini_password=self.mini_password,
+                                            redis_ip=self.redis_ip, google_keyfile_path=self.google_keyfile_path,
+                                            openai_key_path=self.openai_key_path,
+                                            default_speaking_rate=self.default_speaking_rate,
+                                            computer_test_mode=self.computer_test_mode)
+
+            pilot_script.run(participant_id=participant_id, interaction_part=interaction_part, child_name=child_name,
+                             child_age=child_age, droomplek=droomplek, kleur=kleur)
 
         else:
             print("[Error] Script type not supported")
-
 
 
 if __name__ == '__main__':

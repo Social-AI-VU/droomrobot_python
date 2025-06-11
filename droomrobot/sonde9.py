@@ -1,5 +1,3 @@
-from enum import Enum
-from os.path import abspath, join
 from time import sleep
 
 from sic_framework.services.openai_gpt.gpt import GPTRequest

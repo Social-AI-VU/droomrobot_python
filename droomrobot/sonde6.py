@@ -1,10 +1,8 @@
-from os.path import abspath, join
 from time import sleep
 
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
-# from droomrobot import Droomrobot, AnimationType
-from core import Droomrobot, AnimationType, InteractionPart, ChildGender
+from core import Droomrobot, AnimationType, InteractionPart
 
 
 class Sonde6:
@@ -21,7 +19,6 @@ class Sonde6:
                                      openai_key_path, default_speaking_rate,
                                      computer_test_mode)
 
-    #def run(self, child_name: str, child_age: int, robot_name: str="de droomrobot"):
     def run(self, participant_id: str, interaction_part: InteractionPart, child_name: str, child_age: int,
             droomplek='raceauto', kleur='blauw'):
 
@@ -509,18 +506,3 @@ class Sonde6:
         self.droomrobot.say('Je hebt het geweldig gedaan! Je hebt laten zien hoe rustig en sterk je bent, als een echte dolfijn.', speaking_rate=0.9)
         sleep(0.5)
         self.droomrobot.say('Zwem maar weer rustig omhoog en open je ogen zodat je weer hier in de ruimte bent.', speaking_rate=0.9)
-
-    def on_dialog(self, message):
-        if message.response:
-            if message.response.recognition_result.is_final:
-                print("Transcript:", message.response.recognition_result.transcript)
-                self.transcript = message.response.recognition_result.transcript
-
-
-# if __name__ == '__main__':
-#     sonde6 = Sonde6(mini_ip="10.0.0.156", mini_id="00199", mini_password="alphago",
-#                             redis_ip="10.0.0.108",
-#                             google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
-#                             openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")),
-#                             default_speaking_rate=0.8, computer_test_mode=False)
-#     sonde6.run('Tessa', 8)

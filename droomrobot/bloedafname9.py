@@ -1,10 +1,8 @@
-from enum import Enum
-from os.path import abspath, join
 from time import sleep
 
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
-from core import Droomrobot, AnimationType, InteractionPart, ChildGender
+from core import Droomrobot, AnimationType, InteractionPart
 
 
 class Bloedafname9:
@@ -21,19 +19,17 @@ class Bloedafname9:
                                      openai_key_path, default_speaking_rate,
                                      computer_test_mode)
 
-    def run(self, participant_id: str, interaction_part: InteractionPart, child_name: str, child_age: int, child_gender: ChildGender,
+    def run(self, participant_id: str, interaction_part: InteractionPart, child_name: str, child_age: int,
             droomplek='strand', kleur='blauw'):
         self.user_model = {
             'child_name': child_name,
             'child_age': child_age,
-            'child_gender': child_gender,
         }
 
         self.droomrobot.start_logging(participant_id, {
             'participant_id': participant_id,
             'interaction_part': interaction_part,
-            'child_age': child_age,
-            'child_gender': child_gender,
+            'child_age': child_age
         })
         if interaction_part == InteractionPart.INTRODUCTION:
             self.introductie(child_name, child_age)
@@ -295,12 +291,6 @@ class Bloedafname9:
         self.droomrobot.say(f'je kon al goed een {kleur} lichtje uitzoeken.')  # weet niet of het zo goed gaat met '
         self.droomrobot.say('En weet je wat nu zo fijn is, hoe vaker je dit truukje oefent, hoe makkelijker het wordt.')
         self.droomrobot.say('Je kunt dit ook zonder mij oefenen.')
-        if self.user_model['child_gender'] == ChildGender.GIRL:
-            self.droomrobot.say(f'je bent echt een sterke meid.')
-        elif self.user_model['child_gender'] == ChildGender.BOY:
-            self.droomrobot.say(f'je bent echt een sterke kerel.')
-        else:
-            self.droomrobot.say(f'je bent echt al sterk.')
         self.droomrobot.say('Je hoeft alleen maar je ogen dicht te doen en op reis te gaan in je fantasie.')
         self.droomrobot.say('Dan word je lichaam vanzelf wel rustig en voel jij je fijn.')
         self.droomrobot.say('Ik ben benieuwd hoe goed je het de volgende keer gaat doen.')

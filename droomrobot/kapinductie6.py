@@ -1,10 +1,8 @@
-from enum import Enum
-from os.path import abspath, join
 from time import sleep
 
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
-from core import Droomrobot, AnimationType, InteractionPart
+from core import Droomrobot, InteractionPart
 
 
 class Kapinductie6:

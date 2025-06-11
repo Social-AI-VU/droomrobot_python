@@ -418,17 +418,3 @@ class Sonde4:
         self.droomrobot.say('Wat heb jij dit supergoed gedaan! Jij bent net een echte slimme en sterke dolfijn!')
         self.droomrobot.say('Zwem maar rustig omhoog en als je klaar bent, mag je je ogen weer open doen.')
 
-    def on_dialog(self, message):
-        if message.response:
-            if message.response.recognition_result.is_final:
-                print("Transcript:", message.response.recognition_result.transcript)
-                self.transcript = message.response.recognition_result.transcript
-
-
-if __name__ == '__main__':
-    sonde4 = Sonde4(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago",
-                    redis_ip="192.168.178.84",
-                    google_keyfile_path=abspath(join("..", "conf", "dialogflow", "google_keyfile.json")),
-                    openai_key_path=abspath(join("..", "conf", "openai", ".openai_env")),
-                    default_speaking_rate=0.8, computer_test_mode=False)
-    sonde4.run('Tessa', 8)
