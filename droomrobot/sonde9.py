@@ -114,7 +114,7 @@ class Sonde9:
         self.droomrobot.say('mag je je ogen dicht doen.')
         self.droomrobot.say('dat maakt het makkelijker om je rustig te voelen.')
         self.droomrobot.say(
-            'En terwijl je nu zo zit, leg je rustig je handen op je buik doen en adem je kalm in en uit.')
+            'En terwijl je nu zo zit, leg je rustig je handen op je buik, en adem je kalm in en uit.')
 
         self.droomrobot.say('Adem rustig in.')
         self.droomrobot.play_audio('resources/audio/breath_in.wav')
