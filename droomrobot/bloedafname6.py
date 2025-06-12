@@ -253,7 +253,7 @@ class Bloedafname6:
         self.droomrobot.say('Dat was het weer.')
         ging_goed = self.droomrobot.ask_opinion_llm("Hoe goed is het gegaan?")
         if 'positive' in ging_goed:
-            self.droomrobot.say(f'Wat fijn! je hebt jezelf echt goed geholpen, {self.user_model['child_name']}')
+            self.droomrobot.say(f'Wat fijn! je hebt jezelf echt goed geholpen, {self.user_model["child_name"]}')
         else:
             self.droomrobot.say('Dat geeft niet.')
             self.droomrobot.say('Je hebt goed je best gedaan.')

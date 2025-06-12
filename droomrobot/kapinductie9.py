@@ -51,6 +51,7 @@ class Kapinductie9:
         self.droomrobot.say(f'{child_name}, wat een leuke naam.')
         self.droomrobot.say('En hoe oud ben je?')
         sleep(3)
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True)  # smile
         self.droomrobot.say(
             f'{str(child_age)} jaar. Oh wat goed, dan ben je al oud genoeg om mijn speciale trucje te leren.')
         self.droomrobot.say(
@@ -128,8 +129,11 @@ class Kapinductie9:
         self.droomrobot.say(
             'Je hoeft alleen maar diep in en uit te ademen. Ik ben benieuwd hoe goed dit je zometeen gaat helpen.')
         self.droomrobot.say('Nu je genoeg geoefend hebt mag je je ogen weer lekker opendoen.')
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True)  # smile
         self.droomrobot.say(
             f'Wanneer je zometeen aan de beurt bent ga ik je helpen om weer naar {droomplek_lidwoord} {droomplek} te gaan in gedachten. Je hebt super goed geoefend, dus je kan verrast zijn hoe goed het zometeen gaat!')
+        self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say(f'Tot straks, {child_name}.')
 
     def interventie(self, child_name: str, droomplek: str):

@@ -49,6 +49,7 @@ class Sonde9:
         self.droomrobot.ask_fake('Wat is jouw naam?', 3)
         self.droomrobot.say(f'{child_name}, wat een leuke naam.')
         self.droomrobot.ask_fake('En hoe oud ben je?', 3)
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True)  # smile
         self.droomrobot.say(
             f'{str(child_age)} jaar. Oh wat goed, dan kan ik je een truukje leren om alles in het ziekenhuis makkelijker te maken.')
         self.droomrobot.say('Dat truukje werkt bij veel kinderen heel goed.')
@@ -133,6 +134,7 @@ class Sonde9:
         self.droomrobot.say('Je hoeft alleen maar een paar keer diep in en uit te ademen.')
         self.droomrobot.say('Ik ben benieuwd hoe goed dit je zometeen gaat helpen.')
         self.droomrobot.say('Als je genoeg geoefend hebt, mag je je ogen weer lekker open doen.')
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True)  # smile
         self.droomrobot.say(f'Ik vind {kleur} een hele mooie kleur, die heb je goed gekozen.')
 
         if droomplek:
@@ -145,6 +147,8 @@ class Sonde9:
             elif 'dolfijn' in droomplek:
                 self.droomrobot.say(
                     'Als je zometeen aan de beurt bent, ga ik je helpen om weer naar de zee te gaan in gedachten.')
+        self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say(f'Tot straks, {child_name}.')
 
     def interventie(self, child_name: str, droomplek: str, kleur: str):
@@ -175,9 +179,11 @@ class Sonde9:
         self.droomrobot.say('Wat heb je jezelf goed geholpen om alles makkelijker te maken.')
         ging_goed = self.droomrobot.ask_opinion_llm("Hoe goed is het gegaan?")
         if 'positive' in ging_goed:
+            self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True)  # smile
             self.droomrobot.say('Wat fijn! Je hebt jezelf echt goed geholpen.')
         else:
             self.droomrobot.say('Ik vind dat je echt goed je best hebt gedaan.')
+            self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True)  # smile
             self.droomrobot.say('En kijk welke stapjes je allemaal al goed gelukt zijn.')
             self.droomrobot.say('Je hebt goed geluisterd naar mijn stem.')
 
@@ -187,6 +193,9 @@ class Sonde9:
         self.droomrobot.say('Je hoeft alleen maar je ogen dicht te doen en terug te denken aan jouw plek in gedachten.')
         self.droomrobot.say(
             'Ik ben benieuwd hoe goed je het de volgende keer gaat doen. Je doet het op jouw eigen manier, en dat is precies goed.')
+        self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
+        self.droomrobot.say('Tot de volgende keer!')
 
     def raceauto(self, child_name: str, child_age: int):
         self.droomrobot.say('De raceauto, die vind ik ook het leukste!')
