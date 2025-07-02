@@ -35,6 +35,14 @@ class DroomrobotScript:
     def run(self, participant_id: str, interaction_part: InteractionPart, user_model: dict):
         raise NotImplementedError("You need to define the run sequence of the script")
 
-    def close(self):
+    def pause(self):
+        if self.droomrobot:
+            self.droomrobot.pause()
+
+    def resume(self):
+        if self.droomrobot:
+            self.droomrobot.resume()
+
+    def stop(self):
         self.droomrobot.stop_logging()
         self.droomrobot.disconnect()

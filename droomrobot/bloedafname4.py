@@ -13,17 +13,7 @@ class Bloedafname4(DroomrobotScript):
         self.script_id = ScriptId.BLOEDAFNAME
 
     def run(self, participant_id: str, interaction_part: InteractionPart, user_model: dict):
-        self.user_model = user_model
 
-        if 'droomplek' in self.user_model:
-            self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
-
-        self.droomrobot.start_logging(participant_id, {
-            'participant_id': participant_id,
-            'script_id': self.script_id,
-            'interaction_part': interaction_part,
-            'child_age': self.user_model['child_age']
-        })
         if interaction_part == InteractionPart.INTRODUCTION:
             self.introductie()
         elif interaction_part == InteractionPart.INTERVENTION:
