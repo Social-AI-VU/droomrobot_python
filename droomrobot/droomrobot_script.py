@@ -28,12 +28,26 @@ class DroomrobotScript:
                                      google_tts_voice_name, google_tts_voice_gender,
                                      openai_key_path, default_speaking_rate,
                                      computer_test_mode)
+        self.participant_id = None
         self.user_model = None
         self.script_id = None
 
     @abc.abstractmethod
-    def run(self, participant_id: str, interaction_part: InteractionPart, user_model: dict):
-        raise NotImplementedError("You need to define the run sequence of the script")
+    def run(self, participant_id: str, interaction_part: InteractionPart, user_model_addendum: dict):
+
+        self.participant_id = participant_id
+        self.user_model = self.droomrobot.load_user_model(participant_id=participant_id)
+        self.user_model.update(user_model_addendum)
+
+        if 'droomplek' in self.user_model:
+            self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
+
+        self.droomrobot.start_logging(participant_id, {
+            'participant_id': participant_id,
+            'script_id': self.script_id.name,
+            'interaction_part': interaction_part,
+            'child_age': self.user_model['child_age']
+        })
 
     def pause(self):
         if self.droomrobot:

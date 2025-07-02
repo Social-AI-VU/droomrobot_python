@@ -15,9 +15,35 @@ class DroomrobotGUI:
 
         self.advanced_fields = []
 
+        # Interaction Frame
+        interaction_frame = ttk.LabelFrame(root, text="Interaction Parameters")
+        interaction_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+
+        self.participant_id = tk.StringVar()
+        self.child_name = tk.StringVar()
+        self.child_age = tk.IntVar()
+
+        self.script_id = tk.StringVar(value=ScriptId.SONDE.name)
+        self.interaction_part = tk.StringVar(value=InteractionPart.INTRODUCTION.name)
+
+        ttk.Label(interaction_frame, text="Participant ID").grid(row=0, column=0)
+        ttk.Entry(interaction_frame, textvariable=self.participant_id).grid(row=0, column=1)
+
+        ttk.Label(interaction_frame, text="Voornaam").grid(row=1, column=0)
+        ttk.Entry(interaction_frame, textvariable=self.child_name).grid(row=1, column=1)
+
+        ttk.Label(interaction_frame, text="Leeftijd").grid(row=2, column=0)
+        ttk.Entry(interaction_frame, textvariable=self.child_age).grid(row=2, column=1)
+
+        ttk.Label(interaction_frame, text="Context").grid(row=3, column=0)
+        ttk.Combobox(interaction_frame, textvariable=self.script_id, values=[e.name for e in ScriptId]).grid(row=3, column=1)
+
+        ttk.Label(interaction_frame, text="Onderdeel").grid(row=4, column=0)
+        ttk.Combobox(interaction_frame, textvariable=self.interaction_part, values=[e.name for e in InteractionPart]).grid(row=4, column=1)
+
         # Setup Frame
         setup_frame = ttk.LabelFrame(root, text="Robot Setup")
-        setup_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        setup_frame.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
 
         self.mini_ip = tk.StringVar(value="192.168.178.111")
         self.mini_id = tk.StringVar(value="00167")
@@ -37,32 +63,6 @@ class DroomrobotGUI:
 
         ttk.Label(setup_frame, text="Redis IP").grid(row=3, column=0, sticky="w")
         ttk.Entry(setup_frame, textvariable=self.redis_ip).grid(row=3, column=1)
-
-        # Interaction Frame
-        interaction_frame = ttk.LabelFrame(root, text="Interaction Parameters")
-        interaction_frame.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
-
-        self.participant_id = tk.StringVar()
-        self.child_name = tk.StringVar()
-        self.child_age = tk.IntVar()
-
-        self.script_id = tk.StringVar(value=ScriptId.SONDE.name)
-        self.interaction_part = tk.StringVar(value=InteractionPart.INTRODUCTION.name)
-
-        ttk.Label(interaction_frame, text="Participant ID").grid(row=0, column=0)
-        ttk.Entry(interaction_frame, textvariable=self.participant_id).grid(row=0, column=1)
-
-        ttk.Label(interaction_frame, text="Voornaam Kind").grid(row=1, column=0)
-        ttk.Entry(interaction_frame, textvariable=self.child_name).grid(row=1, column=1)
-
-        ttk.Label(interaction_frame, text="Leeftijd Kind").grid(row=2, column=0)
-        ttk.Entry(interaction_frame, textvariable=self.child_age).grid(row=2, column=1)
-
-        ttk.Label(interaction_frame, text="Context").grid(row=3, column=0)
-        ttk.Combobox(interaction_frame, textvariable=self.script_id, values=[e.name for e in ScriptId]).grid(row=3, column=1)
-
-        ttk.Label(interaction_frame, text="Onderdeel").grid(row=4, column=0)
-        ttk.Combobox(interaction_frame, textvariable=self.interaction_part, values=[e.name for e in InteractionPart]).grid(row=4, column=1)
 
         # Toggle button for advanced settings
         self.advanced_visible = False

@@ -13,6 +13,7 @@ class Bloedafname4(DroomrobotScript):
         self.script_id = ScriptId.BLOEDAFNAME
 
     def run(self, participant_id: str, interaction_part: InteractionPart, user_model: dict):
+        super().run(participant_id, interaction_part, user_model)
 
         if interaction_part == InteractionPart.INTRODUCTION:
             self.introductie()
@@ -52,7 +53,6 @@ class Bloedafname4(DroomrobotScript):
                                     {'droomplek': 1},
                                     'droomplek',
                                     'droomplek')
-        #self.user_model['droomplek'] = self.droomrobot.ask_entity_llm('Waar voel jij je fijn?')
 
         if self.user_model['droomplek']:
             if 'strand' in self.user_model['droomplek']:
@@ -69,6 +69,7 @@ class Bloedafname4(DroomrobotScript):
             self.user_model['droomplek'] = 'strand'  # default
             self.droomplek_not_recognized()
         self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
+        self.droomrobot.save_user_model(self.participant_id, self.user_model)
 
         # SAMEN OEFENEN
         self.droomrobot.say('Oke, laten we samen gaan oefenen.')
@@ -112,6 +113,7 @@ class Bloedafname4(DroomrobotScript):
         sleep(0.7)
         #niet in originele script, in 4-6 word kracht niet uit gekozen maar alleen gepraat over een kracht. hier nu laten kiezen is betere (personalisatie)
         self.user_model['superkracht'] = self.droomrobot.ask_entity_llm('Welke kracht kies je?')
+        self.droomrobot.save_user_model(self.participant_id, self.user_model)
         sleep(0.7)
         if self.user_model['superkracht']:
             superkracht_question = self.droomrobot.generate_question(self.user_model['child_age'], "Welke superkracht zou je willen?",
@@ -142,6 +144,7 @@ class Bloedafname4(DroomrobotScript):
         self.droomrobot.say('Is het geel, oranje, of misschien jouw lievelingskleur?', speaking_rate=0.75)
         sleep(0.7)
         self.user_model['kleur'] = self.droomrobot.ask_entity_llm('Welke kleur heeft jouw lichtje?', strict=True)
+        self.droomrobot.save_user_model(self.participant_id, self.user_model)
         sleep(0.7)
         self.droomrobot.say(f'{self.user_model['kleur']}, wat goed.', speaking_rate=0.75)
         sleep(0.7)

@@ -13,17 +13,8 @@ class Bloedafname9(DroomrobotScript):
         self.script_id = ScriptId.BLOEDAFNAME
 
     def run(self, participant_id: str, interaction_part: InteractionPart, user_model: dict):
-        self.user_model = user_model
+        super().run(participant_id, interaction_part, user_model)
 
-        if 'droomplek' in self.user_model:
-            self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
-
-        self.droomrobot.start_logging(participant_id, {
-            'participant_id': participant_id,
-            'script_id': self.script_id,
-            'interaction_part': interaction_part,
-            'child_age': self.user_model['child_age']
-        })
         if interaction_part == InteractionPart.INTRODUCTION:
             self.introductie()
         elif interaction_part == InteractionPart.INTERVENTION:
@@ -76,7 +67,7 @@ class Bloedafname9(DroomrobotScript):
         #                             'droom_plek',
         #                             'droom_plek')
 
-        self.user_model['droomplek'] =  self.droomrobot.ask_entity_llm('Naar welke veilige plek zou jij in gedachten willen gaan?')
+        self.user_model['droomplek'] = self.droomrobot.ask_entity_llm('Naar welke veilige plek zou jij in gedachten willen gaan?')
 
         if self.user_model['droomplek']:
             if 'strand' in self.user_model['droomplek']:
@@ -91,6 +82,7 @@ class Bloedafname9(DroomrobotScript):
             self.user_model['droomplek'] =  'strand'  # default
             self.droomplek_not_recognized()
         self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
+        self.droomrobot.save_user_model(self.participant_id, self.user_model)
 
         # SAMEN OEFENEN
         self.droomrobot.say(f'Oke {self.user_model['child_name']}, laten we alvast oefenen om samen een reis in je fantasie te maken, zodat het je zometeen gaat helpen bij het bloedprikken.')

@@ -110,7 +110,7 @@ if __name__ == '__main__':
                                            openai_key_path=abspath(join("../conf", "openai", ".openai_env")),
                                            default_speaking_rate=0.8, computer_test_mode=False)
 
-    droomrobot_control.run_script(participant_id='9999',
+    droomrobot_control.run_script(participant_id='996',
                                   script_id=ScriptId.SONDE,
                                   interaction_part=InteractionPart.INTRODUCTION,
                                   user_model={

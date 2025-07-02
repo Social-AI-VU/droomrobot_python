@@ -3,7 +3,8 @@ import json
 import queue
 import wave
 from enum import Enum
-from os import environ
+from os import environ, fsync
+from os.path import exists
 from pathlib import Path
 from threading import Thread, Event
 from time import sleep, strftime
@@ -533,3 +534,23 @@ class Droomrobot:
             self._stop_requested = False
             raise StopIteration("Script execution stopped")
 
+    @staticmethod
+    def _get_user_model_file_path(participant_id: str):
+        folder = Path("user_models")
+        folder.mkdir(parents=True, exist_ok=True)
+        return folder / f"user_model_{participant_id}.json"
+
+    def load_user_model(self, participant_id: str):
+        file_path = self._get_user_model_file_path(participant_id)
+        if exists(file_path):
+            with open(file_path, "r") as f:
+                return json.load(f)
+        else:
+            return {}
+
+    def save_user_model(self, participant_id: str, user_model: dict):
+        file_path = self._get_user_model_file_path(participant_id)
+        with open(file_path, "w") as f:
+            json.dump(user_model, f, indent=4)
+            f.flush()  # flush internal buffers
+            fsync(f.fileno())  # flush OS buffers to disk

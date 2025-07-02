@@ -28,3 +28,6 @@ conf/dialogflow/*.json
 #ignore .openai_env file
 conf/openai/.openai_env
 
+# Ignore user models
+user_models/
+

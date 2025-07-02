@@ -11,17 +11,8 @@ class Kapinductie6(DroomrobotScript):
         self.script_id = ScriptId.KAPINDUCTIE
 
     def run(self, participant_id: str, interaction_part: InteractionPart, user_model: dict):
-        self.user_model = user_model
+        super().run(participant_id, interaction_part, user_model)
 
-        if 'droomplek' in self.user_model:
-            self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
-
-        self.droomrobot.start_logging(participant_id, {
-            'participant_id': participant_id,
-            'script_id': self.script_id,
-            'interaction_part': interaction_part,
-            'child_age': self.user_model['child_age']
-        })
         if interaction_part == InteractionPart.INTRODUCTION:
             self.introductie()
         elif interaction_part == InteractionPart.INTERVENTION:
@@ -74,6 +65,7 @@ class Kapinductie6(DroomrobotScript):
             self.user_model['droomplek'] = 'strand'  # default
             self.droomplek_not_recognized()
         self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
+        self.droomrobot.save_user_model(self.participant_id, self.user_model)
 
         # SAMEN OEFENEN
         self.droomrobot.say('Laten we alvast gaan oefenen om samen een mooie droomreis te maken, zodat het je zometeen gaat helpen bij de slaapdokter.')
