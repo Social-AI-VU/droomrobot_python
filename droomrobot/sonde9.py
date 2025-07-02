@@ -2,56 +2,48 @@ from time import sleep
 
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
-from core import Droomrobot, AnimationType, InteractionPart
+from core import AnimationType
+from droomrobot.droomrobot_script import DroomrobotScript, ScriptId, InteractionPart
 
 
-class Sonde9:
+class Sonde9(DroomrobotScript):
 
-    def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
-                 google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
-                 google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE",
-                 openai_key_path=None, default_speaking_rate=1.0,
-                 computer_test_mode=False):
+    def __init__(self, *args, **kwargs):
+        super(Sonde9, self).__init__(*args, **kwargs)
+        self.script_id = ScriptId.SONDE
 
-        self.droomrobot = Droomrobot(mini_ip, mini_id, mini_password, redis_ip,
-                                     google_keyfile_path, sample_rate_dialogflow_hertz, dialogflow_language,
-                                     google_tts_voice_name, google_tts_voice_gender,
-                                     openai_key_path, default_speaking_rate,
-                                     computer_test_mode)
+    def run(self, participant_id: str, interaction_part: InteractionPart, user_model: dict):
+        self.user_model = user_model
 
-    def run(self, participant_id: str, interaction_part: InteractionPart, child_name: str, child_age: int,
-            droomplek='raceauto', kleur='blauw'):
-
-        self.user_model = {
-            'child_name': child_name,
-            'child_age': child_age
-        }
+        if 'droomplek' in self.user_model:
+            self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
 
         self.droomrobot.start_logging(participant_id, {
             'participant_id': participant_id,
+            'script_id': self.script_id,
             'interaction_part': interaction_part,
-            'child_age': child_age
+            'child_age': self.user_model['child_age']
         })
         if interaction_part == InteractionPart.INTRODUCTION:
-            self.introductie(child_name, child_age)
+            self.introductie()
         elif interaction_part == InteractionPart.INTERVENTION:
-            self.interventie(child_name, droomplek, kleur)
+            self.interventie()
         else:
             print("Interaction part not recognized")
         self.droomrobot.stop_logging()
 
-    def introductie(self, child_name: str, child_age: int):
+    def introductie(self):
         # INTRODUCTIE
         self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand up
         self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say(f'Hallo, ik ben de droomrobot!')
         self.droomrobot.say('Wat fijn dat ik je mag helpen vandaag.')
         self.droomrobot.ask_fake('Wat is jouw naam?', 3)
-        self.droomrobot.say(f'{child_name}, wat een leuke naam.')
+        self.droomrobot.say(f'{self.user_model['child_name']}, wat een leuke naam.')
         self.droomrobot.ask_fake('En hoe oud ben je?', 3)
         self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True)  # smile
         self.droomrobot.say(
-            f'{str(child_age)} jaar. Oh wat goed, dan kan ik je een truukje leren om alles in het ziekenhuis makkelijker te maken.')
+            f'{str(self.user_model['child_age'])} jaar. Oh wat goed, dan kan ik je een truukje leren om alles in het ziekenhuis makkelijker te maken.')
         self.droomrobot.say('Dat truukje werkt bij veel kinderen heel goed.')
         self.droomrobot.say('Ik ben benieuwd hoe goed het bij jou gaat werken.')
         self.droomrobot.say(
@@ -75,25 +67,24 @@ class Sonde9:
            'Wat goed helpt is om je voor te stellen dat je in een raceauto door een tunnel scheurt, of van een waterglijbaan gaat, of als dolfijn door het water beweegt.')
         self.droomrobot.say('Welke lijkt jij het leukste?')
 
-        droomplek = self.droomrobot.ask_entity('De waterglijbaan, de race-auto of dolfijn?',
+        self.user_model['droomplek'] = self.droomrobot.ask_entity('De waterglijbaan, de race-auto of dolfijn?',
                                                {'droomplek': 1},
                                                'droomplek',
                                                'droomplek')
-        # droomplek = self.droomrobot.ask_entity_llm('De waterglijbaan, de race-auto of dolfijn?') ## wellicht "kies uit raceauto racen, naar een waterpretpark of als dolfijn in de zee zwemmen"
 
-        if droomplek:
-            if 'raceauto' in droomplek:
-                self.raceauto(child_name, child_age)
-            elif 'waterglijbaan' in droomplek:
-                self.waterglijbaan(child_name, child_age)
-            elif 'dolfijn' in droomplek:
-                self.dolfijn(child_name, child_age)
+        if self.user_model['droomplek']:
+            if 'raceauto' in self.user_model['droomplek']:
+                self.raceauto()
+            elif 'waterglijbaan' in self.user_model['droomplek']:
+                self.waterglijbaan()
+            elif 'dolfijn' in self.user_model['droomplek']:
+                self.dolfijn()
             # else:
-            #     self.nieuwe_droomplek(droomplek, child_name, child_age)
+            #     self.nieuwe_droomplek(droomplek, child_name, self.user_model['child_age'])
         else:
-            droomplek = 'raceauto'  # default
-            self.droomplek_not_recognized(child_name, child_age)
-        # droomplek_lidwoord = self.droomrobot.get_article(droomplek)
+            self.user_model['droomplek'] = 'raceauto'  # default
+            self.droomplek_not_recognized()
+        self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
 
         # SAMEN OEFENEN
         self.droomrobot.say(
@@ -121,13 +112,13 @@ class Sonde9:
         self.droomrobot.play_audio('resources/audio/breath_out.wav')
         self.droomrobot.say('Voel hoe je buik zachtjes op en neer beweegt bij iedere ademhaling.')
 
-        if droomplek:
-            if 'raceauto' in droomplek:
-                kleur = self.raceauto_oefenen(child_name, child_age)
-            elif 'waterglijbaan' in droomplek:
-                kleur = self.waterglijbaan_oefenen(child_name, child_age)
-            elif 'dolfijn' in droomplek:
-                kleur = self.dolfijn_oefenen(child_name, child_age)
+        if self.user_model['droomplek']:
+            if 'raceauto' in self.user_model['droomplek']:
+                self.raceauto_oefenen()
+            elif 'waterglijbaan' in self.user_model['droomplek']:
+                self.waterglijbaan_oefenen()
+            elif 'dolfijn' in self.user_model['droomplek']:
+                self.dolfijn_oefenen()
 
         self.droomrobot.say(
             'En wat zo fijn is, is dat iedere keer als je het nodig hebt je weer terug kan gaan naar deze fijne plek.')
@@ -135,23 +126,23 @@ class Sonde9:
         self.droomrobot.say('Ik ben benieuwd hoe goed dit je zometeen gaat helpen.')
         self.droomrobot.say('Als je genoeg geoefend hebt, mag je je ogen weer lekker open doen.')
         self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True)  # smile
-        self.droomrobot.say(f'Ik vind {kleur} een hele mooie kleur, die heb je goed gekozen.')
+        self.droomrobot.say(f'Ik vind {self.user_model['kleur']} een hele mooie kleur, die heb je goed gekozen.')
 
-        if droomplek:
-            if 'raceauto' in droomplek:
+        if self.user_model['droomplek']:
+            if 'raceauto' in self.user_model['droomplek']:
                 self.droomrobot.say(
                     'Als je zometeen aan de beurt bent, ga ik je helpen om weer naar de racebaan te gaan in gedachten.')
-            elif 'waterglijbaan' in droomplek:
+            elif 'waterglijbaan' in self.user_model['droomplek']:
                 self.droomrobot.say(
                     'Als je zometeen aan de beurt bent, ga ik je helpen om weer naar het waterpretpark te gaan in gedachten.')
-            elif 'dolfijn' in droomplek:
+            elif 'dolfijn' in self.user_model['droomplek']:
                 self.droomrobot.say(
                     'Als je zometeen aan de beurt bent, ga ik je helpen om weer naar de zee te gaan in gedachten.')
         self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
         self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
-        self.droomrobot.say(f'Tot straks, {child_name}.')
+        self.droomrobot.say(f'Tot straks, {self.user_model['child_name']}.')
 
-    def interventie(self, child_name: str, droomplek: str, kleur: str):
+    def interventie(self):
         self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
         self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een reis door je fantasie maken.')
@@ -167,13 +158,13 @@ class Sonde9:
         self.droomrobot.say('en rustig uit.')
         self.droomrobot.play_audio('resources/audio/breath_out.wav')
 
-        if droomplek:
-            if 'raceauto' in droomplek:
-                self.raceauto_interventie(child_name, kleur)
-            elif 'waterglijbaan' in droomplek:
-                self.waterglijbaan_interventie(child_name, kleur)
-            elif 'dolfijn' in droomplek:
-                self.dolfijn_interventie(child_name, kleur)
+        if self.user_model['droomplek']:
+            if 'raceauto' in self.user_model['droomplek']:
+                self.raceauto_interventie()
+            elif 'waterglijbaan' in self.user_model['droomplek']:
+                self.waterglijbaan_interventie()
+            elif 'dolfijn' in self.user_model['droomplek']:
+                self.dolfijn_interventie()
 
     def afscheid(self):
         self.droomrobot.say('Wat heb je jezelf goed geholpen om alles makkelijker te maken.')
@@ -197,12 +188,12 @@ class Sonde9:
         self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say('Tot de volgende keer!')
 
-    def raceauto(self, child_name: str, child_age: int):
+    def raceauto(self):
         self.droomrobot.say('De raceauto, die vind ik ook het leukste!')
         self.droomrobot.say('Ik vind het fijn dat je zelf kan kiezen hoe snel of rustig je gaat rijden.')
         motivation = self.droomrobot.ask_open(f'Hou jij van snel rijden of rustig?')
         if motivation:
-            personalized_response = self.droomrobot.personalize('Hou jij van snel rijden of rustig?', child_age,
+            personalized_response = self.droomrobot.personalize('Hou jij van snel rijden of rustig?', self.user_model['child_age'],
                                                                 motivation)
             self.droomrobot.say(personalized_response)
         else:
@@ -211,26 +202,26 @@ class Sonde9:
         self.droomrobot.say(
             'Wat mij altijd goed helpt is om in gedachten te denken dat de sonde een race auto is die lekker snel en makkelijk door een tunnel rijdt.')
 
-    def waterglijbaan(self, child_name: str, child_age: int):
+    def waterglijbaan(self):
         self.droomrobot.say('Wat leuk, een waterglijbaan!')
         self.droomrobot.say('Gelukkig kan ik tegen water zodat ik met je mee kan gaan.')
         motivation = self.droomrobot.ask_open(f'Ga jij het liefste snel of rustig van de waterglijbaan?')
         if motivation:
             personalized_response = self.droomrobot.personalize(
-                'Ga jij het liefste snel of rustig van de waterglijbaan?', child_age, motivation)
+                'Ga jij het liefste snel of rustig van de waterglijbaan?', self.user_model['child_age'], motivation)
             self.droomrobot.say(personalized_response)
         else:
             self.droomrobot.say("Oke, super.")
         self.droomrobot.say(
             'Wat mij altijd goed helpt is om in gedachten te denken dat de sonde door een waterglijbaan gaat, lekker snel en makkelijk.')
 
-    def dolfijn(self, child_name: str, child_age: int):
+    def dolfijn(self):
         self.droomrobot.say('Dat vind ik dol, fijn.')
         self.droomrobot.say(
             'Ik vind het altijd heerlijk om door het water te zwemmen op zoek naar schatten onder water.')
         motivation = self.droomrobot.ask_open(f'Hou jij van snel of rustig zwemmen?')
         if motivation:
-            personalized_response = self.droomrobot.personalize('Hou jij van snel of rustig zwemmen?', child_age,
+            personalized_response = self.droomrobot.personalize('Hou jij van snel of rustig zwemmen?', self.user_model['child_age'],
                                                                 motivation)
             self.droomrobot.say(personalized_response)
         else:
@@ -238,9 +229,9 @@ class Sonde9:
         self.droomrobot.say(
             'Wat mij altijd goed helpt is om in gedachten te denken dat de sonde een dolfijn is die heel makkelijk en snel door het water beweegt, op zoek naar een schat.')
 
-    def nieuwe_droomplek(self, droomplek: str, child_name: str, child_age: int):
+    def nieuwe_droomplek(self):
         gpt_response = self.droomrobot.gpt.request(
-            GPTRequest(f'Je bent een sociale robot die praat met een kind van {str(child_age)} jaar oud.'
+            GPTRequest(f'Je bent een sociale robot die praat met een kind van {str(self.user_model['child_age'])} jaar oud.'
                        f'Het kind ligt in het ziekenhuis.'
                        f'Jij bent daar om het kind af te leiden met een leuk gesprek. '
                        f'Gebruik alleen positief taalgebruik.'
@@ -251,30 +242,30 @@ class Sonde9:
                        f'Bijvoorbeeld als de fijne plek de speeltuin is zouden dit de twee zinnen kunnen zijn.'
                        f'"De speeltuin, wat een vrolijke plek! Ik hou van de glijbaan en de schommel."'
                        f'Weet je wat ik daar graag doe? Heel hoog schommelen, bijna tot aan de sterren."'
-                       f'De fijne plek voor het kind is "{droomplek}"'
+                       f'De fijne plek voor het kind is "{self.user_model['droomplek']}"'
                        f'Genereer nu de twee zinnen (observatie en wat de robot zou doen op die plek). '))
         self.droomrobot.say(gpt_response.response)
-        motivation = self.droomrobot.ask_open(f'Wat zou jij daar willen doen {child_name}?')
+        motivation = self.droomrobot.ask_open(f'Wat zou jij daar willen doen {self.user_model['child_name']}?')
         if motivation:
             personalized_response = self.droomrobot.personalize(
-                f'Wat zou jij op jouw droomplek {droomplek} willen doen?', child_age, motivation)
+                f'Wat zou jij op jouw droomplek {self.user_model['droomplek']} willen doen?', self.user_model['child_age'], motivation)
             self.droomrobot.say(personalized_response)
         else:
             self.droomrobot.say("Oke, super.")
 
-    def droomplek_not_recognized(self, child_name: str, child_age: int):
+    def droomplek_not_recognized(self):
         self.droomrobot.say('Oh sorry ik begreep je even niet.')
         self.droomrobot.say('Dus laten we met de raceauto racen.')
-        self.raceauto(child_name, child_age)
+        self.raceauto()
 
-    def raceauto_oefenen(self, child_name: str, child_age: int):
+    def raceauto_oefenen(self):
         self.droomrobot.say(
             'En terwijl je zo rustig aan het ademhalen bent mag je je gaan voorstellen dat je op een plek met een racebaan bent.')
         self.droomrobot.say('En op die plek staat een mooie raceauto, speciaal voor jou!')
         self.droomrobot.say('Kijk maar eens hoe jouw speciale raceauto eruit ziet.')
         sleep(1)
         kleur = self.droomrobot.ask_entity_llm('Welke kleur heeft jouw raceauto?')
-        self.droomrobot.say(f"Wat goed, die mooie {kleur} raceauto gaat jou vandaag helpen.")
+        self.droomrobot.say(f"Wat goed, die mooie {self.user_model['kleur']} raceauto gaat jou vandaag helpen.")
         self.droomrobot.say('Ga maar in de raceauto zitten, en voel maar hoe fijn je je daar voelt.')
         sleep(1)
         self.droomrobot.say('De motor ronkt.')
@@ -285,7 +276,7 @@ class Sonde9:
         self.droomrobot.say('Jij hebt alles onder controle.')
         return kleur
 
-    def dolfijn_oefenen(self, child_name: str, child_age: int):
+    def dolfijn_oefenen(self):
         self.droomrobot.say(
             'En terwijl je zo rustig aan het ademhalen bent, mag je je gaan voorstellen dat je een dolfijn bent die aan het zwemmen is.')
         self.droomrobot.say('Je bent in een mooie, blauwe zee.')
@@ -295,7 +286,7 @@ class Sonde9:
         self.droomrobot.say('Misschien is het water warm en zacht, of fris en koel.')
         self.droomrobot.say('Je voelt hoe je licht wordt, alsof je zweeft.')
         kleur = self.droomrobot.ask_entity_llm('Wat voor kleur dolfijn ben je?')
-        self.droomrobot.say(f'Aah, een {kleur} dolfijn! Die zijn extra krachtig.')
+        self.droomrobot.say(f'Aah, een {self.user_model['kleur']} dolfijn! Die zijn extra krachtig.')
         self.droomrobot.say(
             'Je zult wellicht zien dat als je om je heen kijkt dat je dan de zonnenstralen door het water ziet schijnen.')
         sleep(1)
@@ -304,7 +295,7 @@ class Sonde9:
         sleep(2)
         return kleur
 
-    def waterglijbaan_oefenen(self, child_name: str, child_age: int):
+    def waterglijbaan_oefenen(self):
         self.droomrobot.say(
             'En terwijl je zo rustig aan het ademhalen bent mag je je gaan voorstellen dat je in een waterpretpark bent.')
         self.droomrobot.say('Het is een lekker warme dag en je voelt de zon op je gezicht.')
@@ -313,7 +304,7 @@ class Sonde9:
         self.droomrobot.say(
             'Kijk maar eens om je heen welke glijbanen je allemaal ziet en welke kleuren de glijbanen hebben.')
         kleur = self.droomrobot.ask_entity_llm('Welke kleur heeft de glijbaan waar je vanaf wilt gaan?')
-        self.droomrobot.say(f'Wat goed! Die mooie {kleur} glijbaan gaat jou vandaag helpen.')
+        self.droomrobot.say(f'Wat goed! Die mooie {self.user_model['kleur']} glijbaan gaat jou vandaag helpen.')
         self.droomrobot.say('Je loopt langzaam de trap op naar de top van de glijbaan')
         self.droomrobot.say('Merk maar dat je je bij iedere stap fijner en rustiger voelt.')
         self.droomrobot.say('Misschien voel je een beetje kriebels in je buik dat is helemaal oké!')
@@ -327,8 +318,8 @@ class Sonde9:
         self.droomrobot.say('Ga maar rustig naar beneden met de glijbaan en merk maar hoe rustig en soepel dat gaat.')
         return kleur
 
-    def raceauto_interventie(self, child_name: str, kleur: str):
-        self.droomrobot.say(f'Stel je maar weer voor dat je op de racebaan staat met jouw {kleur} raceauto!')
+    def raceauto_interventie(self):
+        self.droomrobot.say(f'Stel je maar weer voor dat je op de racebaan staat met jouw {self.user_model['kleur']} raceauto!')
         sleep(3)
         self.droomrobot.say('Je auto rijdt op een rechte weg.')
         self.droomrobot.say(
@@ -365,9 +356,9 @@ class Sonde9:
         self.droomrobot.say('Je hebt alles onder controle en je bent een echte racekampioen!')
         self.droomrobot.say('Nu mag je je ogen weer open doen.')
 
-    def waterglijbaan_interventie(self, child_name: str, kleur: str):
+    def waterglijbaan_interventie(self):
         self.droomrobot.say('Stel je je maar weer voor dat je in het waterpretpark bent.')
-        self.droomrobot.say(f'Je gaat weer de trap op van jouw {kleur} glijbaan, die je net al zo goed geoefend hebt.')
+        self.droomrobot.say(f'Je gaat weer de trap op van jouw {self.user_model['kleur']} glijbaan, die je net al zo goed geoefend hebt.')
         self.droomrobot.say('Bij iedere stap voel je weer dat je lichaam zich goed voelt en je er kracht van krijgt.')
         self.droomrobot.say('Hoor het geluid van het water maar.')
         self.droomrobot.play_audio('resources/audio/splashing_water.wav')
@@ -409,8 +400,8 @@ class Sonde9:
         self.droomrobot.say(
             'Je mag jezelf een high vijf geven want jij bent een echte waterkampioen! En doe je ogen maar weer open.')
 
-    def dolfijn_interventie(self, child_name: str, kleur: str):
-        self.droomrobot.say(f'Stel je je maar weer voor dat je een {kleur} dolfijn in de zee bent.')
+    def dolfijn_interventie(self):
+        self.droomrobot.say(f'Stel je je maar weer voor dat je een {self.user_model['kleur']} dolfijn in de zee bent.')
         self.droomrobot.say('Kijk maar weer om je heen wat je allemaal ziet.')
         self.droomrobot.say('De visjes om je heen en de mooie kleuren.')
         self.droomrobot.say(

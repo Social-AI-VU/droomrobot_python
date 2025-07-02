@@ -2,39 +2,32 @@ from time import sleep
 
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
-from core import Droomrobot, AnimationType, InteractionPart
+from core import AnimationType
+from droomrobot.droomrobot_script import DroomrobotScript, ScriptId, InteractionPart
 
 
-class Bloedafname4:
+class Bloedafname4(DroomrobotScript):
 
-    def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
-                 google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
-                 google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE",
-                 openai_key_path=None, default_speaking_rate=1.0,
-                 computer_test_mode=False):
+    def __init__(self, *args, **kwargs):
+        super(Bloedafname4, self).__init__(*args, **kwargs)
+        self.script_id = ScriptId.BLOEDAFNAME
 
-        self.droomrobot = Droomrobot(mini_ip, mini_id, mini_password, redis_ip,
-                                     google_keyfile_path, sample_rate_dialogflow_hertz, dialogflow_language,
-                                     google_tts_voice_name, google_tts_voice_gender,
-                                     openai_key_path, default_speaking_rate,
-                                     computer_test_mode)
+    def run(self, participant_id: str, interaction_part: InteractionPart, user_model: dict):
+        self.user_model = user_model
 
-    def run(self, participant_id: str, interaction_part: InteractionPart, child_name: str, child_age: int,
-        droomplek='strand', kleur='blauw'):
-        self.user_model = {
-            'child_name': child_name,
-            'child_age': child_age,
-        }
+        if 'droomplek' in self.user_model:
+            self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
 
         self.droomrobot.start_logging(participant_id, {
             'participant_id': participant_id,
+            'script_id': self.script_id,
             'interaction_part': interaction_part,
-            'child_age': child_age
+            'child_age': self.user_model['child_age']
         })
         if interaction_part == InteractionPart.INTRODUCTION:
             self.introductie()
         elif interaction_part == InteractionPart.INTERVENTION:
-            self.interventie(child_name=child_name, droomplek=droomplek, kleur=kleur)
+            self.interventie()
         else:
             print("Interaction part not recognized")
         self.droomrobot.stop_logging()
@@ -204,10 +197,7 @@ class Bloedafname4:
             'Als je zometeen aan de beurt bent, ga ik je helpen om het lichtje weer samen aan te zetten, zodat je weer die superheld bent.')
         self.droomrobot.say('Tot straks, doei!')
 
-    def interventie(self, child_name: str, droomplek: str, kleur: str):
-        self.user_model['droomplek'] = droomplek
-        self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
-        self.user_model['kleur'] = kleur
+    def interventie(self):
         self.droomrobot.animate(AnimationType.ACTION, "009")
         self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
         self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile

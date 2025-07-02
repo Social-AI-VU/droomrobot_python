@@ -3,7 +3,6 @@ import json
 import queue
 import wave
 from enum import Enum
-from os.path import abspath, join
 from os import environ
 from pathlib import Path
 from threading import Thread, Event
@@ -14,7 +13,6 @@ import mini.mini_sdk as MiniSdk
 from mini import MouthLampColor, MouthLampMode
 from mini.apis.api_action import PlayAction
 from mini.apis.api_expression import SetMouthLamp, PlayExpression
-from mini.dns.dns_browser import WiFiDevice
 from sic_framework.core.message_python2 import AudioRequest
 from sic_framework.devices.alphamini import Alphamini
 from sic_framework.devices.common_mini.mini_speaker import MiniSpeakersConf
@@ -69,17 +67,6 @@ Forth, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to b
 """
 
 
-class InteractionPart(Enum):
-    INTRODUCTION = 1
-    INTERVENTION = 2
-
-
-class ChildGender(Enum):
-    GIRL = 1
-    BOY = 2
-    OTHER = 3
-
-
 class AnimationType(Enum):
     ACTION = 1
     EXPRESSION = 2
@@ -91,11 +78,21 @@ class Droomrobot:
                  google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE",
                  openai_key_path=None, default_speaking_rate=1.0,
                  computer_test_mode=False):
+
+        print("\n SETTING UP FIRST CORE PROCESSES")
+        # Pause
+        self.pause_event = Event()
+        self.pause_event.set()  # Start in unpaused state
+
+        # Logging
+        self.log_queue = None
+        self.log_thread = None
+
+        print("\n SETTING UP OPENAI")
         # Generate your personal openai api key here: https://platform.openai.com/api-keys
         # Either add your openai key to your systems variables (and comment the next line out) or
         # create a .openai_env file in the conf/openai folder and add your key there like this:
         # OPENAI_API_KEY="your key"
-        print("\n SETTING UP OPENAI")
         if openai_key_path:
             load_dotenv(openai_key_path)
 
@@ -163,16 +160,6 @@ class Droomrobot:
         # connect the output of Minimicrophone as the input of DialogflowComponent
         self.dialogflow.connect(self.mic)
         self.dialogflow.register_callback(self._on_dialog)
-        print("Complete")
-
-        print("\n SETTING UP LAST CORE PROCESSES")
-        # Pause
-        self.pause_event = Event()
-        self.pause_event.set()  # Start in unpaused state
-
-        # Logging
-        self.log_queue = None
-        self.log_thread = None
         print("Complete and ready for interaction!")
 
     def start_logging(self, log_id, init_data: dict):
@@ -459,7 +446,6 @@ class Droomrobot:
             future = asyncio.run_coroutine_threadsafe(self._animation_action(animation_id, animation_type), self.background_loop)
             if not run_async:
                 future.result()
-                
 
     def set_mouth_lamp(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000,
                        run_async=False):
