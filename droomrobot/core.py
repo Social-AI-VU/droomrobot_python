@@ -6,7 +6,7 @@ from enum import Enum
 from os.path import abspath, join
 from os import environ
 from pathlib import Path
-from threading import Thread
+from threading import Thread, Event
 from time import sleep, strftime
 
 import numpy as np
@@ -165,9 +165,15 @@ class Droomrobot:
         self.dialogflow.register_callback(self._on_dialog)
         print("Complete")
 
+        print("\n SETTING UP LAST CORE PROCESSES")
+        # Pause
+        self.pause_event = Event()
+        self.pause_event.set()  # Start in unpaused state
 
+        # Logging
         self.log_queue = None
         self.log_thread = None
+        print("Complete and ready for interaction!")
 
     def start_logging(self, log_id, init_data: dict):
         folder = Path("logs")
@@ -206,7 +212,14 @@ class Droomrobot:
             timestamp = strftime("%Y-%m-%d %H:%M:%S")
             self.log_queue.put(f"[{timestamp}] recognition result: {recognition_result}")
 
+    def pause(self):
+        self.pause_event.clear()
+
+    def resume(self):
+        self.pause_event.set()
+
     def say(self, text, speaking_rate=None):
+        self._check_pause()
         if speaking_rate:
             reply = self.tts.request(GetSpeechRequest(text=text,
                                                       voice_name=self.google_tts_voice_name,
@@ -221,6 +234,7 @@ class Droomrobot:
         self.log_utterance(speaker='robot', text=text)
 
     def play_audio(self, audio_file):
+        self._check_pause()
         with wave.open(audio_file, 'rb') as wf:
             # Get parameters
             sample_width = wf.getsampwidth()
@@ -235,6 +249,7 @@ class Droomrobot:
             self.log_utterance(speaker='robot', text=f'plays {audio_file}')
 
     def ask_yesno(self, question, max_attempts=2, speaking_rate=None):
+        self._check_pause()
         attempts = 0
         while attempts < max_attempts:
             # ask question
@@ -262,6 +277,7 @@ class Droomrobot:
         return None
 
     def ask_entity(self, question, context, target_intent, target_entity, max_attempts=2, speaking_rate=None):
+        self._check_pause()
         attempts = 0
 
         while attempts < max_attempts:
@@ -288,6 +304,7 @@ class Droomrobot:
         return None
 
     def ask_open(self, question, max_attempts=2, speaking_rate=None):
+        self._check_pause()
         attempts = 0
 
         while attempts < max_attempts:
@@ -308,12 +325,14 @@ class Droomrobot:
         return None
 
     def ask_fake(self, question, duration, speaking_rate=None):
+        self._check_pause()
         self.say(question, speaking_rate=speaking_rate)
         self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
         sleep(duration)
         self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
     def ask_entity_llm(self, question, strict=False, max_attempts=2, speaking_rate=None):
+        self._check_pause()
         attempts = 0
 
         while attempts < max_attempts:
@@ -358,6 +377,7 @@ class Droomrobot:
         return None
 
     def ask_opinion_llm(self, question, max_attempts=2, speaking_rate=None):
+        self._check_pause()
         attempts = 0
 
         while attempts < max_attempts:
@@ -393,18 +413,21 @@ class Droomrobot:
         return None
 
     def get_article(self, word):
+        self._check_pause()
         gpt_response = self.gpt.request(
             GPTRequest(
                 f'Retourneer het lidwoord van {word}. Retouneer alleen het lidwoord zelf bijv. "de" of "het" en geen andere informatie.'))
         return gpt_response.response
 
     def get_adjective(self, word):
+        self._check_pause()
         gpt_response = self.gpt.request(
             GPTRequest(
                 f'Retourneer het bijvoeglijk naamwoord van {word}. Retourneer alleen het bijvoeglijk naamwoord zelf bijv. "oranje" of "zachte" en geen andere informatie.'))
         return gpt_response.response
 
     def personalize(self, robot_input, user_age, user_input):
+        self._check_pause()
         gpt_response = self.gpt.request(
             GPTRequest(f'Je bent een sociale robot die praat met een kind van {str(user_age)} jaar oud.'
                        f'Het kind ligt in het ziekenhuis.'
@@ -416,6 +439,7 @@ class Droomrobot:
         return gpt_response.response
 
     def generate_question(self, user_age, robot_input, user_input):
+        self._check_pause()
         gpt_response = self.gpt.request(
             GPTRequest(f'Je bent een sociale robot die praat met een kind van {str(user_age)} jaar oud.'
                        f'Het kind ligt in het ziekenhuis.'
@@ -427,6 +451,7 @@ class Droomrobot:
         return gpt_response.response
 
     def animate(self, animation_type: AnimationType, animation_id: str, run_async=False):
+        self._check_pause()
         # run_async for synchronised animation and text.
         if 'computer' in self.device_name:
             print(f"Animation simulation: {animation_id}")
@@ -438,6 +463,7 @@ class Droomrobot:
 
     def set_mouth_lamp(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000,
                        run_async=False):
+        self._check_pause()
         if 'computer' in self.device_name:
             print(f"Set mouth lamp: {color} {mode} {duration} {breath_duration}")
         else:
@@ -511,4 +537,8 @@ class Droomrobot:
         else:
             mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.NORMAL, duration=duration)
         await mouth_lamp_action.execute()
+
+    def _check_pause(self):
+        while not self.pause_event.is_set():
+            sleep(0.1)
 
