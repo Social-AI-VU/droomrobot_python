@@ -31,3 +31,6 @@ conf/openai/.openai_env
 # Ignore user models
 user_models/
 
+# Ignore droomrobot config files
+conf/droomrobot/*.json
+

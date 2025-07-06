@@ -1,9 +1,10 @@
 import sys
 import tkinter as tk
+from json import load, JSONDecodeError
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 from threading import Thread
-from os.path import abspath
+from os.path import abspath, join
 
 from droomrobot.droomrobot_script import InteractionContext, InteractionSession
 from droomrobot_control import DroomrobotControl
@@ -57,13 +58,15 @@ class DroomrobotGUI:
         sys.stderr = TextRedirector(self.console, "stderr")
 
         # === Setup (Connect) Screen ===
-        self.mini_ip = tk.StringVar(value="192.168.178.111")
-        self.mini_id = tk.StringVar(value="00167")
-        self.mini_password = tk.StringVar(value="alphago")
-        self.redis_ip = tk.StringVar(value="192.168.178.84")
-        self.google_keyfile = tk.StringVar(value="../conf/dialogflow/google_keyfile.json")
-        self.openai_keyfile = tk.StringVar(value="../conf/openai/.openai_env")
-        self.debug_mode = tk.BooleanVar(value=False)
+        # Load them from config file
+        config = self.load_config()
+        self.mini_ip = tk.StringVar(value=config.get("mini_ip", "192.168.178.111"))
+        self.mini_id = tk.StringVar(value=config.get("mini_id", "00167"))
+        self.mini_password = tk.StringVar(value=config.get("mini_password", "alphago"))
+        self.redis_ip = tk.StringVar(value=config.get("redis_ip", "192.168.178.84"))
+        self.google_keyfile = tk.StringVar(value=config.get("google_keyfile", "../conf/dialogflow/google_keyfile.json"))
+        self.openai_keyfile = tk.StringVar(value=config.get("openai_keyfile", "../conf/openai/.openai_env"))
+        self.debug_mode = tk.BooleanVar(value=config.get("debug_mode", False))
 
         setup_frame = ttk.LabelFrame(self.connect_frame, text="Robot Setup")
         setup_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
@@ -101,8 +104,17 @@ class DroomrobotGUI:
         self.participant_id = tk.StringVar()
         self.child_name = tk.StringVar()
         self.child_age = tk.IntVar()
-        self.context = tk.StringVar(value=InteractionContext.SONDE.name)
-        self.session = tk.StringVar(value=InteractionSession.INTRODUCTION.name)
+        try:
+            context_enum = InteractionContext[config.get("context")]
+        except KeyError:
+            context_enum = InteractionContext.SONDE
+        self.context = tk.StringVar(value=context_enum.name)
+
+        try:
+            session_enum = InteractionSession[config.get("session")]
+        except KeyError:
+            session_enum = InteractionSession.INTRODUCTION
+        self.session = tk.StringVar(value=session_enum.name)
 
         interaction_frame = ttk.LabelFrame(self.full_control_frame, text="Interaction Parameters")
         interaction_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
@@ -164,6 +176,9 @@ class DroomrobotGUI:
         self.disconnect_btn.grid(row=0, column=4, padx=5)
 
         # Phase control (hidden initially)
+        style = ttk.Style()
+        style.configure("CurrentPhase.TButton", background="#b6e7b0", foreground="black", relief="sunken")
+
         self.phase_frame = ttk.LabelFrame(self.full_control_frame, text="Script Phases")
         self.phase_frame.grid(row=5, column=0, padx=10, pady=10, sticky="ew")
         self.phase_frame.grid_remove()
@@ -305,6 +320,8 @@ class DroomrobotGUI:
         self.script_thread = Thread(target=run)
         self.script_thread.start()
 
+        self.wait_for_phase_data()
+
         self.start_btn.config(state="disabled")
         self.pause_btn.config(state="normal")
         self.stop_btn.config(state="normal")
@@ -331,22 +348,6 @@ class DroomrobotGUI:
         self.resume_btn.config(state="disabled")
         self.stop_btn.config(state="disabled")
 
-    def show_phase_buttons(self, phase_names):
-        for widget in self.phase_frame.winfo_children():
-            widget.destroy()
-
-        self.phase_buttons = {}
-        for phase_name in phase_names:
-            btn = ttk.Button(self.phase_frame, text=phase_name, command=lambda p=phase_name: self.next_phase(p))
-            btn.pack(side="left", padx=5, pady=5)
-            self.phase_buttons[phase_name] = btn
-
-        self.phase_frame.grid()
-
-    def next_phase(self, phase_name):
-        if self.droomrobot_control and phase_name in self.droomrobot_control.interaction_script.phase_events:
-            self.droomrobot_control.interaction_script.phase_events[phase_name].set()
-
     def toggle_console(self):
         if self.console_visible:
             self.console_frame.grid_remove()
@@ -355,6 +356,55 @@ class DroomrobotGUI:
             self.console_frame.grid()
             self.console_toggle_btn.config(text="Hide Console ⯆")
         self.console_visible = not self.console_visible
+
+    def show_phase_buttons(self):
+        script = self.droomrobot_control.interaction_script
+        phases = script.phases
+        current = script.current_phase
+
+        for widget in self.phase_frame.winfo_children():
+            widget.destroy()
+
+        self.phase_buttons = {}
+
+        for idx, name in enumerate(phases):
+            is_current = idx == current
+
+            btn = ttk.Button(
+                self.phase_frame,
+                text=name,
+                command=lambda phase_name=name: self.next_phase(phase_name),
+                state="disabled" if is_current else "normal",
+                style="CurrentPhase.TButton" if is_current else "TButton"
+            )
+            btn.pack(side="left", padx=5, pady=5)
+            self.phase_buttons[name] = btn
+
+        self.phase_frame.grid()
+
+    def next_phase(self, phase_name):
+        for phase, btn in self.phase_buttons.items():
+            if phase == phase_name:
+                btn.config(state="disabled", style="CurrentPhase.TButton")
+            else:
+                btn.config(state="normal", style="TButton")
+        self.droomrobot_control.interaction_script.next_phase(phase_name)
+        self.resume_script()
+
+    def wait_for_phase_data(self):
+        if self.droomrobot_control.interaction_script.phases:
+            self.show_phase_buttons()
+        else:
+            self.root.after(200, self.wait_for_phase_data)
+
+    @staticmethod
+    def load_config(path=abspath(join("../conf", "droomrobot", "default_settings.json"))):
+        try:
+            with open(path, "r") as f:
+                return load(f)
+        except (FileNotFoundError, JSONDecodeError) as e:
+            print(f"Error loading config: {e}")
+            return {}
 
 
 # --- Run GUI ---

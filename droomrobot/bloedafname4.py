@@ -1,8 +1,5 @@
-from time import sleep
-
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
-from core import AnimationType, PhaseSkipped
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InterventionPhase, \
     InteractionChoice, InteractionChoiceCondition
 
@@ -190,12 +187,19 @@ class Bloedafname4(DroomrobotScript):
             InterventionPhase.PROCEDURE.name,
             InterventionPhase.WRAPUP.name
         ]
-        self.current_phase = 0
-
         self.phase_moves = InteractionChoice('Bloedafname4', InteractionChoiceCondition.PHASE)
-        self.phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, "Preparation")
-        self.phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, "Procedure")
-        self.phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.say, "Wrap up")
+        self.phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, "Hallo ik ben aan het testen")
+        self.phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, "en ik houd van komkommer")
+        self.phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, "en zonnebloemen en draken en monster")
+        self.phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, "en paardenbloemen en dansen in de regen")
+        self.phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, "Ik ga straks lekker zwemmen")
+        self.phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, "En ik vind het leuk om te gamen")
+        self.phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, "Wat vind jij leuk?")
+        self.phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, "Dat is ook ontzettend gaaf zeg")
+        self.phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, "Lekker naar de maan")
+        self.phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.say, "Laten we zo lekker gaan slapen")
+        self.phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.say, "Wat is jouw favoriete sprookje")
+        self.phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.say, "Ik lees nu graag Pluk van de petteflat")
 
     #     self.intervention_preparation()
     #     self.phase_events[InteractionPhase.PROCEDURE].wait()  # Wait for GUI to trigger

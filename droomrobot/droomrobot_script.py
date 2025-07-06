@@ -109,17 +109,21 @@ class DroomrobotScript:
 
         # Script management
         self.interaction_moves = []
+        self.script_idx = 0
+
         self.is_running = True
         self.pause_event = Event()
         self.pause_event.set()
+
         self.phases = []
         self.current_phase = 0
         self.phase_moves = None
-
+        self._requested_phase = None
 
     @abc.abstractmethod
     def prepare(self, participant_id: str, session: InteractionSession, user_model_addendum: dict):
         self.participant_id = participant_id
+        self.session = session
         self.user_model = self.droomrobot.load_user_model(participant_id=participant_id)
         self.user_model.update(user_model_addendum)
 
@@ -136,29 +140,35 @@ class DroomrobotScript:
         self.droomrobot.start_logging(self.participant_id, {
             'participant_id': self.participant_id,
             'context': self.interaction_context.name,
-            'session': self.session,
+            'session': self.session.name,
             'child_age': self.user_model['child_age']
         })
 
         if self.phases and self.phase_moves:
             self.interaction_moves = self.phase_moves.execute(self.phases[self.current_phase])
 
-        i = 0
-        while i < len(self.interaction_moves) and self.is_running:
+        self.script_idx = 0
+        while self.script_idx < len(self.interaction_moves) and self.is_running:
             self.pause_event.wait()
-            move = self.interaction_moves[i]
+
+            # Handle phase switch request BEFORE executing next move
+            if self._requested_phase:
+                self._switch_to_requested_phase()
+
+            move = self.interaction_moves[self.script_idx]
 
             if isinstance(move, InteractionMove):
                 result = move.execute()
                 if move.user_model_key:
                     self.user_model[move.user_model_key] = result
                     self.droomrobot.save_user_model(self.participant_id, self.user_model)
-                i += 1
+                self.script_idx += 1
 
             elif isinstance(move, InteractionChoice):
                 moves = move.execute(self.user_model)
-                self.interaction_moves[i:i + 1] = moves  # insert the moves beloning to the choice in the list
+                self.interaction_moves[self.script_idx:self.script_idx + 1] = moves  # insert the moves beloning to the choice in the list
 
+        self.is_running = False
         self.droomrobot.stop_logging()
 
     def stop(self):
@@ -169,16 +179,28 @@ class DroomrobotScript:
 
     def resume(self):
         self.pause_event.set()
-    
-    def to_phase(self, phase: str):
-        if self.phases and self.phase_moves:
-            if phase not in self.phases:
-                raise InteractionChoiceNotAvailable(f"{phase} is not available.")
-            self.pause()
-            self.interaction_moves = self.phase_moves.execute(phase)
+
+    def next_phase(self, phase: str):
+        if not self.phases or not self.phase_moves:
+            raise InteractionChoiceNotAvailable("No phases available.")
+
+        if phase not in self.phases:
+            raise InteractionChoiceNotAvailable(f"{phase} is not available.")
+
+        if self.is_running:
+            # Request the phase switch
+            self._requested_phase = phase
+        else:  # restart if not is running anymore
             self.current_phase = self.phases.index(phase)
-            self.resume()
-        else:
-            raise InteractionChoiceNotAvailable(f"No phases available.")
+            self.is_running = True
+            self.run()
+
+    def _switch_to_requested_phase(self):
+        phase = self._requested_phase
+        self._requested_phase = None
+
+        self.interaction_moves = self.phase_moves.execute(phase)
+        self.current_phase = self.phases.index(phase)
+        self.script_idx = 0
 
 
