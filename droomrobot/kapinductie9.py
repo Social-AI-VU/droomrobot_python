@@ -3,21 +3,21 @@ from time import sleep
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
 from droomrobot.core import AnimationType
-from droomrobot.droomrobot_script import DroomrobotScript, ScriptId, InteractionPart
+from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession
 
 
 class Kapinductie9(DroomrobotScript):
 
     def __init__(self, *args, **kwargs):
         super(Kapinductie9, self).__init__(*args, **kwargs)
-        self.script_id = ScriptId.KAPINDUCTIE
+        self.script_id = InteractionContext.KAPINDUCTIE
 
-    def run(self, participant_id: str, interaction_part: InteractionPart, user_model: dict):
-        super().run(participant_id, interaction_part, user_model)
+    def run(self, participant_id: str, session: InteractionSession, user_model: dict):
+        super().run(participant_id, session, user_model)
 
-        if interaction_part == InteractionPart.INTRODUCTION:
+        if session == InteractionSession.INTRODUCTION:
             self.introductie()
-        elif interaction_part == InteractionPart.INTERVENTION:
+        elif session == InteractionSession.INTERVENTION:
             self.interventie()
         else:
             print("Interaction part not recognized")

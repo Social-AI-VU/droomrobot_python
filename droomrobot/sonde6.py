@@ -3,21 +3,21 @@ from time import sleep
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
 from core import AnimationType
-from droomrobot.droomrobot_script import DroomrobotScript, ScriptId, InteractionPart
+from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession
 
 
 class Sonde6(DroomrobotScript):
 
     def __init__(self, *args, **kwargs):
         super(Sonde6, self).__init__(*args, **kwargs)
-        self.script_id = ScriptId.SONDE
+        self.script_id = InteractionContext.SONDE
 
-    def run(self, participant_id: str, interaction_part: InteractionPart, user_model: dict):
-        super().run(participant_id, interaction_part, user_model)
+    def run(self, participant_id: str, session: InteractionSession, user_model: dict):
+        super().run(participant_id, session, user_model)
 
-        if interaction_part == InteractionPart.INTRODUCTION:
+        if session == InteractionSession.INTRODUCTION:
             self.introductie()
-        elif interaction_part == InteractionPart.INTERVENTION:
+        elif session == InteractionSession.INTERVENTION:
             self.interventie()
         else:
             print("Interaction part not recognized")
@@ -167,8 +167,7 @@ class Sonde6(DroomrobotScript):
         self.droomrobot.say('Je hoeft alleen maar je ogen dicht te doen en terug te denken aan jouw plek in gedachten.')
         self.droomrobot.say('Ik ben benieuwd hoe goed je het de volgende keer gaat doen. Je doet het op jouw eigen manier, en dat is precies goed.')
 
-        
-        
+
     def raceauto(self):
         self.droomrobot.say('De raceauto, die vind ik ook het leukste!')
         self.droomrobot.say('Ik vind het fijn dat je zelf kan kiezen hoe snel of rustig je gaat rijden.')
