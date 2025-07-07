@@ -196,7 +196,7 @@ class Droomrobot:
             timestamp = strftime("%Y-%m-%d %H:%M:%S")
             self._log_queue.put(f"[{timestamp}] recognition result: {recognition_result}")
 
-    def say(self, text, speaking_rate=None):
+    def say(self, text, speaking_rate=None, sleep_time=0):
         if speaking_rate:
             reply = self.tts.request(GetSpeechRequest(text=text,
                                                       voice_name=self.google_tts_voice_name,
@@ -209,6 +209,8 @@ class Droomrobot:
 
         self.speaker.request(AudioRequest(reply.waveform, reply.sample_rate))
         self.log_utterance(speaker='robot', text=text)
+        if sleep_time > 0:
+            sleep(sleep_time)
 
     def play_audio(self, audio_file):
         with wave.open(audio_file, 'rb') as wf:
