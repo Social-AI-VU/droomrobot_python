@@ -1,5 +1,3 @@
-from time import sleep
-
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
 from droomrobot.core import AnimationType
@@ -44,11 +42,10 @@ class Bloedafname4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Een droomreis is een trucje waarbij je aan iets heel leuks denkt.')
         self.add_move(self.droomrobot.say, 'Dat helpt je om rustig en sterk te blijven.')
         self.add_move(self.droomrobot.say, 'Nu mag jij kiezen waar je heen wil in gedachten.'
-                                           'Bijvoorbeeld het strand, het bos, de speeltuin of de ruimte of wat anders')
+                                           'Je kunt kiezen uit het strand, het bos, de speeltuin of de ruimte.')
 
         self.add_move(self.droomrobot.ask_entity,
-                      'Wat is een plek waar jij je fijn voelt? Het strand, het bos, '
-                      'de speeltuin of de ruimte?',
+                      'Wat is een plek waar jij je fijn voelt?',
                       {'droomplek': 1},
                       'droomplek',
                       'droomplek',
@@ -185,6 +182,8 @@ class Bloedafname4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Je zult zien dat dit je gaat helpen.')
         self.add_move(self.droomrobot.say, 'Als je zometeen aan de beurt bent, ga ik je helpen om het lichtje '
                                            'weer samen aan te zetten, zodat je weer die superheld bent.')
+        self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.add_move(self.droomrobot.say, 'Tot straks, doei!')
 
     def _intervention(self):
@@ -283,24 +282,6 @@ class Bloedafname4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Ik ga nu een ander kindje helpen, net zoals ik jou nu heb geholpen.')
         self.add_move(self.droomrobot.say, 'Misschien zien we elkaar de volgende keer!')
         self.add_move(self.droomrobot.say, 'Doei')
-
-    def repeat_sentences(self, sentences: list):
-        sentence_idx = 0
-        while not self._requested_phase and self.is_running:
-            total_wait = 5
-            interval = 0.1
-            waited = 0
-            while waited < total_wait:
-                if self._requested_phase or not self.is_running:
-                    return
-                sleep(interval)
-                waited += interval
-            if not self._requested_phase:
-                self.droomrobot.say(sentences[sentence_idx])
-                if sentence_idx < len(sentences) - 1:
-                    sentence_idx += 1
-                else:
-                    sentence_idx = 0
 
     def _build_interaction_choice_droomplek(self) -> InteractionChoice:
         interaction_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)

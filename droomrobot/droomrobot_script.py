@@ -1,6 +1,7 @@
 import abc
 from enum import Enum
 from threading import Event
+from time import sleep
 
 from droomrobot.core import Droomrobot
 
@@ -200,5 +201,24 @@ class DroomrobotScript:
         if not self.is_running:
             self.is_running = True
             self.run()
+
+    def repeat_sentences(self, sentences: list):
+        sentence_idx = 0
+        while not self._requested_phase and self.is_running:
+            total_wait = 5
+            interval = 0.1
+            waited = 0
+            while waited < total_wait:
+                if self._requested_phase or not self.is_running:
+                    return
+                sleep(interval)
+                waited += interval
+            if not self._requested_phase:
+                self.droomrobot.say(sentences[sentence_idx])
+                if sentence_idx < len(sentences) - 1:
+                    sentence_idx += 1
+                else:
+                    sentence_idx = 0
+
 
 
