@@ -124,7 +124,7 @@ class DroomrobotScript:
     def prepare(self, participant_id: str, session: InteractionSession, user_model_addendum: dict):
         self.participant_id = participant_id
         self.session = session
-        self.user_model = self.droomrobot.load_user_model(participant_id=participant_id)
+        self.user_model = self.droomrobot.load_user_model(participant_id=self.participant_id)
         self.user_model.update(user_model_addendum)
 
         if 'droomplek' in self.user_model:
@@ -133,17 +133,10 @@ class DroomrobotScript:
     def add_move(self, func, *args, **kwargs):
         self.interaction_moves.append(InteractionMove(func, *args, **kwargs))
 
-    def add_interaction_choice(self, interaction_choice: InteractionChoice):
+    def add_choice(self, interaction_choice: InteractionChoice):
         self.interaction_moves.append(interaction_choice)
 
     def run(self):
-        self.droomrobot.start_logging(self.participant_id, {
-            'participant_id': self.participant_id,
-            'context': self.interaction_context.name,
-            'session': self.session.name,
-            'child_age': self.user_model['child_age']
-        })
-
         if self.phases and self.phase_moves:
             self.interaction_moves = self.phase_moves.execute(self.phases[self.current_phase])
 
@@ -169,7 +162,8 @@ class DroomrobotScript:
                 self.interaction_moves[self.script_idx:self.script_idx + 1] = moves  # insert the moves beloning to the choice in the list
 
         self.is_running = False
-        self.droomrobot.stop_logging()
+        if self._requested_phase:
+            self._switch_to_requested_phase()
 
     def stop(self):
         self.is_running = False
@@ -202,5 +196,9 @@ class DroomrobotScript:
         self.interaction_moves = self.phase_moves.execute(phase)
         self.current_phase = self.phases.index(phase)
         self.script_idx = 0
+
+        if not self.is_running:
+            self.is_running = True
+            self.run()
 
 

@@ -267,11 +267,12 @@ class Droomrobot:
 
             # Return entity
             if reply.intent:
-                self.log_recognition_result(f'context: {context}, target_intent: {target_intent}, '
-                                            f'target_entity: {target_entity}, recognized_intent: {str(reply.intent)}')
                 if target_intent in reply.intent:
                     if reply.response.query_result.parameters and target_entity in reply.response.query_result.parameters:
-                        return reply.response.query_result.parameters[target_entity]
+                        result_entity = reply.response.query_result.parameters[target_entity]
+                        self.log_recognition_result(f'context: {context}, target_intent: {target_intent}, '
+                                                    f'target_entity: {target_entity}, recognized_entity: {str(result_entity)}')
+                        return result_entity
             attempts += 1
             self.log_recognition_result(f'context: {context}, target_intent: {target_intent}, '
                                         f'target_entity: {target_entity}, recognized_intent: None')

@@ -67,7 +67,14 @@ class DroomrobotControl:
             self.interaction_script.prepare(participant_id=participant_id,
                                             session=session,
                                             user_model_addendum=user_model)
+            self.droomrobot.start_logging(participant_id, {
+                'participant_id': participant_id,
+                'context': interaction_context.name,
+                'session': session,
+                'child_age': user_model['child_age']
+            })
             self.interaction_script.run()
+            self.droomrobot.stop_logging()
         except KeyboardInterrupt:
             print("[Interrupted] Interaction is stopped manually")
         except Exception as e:

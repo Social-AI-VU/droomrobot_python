@@ -22,7 +22,7 @@ class TextRedirector:
         self.text_widget.see("end")
 
     def flush(self):
-        pass  # Needed for compatibility
+        self.text_widget.update_idletasks()
 
 
 class DroomrobotGUI:
@@ -138,7 +138,7 @@ class DroomrobotGUI:
 
         # Advanced Settings
         self.advanced_visible = False
-        self.advanced_frame = ttk.Frame(self.full_control_frame)
+        self.advanced_frame = ttk.LabelFrame(self.full_control_frame, text="Advanced Settings")
         self.toggle_button = ttk.Button(self.full_control_frame, text="Show Advanced Settings ⯈", command=self.toggle_advanced)
         self.toggle_button.grid(row=2, column=0, padx=10, pady=(0, 5), sticky="w")
         self.advanced_frame.grid(row=3, column=0, padx=10, sticky="ew")
@@ -358,18 +358,24 @@ class DroomrobotGUI:
         self.console_visible = not self.console_visible
 
     def show_phase_buttons(self):
+        # Always clear previous buttons
+        for widget in self.phase_frame.winfo_children():
+            widget.destroy()
+        self.phase_buttons = {}
+
+        # Get current script phases
         script = self.droomrobot_control.interaction_script
         phases = script.phases
         current = script.current_phase
 
-        for widget in self.phase_frame.winfo_children():
-            widget.destroy()
+        # If no phases, hide the frame and return
+        if not phases:
+            self.phase_frame.grid_remove()
+            return
 
-        self.phase_buttons = {}
-
+        # Otherwise, display new buttons
         for idx, name in enumerate(phases):
             is_current = idx == current
-
             btn = ttk.Button(
                 self.phase_frame,
                 text=name,
@@ -391,11 +397,16 @@ class DroomrobotGUI:
         self.droomrobot_control.interaction_script.next_phase(phase_name)
         self.resume_script()
 
-    def wait_for_phase_data(self):
-        if self.droomrobot_control.interaction_script.phases:
+    def wait_for_phase_data(self, retries_left=15):  # 15 retries × 200ms = 3 seconds
+        script = self.droomrobot_control.interaction_script
+        if script and script.phases:
             self.show_phase_buttons()
+        elif retries_left > 0:
+            self.root.after(200, lambda: self.wait_for_phase_data(retries_left - 1))
         else:
-            self.root.after(200, self.wait_for_phase_data)
+            # No phases detected after retries, hide any old phase UI
+            self.phase_frame.grid_remove()
+            self.phase_buttons = {}
 
     @staticmethod
     def load_config(path=abspath(join("../conf", "droomrobot", "default_settings.json"))):
