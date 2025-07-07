@@ -182,6 +182,7 @@ class Bloedafname6(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Je zult zien dat dit je gaat helpen.')
         self.add_move(self.droomrobot.say,
                       'Als je zometeen aan de beurt bent, ga ik je helpen om het lichtje weer samen aan te zetten, zodat je weer die superheld bent.')
+
         self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.add_move(self.droomrobot.say, 'Tot straks, doei!')
@@ -414,9 +415,9 @@ class Bloedafname6(DroomrobotScript):
                 f'Bijvoorbeeld als de fijne plek de speeltuin is zouden dit de twee zinnen kunnen zijn.'
                 f'"De speeltuin, wat een vrolijke plek! Ik hou van de glijbaan en de schommel."'
                 f'Weet je wat ik daar graag doe? Heel hoog schommelen, bijna tot aan de sterren."'
-                f'Gebruik kindvriendelijke verbeelding wat te maken heeft met de plek. ')).reponse))
+                f'Gebruik kindvriendelijke verbeelding wat te maken heeft met de plek. ')).response))
         interaction_choice.add_move('other', self.droomrobot.ask_open,
-                                    lambda: f'Wat zou jij willen doen bij jouw droomplek {self.user_model['droomplek']} {self.user_model['child_name']}?',
+                                    lambda: f'Wat zou jij willen doen in {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} {self.user_model['child_name']}?',
                                     user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)

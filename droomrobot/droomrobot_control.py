@@ -3,7 +3,7 @@ from os.path import abspath, join
 from droomrobot.bloedafname4 import Bloedafname4
 from droomrobot.bloedafname6 import Bloedafname6
 from droomrobot.bloedafname9 import Bloedafname9
-from droomrobot.core import Droomrobot
+from droomrobot.core import Droomrobot, AnimationType
 from droomrobot.droomrobot_script import InteractionContext, InteractionSession
 from droomrobot.kapinductie4 import Kapinductie4
 from droomrobot.kapinductie6 import Kapinductie6
@@ -94,20 +94,24 @@ class DroomrobotControl:
         if self.interaction_script:
             self.interaction_script.stop()
 
+    def dance(self):
+        if self.droomrobot:
+            self.droomrobot.animate(AnimationType.ACTION, 'dance_0007en', run_async=True)
+            self.droomrobot.play_audio('resources/audio/happy_dance.wav')
 
-if __name__ == '__main__':
-    droomrobot_control = DroomrobotControl()
-
-    droomrobot_control.connect(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago",
-                               redis_ip="192.168.178.84",
-                               google_keyfile_path=abspath(
-                                   join("../conf", "dialogflow", "google_keyfile.json")),
-                               openai_key_path=abspath(join("../conf", "openai", ".openai_env")),
-                               default_speaking_rate=0.8, computer_test_mode=False)
-
-    droomrobot_control.start(participant_id='996',
-                             interaction_context=InteractionContext.SONDE,
-                             session=InteractionSession.INTRODUCTION,
-                             user_model={
-                                 'child_name': 'Bas',
-                                 'child_age': 10})
+# if __name__ == '__main__':
+#     droomrobot_control = DroomrobotControl()
+#
+#     droomrobot_control.connect(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago",
+#                                redis_ip="192.168.178.84",
+#                                google_keyfile_path=abspath(
+#                                    join("../conf", "dialogflow", "google_keyfile.json")),
+#                                openai_key_path=abspath(join("../conf", "openai", ".openai_env")),
+#                                default_speaking_rate=0.8, computer_test_mode=False)
+#
+#     droomrobot_control.start(participant_id='996',
+#                              interaction_context=InteractionContext.SONDE,
+#                              session=InteractionSession.INTRODUCTION,
+#                              user_model={
+#                                  'child_name': 'Bas',
+#                                  'child_age': 10})

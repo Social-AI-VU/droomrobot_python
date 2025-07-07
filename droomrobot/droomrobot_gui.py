@@ -155,6 +155,9 @@ class DroomrobotGUI:
 
         self.add_field_button = ttk.Button(self.advanced_frame, text="Add Field", command=self.add_advanced_field)
         self.add_field_button.pack(anchor="w", pady=(5, 5))
+        #
+        # self.dance_button = ttk.Button(self.advanced_frame, text="💃 Let Robot Dance", command=self.dance)
+        # self.dance_button.pack(anchor="w", pady=(5, 10))
 
         # Control Buttons
         button_frame = ttk.Frame(self.full_control_frame)
@@ -291,7 +294,7 @@ class DroomrobotGUI:
             redis_ip=self.redis_ip.get(),
             google_keyfile_path=abspath(self.google_keyfile.get()),
             openai_key_path=abspath(self.openai_keyfile.get()),
-            default_speaking_rate=0.8,
+            default_speaking_rate=1.0,
             computer_test_mode=self.debug_mode.get()
         )
 
@@ -407,6 +410,16 @@ class DroomrobotGUI:
             # No phases detected after retries, hide any old phase UI
             self.phase_frame.grid_remove()
             self.phase_buttons = {}
+
+    def dance(self):
+        if self.droomrobot_control:
+            try:
+                self.droomrobot_control.dance()
+                print("Robot is dancing!")
+            except Exception as e:
+                print("Dance failed:", e)
+        else:
+            print("Robot is not connected.")
 
     @staticmethod
     def load_config(path=abspath(join("../conf", "droomrobot", "default_settings.json"))):

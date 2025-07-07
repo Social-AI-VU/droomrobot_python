@@ -372,7 +372,7 @@ class Bloedafname4(DroomrobotScript):
                 f'Bijvoorbeeld als de fijne plek de speeltuin is zouden dit de twee zinnen kunnen zijn.'
                 f'"De speeltuin, wat een vrolijke plek! Ik hou van de glijbaan en de schommel."'
                 f'Weet je wat ik daar graag doe? Heel hoog schommelen, bijna tot aan de sterren."'
-                f'Gebruik kindvriendelijke verbeelding wat te maken heeft met de plek. ')).reponse))
+                f'Gebruik kindvriendelijke verbeelding wat te maken heeft met de plek. ')).response))
         interaction_choice.add_move('other', self.droomrobot.ask_open,
                                     lambda: f'Wat zou jij willen doen bij jouw droomplek {self.user_model['droomplek']} {self.user_model['child_name']}?',
                                     user_model_key='droomplek_motivatie')
