@@ -6,6 +6,7 @@ from enum import Enum
 from os import environ, fsync
 from os.path import exists
 from pathlib import Path
+import random as rand
 from threading import Thread, Event
 from time import sleep, strftime
 
@@ -80,10 +81,11 @@ class Droomrobot:
                  openai_key_path=None, default_speaking_rate=1.0,
                  computer_test_mode=False):
 
-        print("\n SETTING UP FIRST CORE PROCESSES")
+        print("\n SETTING UP LOGGING")
         # Logging
         self._log_queue = None
         self._log_thread = None
+        print('complete')
 
         print("\n SETTING UP OPENAI")
         # Generate your personal openai api key here: https://platform.openai.com/api-keys
@@ -196,7 +198,7 @@ class Droomrobot:
             timestamp = strftime("%Y-%m-%d %H:%M:%S")
             self._log_queue.put(f"[{timestamp}] recognition result: {recognition_result}")
 
-    def say(self, text, speaking_rate=None, sleep_time=0):
+    def say(self, text, speaking_rate=None, sleep_time=0, animated=False):
         if speaking_rate:
             reply = self.tts.request(GetSpeechRequest(text=text,
                                                       voice_name=self.google_tts_voice_name,
@@ -208,6 +210,8 @@ class Droomrobot:
                                                       ssml_gender=self.google_tts_voice_gender))
 
         self.speaker.request(AudioRequest(reply.waveform, reply.sample_rate))
+        if animated:
+            self.animate(AnimationType.ACTION, self._random_speaking_act(), run_async=True)
         self.log_utterance(speaker='robot', text=text)
         if sleep_time > 0:
             sleep(sleep_time)
@@ -226,11 +230,11 @@ class Droomrobot:
             self.speaker.request(AudioRequest(wf.readframes(n_frames), framerate))
             self.log_utterance(speaker='robot', text=f'plays {audio_file}')
 
-    def ask_yesno(self, question, max_attempts=2, speaking_rate=None):
+    def ask_yesno(self, question, max_attempts=2, speaking_rate=None, animated=False):
         attempts = 0
         while attempts < max_attempts:
             # ask question
-            self.say(question, speaking_rate=speaking_rate)
+            self.say(question, speaking_rate=speaking_rate, animated=animated)
 
             self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
@@ -253,12 +257,12 @@ class Droomrobot:
         self.log_recognition_result(f'context: answer_yesno, intent recognition failed')
         return None
 
-    def ask_entity(self, question, context, target_intent, target_entity, max_attempts=2, speaking_rate=None):
+    def ask_entity(self, question, context, target_intent, target_entity, max_attempts=2, speaking_rate=None, animated=False):
         attempts = 0
 
         while attempts < max_attempts:
             # ask question
-            self.say(question, speaking_rate=speaking_rate)
+            self.say(question, speaking_rate=speaking_rate, animated=animated)
             self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, context))
@@ -280,12 +284,12 @@ class Droomrobot:
         self.log_recognition_result(f'context: {context}, intent recognition failed')
         return None
 
-    def ask_open(self, question, max_attempts=2, speaking_rate=None):
+    def ask_open(self, question, max_attempts=2, speaking_rate=None, animated=False):
         attempts = 0
 
         while attempts < max_attempts:
             # ask question
-            self.say(question, speaking_rate=speaking_rate)
+            self.say(question, speaking_rate=speaking_rate, animated=animated)
 
             self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
@@ -300,18 +304,18 @@ class Droomrobot:
             attempts += 1
         return None
 
-    def ask_fake(self, question, duration, speaking_rate=None):
-        self.say(question, speaking_rate=speaking_rate)
+    def ask_fake(self, question, duration, speaking_rate=None, animated=False):
+        self.say(question, speaking_rate=speaking_rate, animated=animated)
         self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
         sleep(duration)
         self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
-    def ask_entity_llm(self, question, strict=False, max_attempts=2, speaking_rate=None):
+    def ask_entity_llm(self, question, strict=False, max_attempts=2, speaking_rate=None, animated=False):
         attempts = 0
 
         while attempts < max_attempts:
             # ask question
-            self.say(question, speaking_rate=speaking_rate)
+            self.say(question, speaking_rate=speaking_rate, animated=animated)
 
             self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
@@ -350,12 +354,12 @@ class Droomrobot:
         self.log_recognition_result('llm extracted entity: None')
         return None
 
-    def ask_opinion_llm(self, question, max_attempts=2, speaking_rate=None):
+    def ask_opinion_llm(self, question, max_attempts=2, speaking_rate=None, animated=False):
         attempts = 0
 
         while attempts < max_attempts:
             # ask question
-            self.say(question, speaking_rate=speaking_rate)
+            self.say(question, speaking_rate=speaking_rate, animated=animated)
 
             self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
@@ -477,27 +481,6 @@ class Droomrobot:
             await action.execute()
 
     async def _mouth_lamp_expression(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000):
-        # mode: mouth light mode, 0: normal mode, 1: breathing mode
-
-        # color: mouth light color, 1: red, 2: green, 3: blue
-
-        # duration: duration, in milliseconds, -1 means always on
-
-        # breath_duration: The duration of one blink, in milliseconds
-
-        """Test setting mouth light
-
-        Set the robot's mouth light to normal mode, green and always on for 3s, and wait for the reply result
-
-        When mode=NORMAL, the duration parameter works, indicating how long it will stay on
-
-        When mode=BREATH, the breath_duration parameter works, indicating how often to breathe
-
-        #SetMouthLampResponse.isSuccess: Is it successful
-
-        #SetMouthLampResponse.resultCode: Return code
-
-        """
         if mode == MouthLampMode.BREATH:
             mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.BREATH,
                                                            breath_duration=breath_duration)
@@ -525,3 +508,26 @@ class Droomrobot:
             json.dump(user_model, f, indent=4)
             f.flush()  # flush internal buffers
             fsync(f.fileno())  # flush OS buffers to disk
+
+    @staticmethod
+    def _random_speaking_act():
+        speaking_acts = [
+            "speakingAct1",
+            "speakingAct2",
+            "speakingAct3",
+            "speakingAct4",
+            "speakingAct5",
+            "speakingAct6",
+            "speakingAct7",
+            "speakingAct8",
+            "speakingAct9",
+            "speakingAct10",
+            "speakingAct11",
+            "speakingAct12",
+            "speakingAct13",
+            "speakingAct14",
+            "speakingAct15",
+            "speakingAct16",
+            "speakingAct17"
+        ]
+        return rand.choice(speaking_acts)
