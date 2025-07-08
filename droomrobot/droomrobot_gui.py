@@ -294,7 +294,7 @@ class DroomrobotGUI:
             redis_ip=self.redis_ip.get(),
             google_keyfile_path=abspath(self.google_keyfile.get()),
             openai_key_path=abspath(self.openai_keyfile.get()),
-            default_speaking_rate=1.0,
+            default_speaking_rate=0.9,
             computer_test_mode=self.debug_mode.get()
         )
 

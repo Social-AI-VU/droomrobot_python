@@ -360,7 +360,7 @@ class Bloedafname6(DroomrobotScript):
                                     'Weet je wat ik daar graag doe? Ik zoek naar dieren die zich verstoppen,'
                                     ' zoals vogels of eekhoorns.')
         interaction_choice.add_move('bos', self.droomrobot.ask_open,
-                                    f'Wat zou in het bos willen doen {self.user_model['child_name']}?',
+                                    f'Wat zou je in het bos willen doen {self.user_model['child_name']}?',
                                     user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
