@@ -56,11 +56,10 @@ class Bloedafname9(DroomrobotScript):
         # SAMEN OEFENEN
         self.add_move(self.droomrobot.ask_yesno, "Zit je zo goed?", user_model_key='zit_goed')
         zit_goed_choice = InteractionChoice('zit_goed', InteractionChoiceCondition.MATCHVALUE)
-        zit_goed_choice.add_move('yes', self.droomrobot.say, 'En nu je lekker bent gaan zitten.')
-        zit_goed_choice.add_move('other', self.droomrobot.say, 'Het zit vaak het lekkerste als je stevig gaat zitten.')
-        zit_goed_choice.add_move('other', self.droomrobot.say, 'met beide benen op de grond.')
-        zit_goed_choice.add_move('other', self.droomrobot.say, 'Ga maar eens kijken hoe goed dat zit.', sleep_time=1)
-        zit_goed_choice.add_move('other', self.droomrobot.say, 'Als je goed zit.')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Het zit vaak het lekkerste als je stevig gaat zitten.')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'met beide benen op de grond.')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Ga maar eens kijken hoe goed dat zit.', sleep_time=1)
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed zit.')
         self.add_choice(zit_goed_choice)
         self.add_move(self.droomrobot.say, 'mag je je ogen dicht doen.')
         self.add_move(self.droomrobot.say, 'dan werkt het trucje het beste.')
@@ -96,7 +95,15 @@ class Bloedafname9(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Stel je eens voor hoe dat lichtje eruit ziet.', speaking_rate=0.75, sleep_time=0.7)
         self.add_move(self.droomrobot.say, 'Is het geel, blauw of misschien jouw lievelingskleur?', speaking_rate=0.75, sleep_time=0.7)
         self.add_move(self.droomrobot.ask_entity_llm, 'Welke kleur heeft jouw lichtje?', strict=True, user_model_key='kleur')
-        self.add_move(self.droomrobot.say, lambda: f'{self.user_model['kleur']}, wat goed.', speaking_rate=0.75, sleep_time=0.7)
+        kleur_choice = InteractionChoice('kleur', InteractionChoiceCondition.HASVALUE)
+        kleur_choice.add_move('success', self.droomrobot.say,
+                              lambda: f'{self.user_model['kleur']}, wat goed, die heb je goed gekozen, {self.user_model['child_name']}.',
+                              speaking_rate=0.75,
+                              sleep_time=0.7)
+        kleur_choice.add_move('fail', self.droomrobot.say,
+                              'Sorry, dat verstond ik even niet goed. Weet je wat? Ik vind groen een mooie kleur. Laten we het lichtje groen maken.')
+        kleur_choice.add_move('fail', lambda: self.set_user_model_variable('kleur', 'groen'))
+        self.add_choice(kleur_choice)
         self.add_move(self.droomrobot.get_adjective, lambda: self.user_model['kleur'], user_model_key='kleur_adjective')
         self.add_move(self.droomrobot.say, lambda: f'Merk maar eens, hoe dat {self.user_model['kleur_adjective']} lichtje, je een heel fijn, krachtig gevoel geeft.', speaking_rate=0.75, sleep_time=0.7)
         self.add_move(self.droomrobot.say, 'En hoe jij nu een superheld bent, met jouw superkracht, en alles aankan.', speaking_rate=0.75, sleep_time=0.7)
@@ -130,6 +137,7 @@ class Bloedafname9(DroomrobotScript):
         oefenen_slecht_choice.add_move('fail', self.droomrobot.say,
                                        "Wat jammer zeg. Probeer ik het de volgende keer beter te doen.")
         oefenen_choice.add_choice('other', oefenen_slecht_choice)
+        oefenen_choice.add_move('fail', self.droomrobot.say, "Oke.")
         self.add_choice(oefenen_choice)
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)  # smile
         self.add_move(self.droomrobot.say, 'Gelukkig wordt het steeds makkelijker als je het vaker oefent.')
@@ -217,8 +225,8 @@ class Bloedafname9(DroomrobotScript):
         ervaring_choice.add_move('positive', self.droomrobot.say,
                                  lambda: f'Wat fijn! je hebt jezelf echt goed geholpen, {self.user_model['child_name']}')
         ervaring_choice.add_move('other', self.droomrobot.say, 'Dat geeft niet.')
-        ervaring_choice.add_move('other', self.droomrobot.say, 'Je hebt goed je best gedaan.')
-        ervaring_choice.add_move('other', self.droomrobot.say, 'En kijk welke stapjes je allemaal al goed gelukt zijn.')
+        ervaring_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Je hebt goed je best gedaan.')
+        ervaring_choice.add_move(['other', 'fail'], self.droomrobot.say, 'En kijk welke stapjes je allemaal al goed gelukt zijn.')
         self.add_choice(ervaring_choice)
         self.add_move(self.droomrobot.say,
                       lambda: f'je kon al goed een {self.user_model['kleur']} lichtje uitzoeken.')  # weet niet of het zo goed gaat met '

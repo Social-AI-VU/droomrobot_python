@@ -61,10 +61,10 @@ class Bloedafname4(DroomrobotScript):
         self.add_move(self.droomrobot.ask_yesno, "Zit je zo goed?", user_model_key='zit_goed')
         zit_goed_choice = InteractionChoice('zit_goed', InteractionChoiceCondition.MATCHVALUE)
         zit_goed_choice.add_move('yes', self.droomrobot.say, 'En nu je lekker bent gaan zitten.')
-        zit_goed_choice.add_move('other', self.droomrobot.say, 'Het zit vaak het lekkerste als je stevig gaat zitten.')
-        zit_goed_choice.add_move('other', self.droomrobot.say, 'met beide benen op de grond.')
-        zit_goed_choice.add_move('other', self.droomrobot.say, 'Ga maar eens kijken hoe goed dat zit.', sleep_time=1)
-        zit_goed_choice.add_move('other', self.droomrobot.say, 'Als je goed zit.')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Het zit vaak het lekkerste als je stevig gaat zitten.')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'met beide benen op de grond.')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Ga maar eens kijken hoe goed dat zit.', sleep_time=1)
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed zit.')
         self.add_choice(zit_goed_choice)
         self.add_move(self.droomrobot.say, 'mag je je ogen dicht doen.')
         self.add_move(self.droomrobot.say, 'dan werkt het truukje het beste.', sleep_time=1)
@@ -89,32 +89,32 @@ class Bloedafname4(DroomrobotScript):
                             speaking_rate=0.75, sleep_time=0.7)
         self.add_move(self.droomrobot.say, 'We gaan samen oefenen hoe je die kracht gebruikt.', speaking_rate=0.75,
                       sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'Jij mag kiezen welke kracht je hebt.', speaking_rate=0.75, sleep_time=0.7)
-
-        #niet in originele script, in 4-6 word kracht niet uit gekozen maar alleen gepraat over een kracht. hier nu laten kiezen is betere (personalisatie)
-        self.add_move(self.droomrobot.ask_entity_llm, 'Welke kracht kies je?', user_model_key='superkracht')
-
-        superkracht_choice = InteractionChoice('superkracht', InteractionChoiceCondition.HASVALUE)
-        superkracht_choice.add_move('success', self.droomrobot.generate_question,
-                                    lambda: self.user_model['child_age'],
-                                    "Welke superkracht zou je willen?",
-                                    lambda: self.user_model['superkracht'],
-                                    user_model_key='superkracht_follow_up_question')
-        superkracht_choice.add_move('success', self.droomrobot.ask_open,
-                                    lambda: f"{self.user_model['superkracht_follow_up_question']}",
-                                    user_model_key='superkracht_follow_up_response')
-        superkracht_choice.add_move('success', lambda: self.droomrobot.say(
-            self.droomrobot.personalize(self.user_model['superkracht_follow_up_question'], self.user_model['child_age'],
-                                        self.user_model['superkracht_follow_up_response'])))
-
-        superkracht_choice.add_move('success', self.droomrobot.say,
-                                    lambda: f'Laten we samen oefenen hoe je '
-                                            f'jouw superkracht {self.user_model['superkracht']} gebruikt.',
-                                    speaking_rate=0.75, sleep_time=0.7)
-        superkracht_choice.add_move('fail', self.droomrobot.say, 'Laten we samen oefenen hoe je die kracht gebruikt.',
-                                    speaking_rate=0.75,
-                                    sleep_time=0.7)
-        self.add_choice(superkracht_choice)
+        # self.add_move(self.droomrobot.say, 'Jij mag kiezen welke kracht je hebt.', speaking_rate=0.75, sleep_time=0.7)
+        #
+        # #niet in originele script, in 4-6 word kracht niet uit gekozen maar alleen gepraat over een kracht. hier nu laten kiezen is betere (personalisatie)
+        # self.add_move(self.droomrobot.ask_entity_llm, 'Welke kracht kies je?', user_model_key='superkracht')
+        #
+        # superkracht_choice = InteractionChoice('superkracht', InteractionChoiceCondition.HASVALUE)
+        # superkracht_choice.add_move('success', self.droomrobot.generate_question,
+        #                             lambda: self.user_model['child_age'],
+        #                             "Welke superkracht zou je willen?",
+        #                             lambda: self.user_model['superkracht'],
+        #                             user_model_key='superkracht_follow_up_question')
+        # superkracht_choice.add_move('success', self.droomrobot.ask_open,
+        #                             lambda: f"{self.user_model['superkracht_follow_up_question']}",
+        #                             user_model_key='superkracht_follow_up_response')
+        # superkracht_choice.add_move('success', lambda: self.droomrobot.say(
+        #     self.droomrobot.personalize(self.user_model['superkracht_follow_up_question'], self.user_model['child_age'],
+        #                                 self.user_model['superkracht_follow_up_response'])))
+        #
+        # superkracht_choice.add_move('success', self.droomrobot.say,
+        #                             lambda: f'Laten we samen oefenen hoe je '
+        #                                     f'jouw superkracht {self.user_model['superkracht']} gebruikt.',
+        #                             speaking_rate=0.75, sleep_time=0.7)
+        # superkracht_choice.add_move('fail', self.droomrobot.say, 'Laten we samen oefenen hoe je die kracht gebruikt.',
+        #                             speaking_rate=0.75,
+        #                             sleep_time=0.7)
+        # self.add_choice(superkracht_choice)
 
         self.add_move(self.droomrobot.say, 'Adem diep in door je neus.', speaking_rate=0.75, sleep_time=0.7)
         self.add_move(self.droomrobot.play_audio, 'resources/audio/breath_in.wav')
@@ -135,9 +135,14 @@ class Bloedafname4(DroomrobotScript):
         self.add_move(self.droomrobot.ask_entity_llm, 'Welke kleur heeft jouw lichtje?', strict=True,
                       user_model_key='kleur')
 
-        self.add_move(self.droomrobot.say, lambda: f'{self.user_model['kleur']}, wat goed.', speaking_rate=0.75,
+        kleur_choice = InteractionChoice('kleur', InteractionChoiceCondition.HASVALUE)
+        kleur_choice.add_move('success', self.droomrobot.say, lambda: f'{self.user_model['kleur']}, wat goed, die heb je goed gekozen, {self.user_model['child_name']}.', speaking_rate=0.75,
                       sleep_time=0.7)
-        self.add_move(self.droomrobot.say, lambda: f'Merk maar eens hoe zoon {self.user_model['kleur']} '
+        kleur_choice.add_move('fail', self.droomrobot.say, 'Sorry, dat verstond ik even niet goed. Weet je wat? Ik vind groen een mooie kleur. Laten we het lichtje groen maken.')
+        kleur_choice.add_move('fail', lambda: self.set_user_model_variable('kleur', 'groen'))
+        self.add_choice(kleur_choice)
+        self.add_move(self.droomrobot.get_adjective, lambda: self.user_model['kleur'], user_model_key='kleur_adjective')
+        self.add_move(self.droomrobot.say, lambda: f'Merk maar eens hoe het {self.user_model['kleur_adjective']} '
                                                    f'lichtje je heel sterk maakt, en je beschermt.',
                       speaking_rate=0.75, sleep_time=0.7)
         self.add_move(self.droomrobot.say, 'En hoe jij nu een superheld bent, met jouw superkracht, en alles aankan.',
@@ -175,6 +180,7 @@ class Bloedafname4(DroomrobotScript):
                                         self.user_model['oefenen_slecht_uitleg'])))
         oefenen_slecht_choice.add_move('fail', self.droomrobot.say, "Wat jammer zeg. Probeer ik het de volgende keer beter te doen.")
         oefenen_choice.add_choice('other', oefenen_slecht_choice)
+        oefenen_choice.add_move('fail', self.droomrobot.say, "Oke.")
         self.add_choice(oefenen_choice)
 
         self.add_move(self.droomrobot.say, 'Gelukkig wordt het steeds makkelijker als je het vaker oefent.')
@@ -269,8 +275,8 @@ class Bloedafname4(DroomrobotScript):
         ervaring_choice = InteractionChoice('interventie_ervaring', InteractionChoiceCondition.MATCHVALUE)
         ervaring_choice.add_move('positive', self.droomrobot.say, lambda: f'Wat fijn! je hebt jezelf echt goed geholpen, {self.user_model['child_name']}')
         ervaring_choice.add_move('other', self.droomrobot.say, 'Dat geeft niet.')
-        ervaring_choice.add_move('other', self.droomrobot.say, 'Je hebt goed je best gedaan.')
-        ervaring_choice.add_move('other', self.droomrobot.say, 'En kijk welke stapjes je allemaal al goed gelukt zijn.')
+        ervaring_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Je hebt goed je best gedaan.')
+        ervaring_choice.add_move(['other', 'fail'], self.droomrobot.say, 'En kijk welke stapjes je allemaal al goed gelukt zijn.')
         self.add_choice(ervaring_choice)
         self.add_move(self.droomrobot.say, lambda: f'je kon al goed een {self.user_model['kleur']} lichtje uitzoeken.')
         self.add_move(self.droomrobot.say, 'En weet je wat nu zo fijn is, hoe vaker je dit truukje oefent, hoe makkelijker het wordt.')

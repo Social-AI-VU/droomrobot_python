@@ -63,31 +63,36 @@ class InteractionChoice:
         self.moves = {}
 
     def execute(self, data: dict | str):
-        if self.condition == InteractionChoiceCondition.HASVALUE:
-            if self.target in data:
-                return self.moves['success']
-            else:
+        try:
+            if self.condition == InteractionChoiceCondition.HASVALUE:
+                if self.target in data:
+                    if isinstance(data, dict) and data[self.target] is None:
+                        return self.moves['fail']
+                    return self.moves['success']
+                else:
+                    return self.moves['fail']
+            elif self.condition == InteractionChoiceCondition.MATCHVALUE:
+                if self.target in data:
+                    if data[self.target] is not None:
+                        if data[self.target] in self.moves:
+                            return self.moves[data[self.target]]
+                        else:
+                            return self.moves['other']
                 return self.moves['fail']
-        elif self.condition == InteractionChoiceCondition.MATCHVALUE:
-            if self.target in data:
-                if data[self.target] is not None:
-                    if data[self.target] in self.moves:
-                        return self.moves[data[self.target]]
-                    else:
-                        return self.moves['other']
-            return self.moves['fail']
-        elif self.condition == InteractionChoiceCondition.PHASE:
-            if data in self.moves:
-                return self.moves[data]
+            elif self.condition == InteractionChoiceCondition.PHASE:
+                if data in self.moves:
+                    return self.moves[data]
+                else:
+                    raise InteractionChoiceNotAvailable(f"{data} is not available.")
             else:
-                raise InteractionChoiceNotAvailable(f"{data} is not available.")
-        else:
-            raise InteractionChoiceNotAvailable(f"{self.condition} is not available as a condition")
+                raise InteractionChoiceNotAvailable(f"{self.condition} is not available as a condition")
+        except KeyError as e:
+            raise InteractionChoiceNotAvailable(f"{e} is not available.")
 
-    def add_move(self, option: str, func, *args, **kwargs):
-        if option not in self.moves:
-            self.moves[option] = []
-        self.moves[option].append(InteractionMove(func, *args, **kwargs))
+    def add_move(self, option: str | list, func, *args, **kwargs):
+        options = [option] if isinstance(option, str) else option
+        for item in options:
+            self.moves.setdefault(item, []).append(InteractionMove(func, *args, **kwargs))
 
     def add_choice(self, option: str, choice: "InteractionChoice"):
         if option not in self.moves:
@@ -219,6 +224,9 @@ class DroomrobotScript:
                     sentence_idx += 1
                 else:
                     sentence_idx = 0
+
+    def set_user_model_variable(self, key: str, value):
+        self.user_model[key] = value
 
 
 

@@ -333,7 +333,7 @@ class Droomrobot:
                                f'Jouw taak is om de key entity er uit te filteren'
                                f'Bijvoorbeeld bij de vraag: "wat is je lievelingsdier?" '
                                f'en de reactie "mijn lievelingsdier is een hond" '
-                               f'filter je "hond" als key entity uit. '
+                               f'filter je alleen "hond" als key entity uit. '
                                f'{strict_instruction}'
                                # f'of bijvoorbeeld "wat is je superkracht?" en de reactie '
                                # f'is "mijn superkracht is heel hard rennen"'
