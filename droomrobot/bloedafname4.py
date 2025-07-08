@@ -35,17 +35,15 @@ class Bloedafname4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Het is een truukje dat kinderen helpt om zich fijn en'
                                            'sterk te voelen in het ziekenhuis.')
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het bij jou gaat werken.')
-        self.add_move(self.droomrobot.say, 'We gaan samen iets leuks bedenken dat jou gaat helpen.')
-        self.add_move(self.droomrobot.say, 'Nu ga ik je wat meer vertellen over het truukje wat ik kan.')
-        self.add_move(self.droomrobot.say, 'Let maar goed op, ik ga je iets bijzonders leren.')
+        self.add_move(self.droomrobot.say, 'Het werkt zo')
         self.add_move(self.droomrobot.say, 'Ik kan jou meenemen op een droomreis!')
         self.add_move(self.droomrobot.say, 'Een droomreis is een trucje waarbij je aan iets heel leuks denkt.')
         self.add_move(self.droomrobot.say, 'Dat helpt je om rustig en sterk te blijven.')
-        self.add_move(self.droomrobot.say, 'Nu mag jij kiezen waar je heen wil in gedachten.'
+        self.add_move(self.droomrobot.say, 'Nu mag jij kiezen waar je heen wil in jouw droomreis.'
                                            'Je kunt kiezen uit het strand, het bos, de speeltuin of de ruimte.')
 
         self.add_move(self.droomrobot.ask_entity,
-                      'Wat is een plek waar jij je fijn voelt?',
+                      'Wat is de plek waar jij je fijn voelt?',
                       {'droomplek': 1},
                       'droomplek',
                       'droomplek',
@@ -69,11 +67,8 @@ class Bloedafname4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'mag je je ogen dicht doen.')
         self.add_move(self.droomrobot.say, 'dan werkt het truukje het beste.', sleep_time=1)
 
-        self.add_move(self.droomrobot.say,
-                      'Stel je voor, dat je op een hele fijne mooie plek bent, in je eigen gedachten.',
-                      speaking_rate=0.75, sleep_time=0.7)
-        self.add_move(self.droomrobot.say, lambda: f'Misschien is het weer {self.user_model['droomplek_lidwoord']} '
-                                                   f'{self.user_model['droomplek']}, of een nieuwe droomwereld',
+        self.add_move(self.droomrobot.say, lambda: f'Stel je voor dat je bij {self.user_model['droomplek_lidwoord']} '
+                                                   f'{self.user_model['droomplek']} bent.',
                       speaking_rate=0.75, sleep_time=0.7)
         self.add_move(self.droomrobot.say, 'Kijk maar eens om je heen, wat je allemaal op die mooie plek ziet.',
                       speaking_rate=0.75, sleep_time=0.7)
@@ -85,7 +80,7 @@ class Bloedafname4(DroomrobotScript):
                       sleep_time=0.7)
         self.add_move(self.droomrobot.say, 'En merk maar hoe fijn jij je op deze plek voelt.', speaking_rate=0.75,
                       sleep_time=0.7)
-        self.add_move(self.droomrobot.say,'Nu je zo fijn op je fijne plek bent, kunnen we je ook wat superkrachten gaan geven.',
+        self.add_move(self.droomrobot.say,lambda: f'Nu je zo fijn bij {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} bent, kunnen we je ook wat superkrachten gaan geven.',
                             speaking_rate=0.75, sleep_time=0.7)
         self.add_move(self.droomrobot.say, 'We gaan samen oefenen hoe je die kracht gebruikt.', speaking_rate=0.75,
                       sleep_time=0.7)
@@ -154,7 +149,7 @@ class Bloedafname4(DroomrobotScript):
                                            ' lichtje je zometeen gaat helpen.', speaking_rate=0.75, sleep_time=0.7)
         self.add_move(self.droomrobot.say, 'Als je genoeg geoefend hebt, mag je je ogen weer '
                                            'lekker open doen, en zeggen, het lichtje gaat mij helpen.',
-                      speaking_rate=0.75, sleep_time=1.0)
+                      speaking_rate=0.75, sleep_time=3.0)
 
         self.add_move(self.droomrobot.ask_yesno, 'Ging het oefenen goed?', user_model_key='oefenen_goed')
         oefenen_choice = InteractionChoice('oefenen_goed', InteractionChoiceCondition.MATCHVALUE)
@@ -207,7 +202,7 @@ class Bloedafname4(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.EXPRESSION,
                              "emo_007", run_async=True)
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Wat fijn dat ik je weer mag helpen, we gaan weer samen een droomreis maken.',)
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, lambda: f'Wat fijn dat ik je weer mag helpen, we gaan weer samen een droomreis naar {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} maken.',)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter en makkelijker gaat.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,'Je mag weer goed gaan zitten, en je ogen dicht doen, zodat deze droomreis nog beter voor jou werkt.', sleep_time=1.0)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Luister maar weer goed naar mijn stem, en merk maar dat andere geluiden in het ziekenhuis veel stiller worden.', speaking_rate=0.75, sleep_time=0.7)
@@ -216,8 +211,6 @@ class Bloedafname4(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.play_audio, 'resources/audio/breath_in.wav')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'en rustig uit.', speaking_rate=0.75, sleep_time=0.7)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.play_audio, 'resources/audio/breath_out.wav')
-
-        #TODO: dit deel boven personaliseren op leeftijd? 4-6
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, lambda:f'Stel je maar voor dat je bij {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} bent.', speaking_rate=0.75, sleep_time=0.7)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Kijk maar weer naar alle mooie kleuren die om je heen zijn, en voel hoe fijn het is om daar te zijn.', speaking_rate=0.75, sleep_time=0.7)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Luister maar naar alle fijne geluiden op die plek.', speaking_rate=0.75, sleep_time=0.7)
@@ -236,10 +229,10 @@ class Bloedafname4(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio, 'resources/audio/breath_in.wav')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'en blaas rustig uit via je mond.', speaking_rate=0.75, sleep_time=0.7)
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio, 'resources/audio/breath_out.wav')
-        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, lambda: f'Je {self.user_model['kleur']} lichtje verschijnt weer op je arm, in precies de kleur die je nodig hebt.', speaking_rate=0.75, sleep_time=0.7)
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, lambda: f'Je {self.user_model['kleur_adjective']} lichtje verschijnt weer op je arm.', speaking_rate=0.75, sleep_time=0.7)
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Zie het lichtje steeds sterker worden.', speaking_rate=0.75, sleep_time=0.7)
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Zo word jij weer een superheld, en kun je jezelf helpen.', speaking_rate=0.75, sleep_time=0.7)
-        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, lambda: f'En als je het nodig hebt, stel je voor dat je {self.user_model['kleur']} lichtje nog helderder gaat schijnen.', speaking_rate=0.75, sleep_time=0.7)
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, lambda: f'En als je het nodig hebt, stel je voor dat je {self.user_model['kleur_adjective']} lichtje nog helderder gaat schijnen.', speaking_rate=0.75, sleep_time=0.7)
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Dat betekent dat jouw kracht helemaal opgeladen is.', speaking_rate=0.75, sleep_time=0.7)
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'je kunt het lichtje nog sterker maken door met je tenen te wiebelen.', speaking_rate=0.75, sleep_time=0.7)
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Het geeft een zachte, veilige gloed om je te helpen.', speaking_rate=0.75, sleep_time=0.7)
@@ -249,7 +242,7 @@ class Bloedafname4(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'en blaas uit.', speaking_rate=0.75, sleep_time=0.7)
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,'resources/audio/breath_out.wav')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,'Merk maar hoe goed jij jezelf kunt helpen, je bent echt een superheld.', speaking_rate=0.75, sleep_time=0.7)
-        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, lambda: f'En nu je {self.user_model['kleur']} lichtje goed aan staat, kan jij weer verder spelen op je fijne plek.', speaking_rate=0.75, sleep_time=0.7)
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, lambda: f'En nu je {self.user_model['kleur_adjective']} lichtje goed aan staat, kan jij weer verder spelen bij {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']}.', speaking_rate=0.75, sleep_time=0.7)
         sentences = [
             "Je doet het fantastisch! Wat een geweldige kleur heeft jouw lichtje nu.",
             "Adem rustig door, je bent helemaal in controle. Goed bezig!",
@@ -281,7 +274,7 @@ class Bloedafname4(DroomrobotScript):
         self.add_move(self.droomrobot.say, lambda: f'je kon al goed een {self.user_model['kleur']} lichtje uitzoeken.')
         self.add_move(self.droomrobot.say, 'En weet je wat nu zo fijn is, hoe vaker je dit truukje oefent, hoe makkelijker het wordt.')
         self.add_move(self.droomrobot.say, 'Je kunt dit ook zonder mij oefenen.')
-        self.add_move(self.droomrobot.say, lambda: f'Je hoeft alleen maar je ogen dicht te doen en aan je {self.user_model['kleur']} lichtje te denken.')
+        self.add_move(self.droomrobot.say, lambda: f'Je hoeft alleen maar je ogen dicht te doen en aan je {self.user_model['kleur_adjective']} lichtje te denken.')
         self.add_move(self.droomrobot.say, 'Dan word jij weer een superheld met extra kracht.')
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed je het de volgende keer gaat doen.')
         self.add_move(self.droomrobot.say, 'Je doet het op jouw eigen manier, en dat is precies goed.')
