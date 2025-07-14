@@ -21,11 +21,9 @@ class Sonde4(DroomrobotScript):
             print("Interaction part not recognized")
 
     def _introduction(self):
-        self.add_move(self.droomrobot.animate, AnimationType.ACTION, "009")
         self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand up
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
-        # INTRODUCTIE
-        self.add_move(self.droomrobot.say, f'Hallo, ik ben de droomrobot!', animate=False)
+        self.add_move(self.droomrobot.say, 'Hallo, ik ben de droomrobot!', animate=False)
         self.add_move(self.droomrobot.say, 'Wat fijn dat ik je mag helpen vandaag.')
         self.add_move(self.droomrobot.ask_fake, 'Hoe heet jij?', 3)
         self.add_move(self.droomrobot.say, lambda: f'{self.user_model['child_name']}, wat leuk je te ontmoeten.')
@@ -86,7 +84,10 @@ class Sonde4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Als je klaar bent met oefenen, mag je je ogen weer open doen.')
         self.add_move(self.droomrobot.say, lambda: f'Ik vind {self.user_model['kleur']} een hele mooie kleur, die heb je goed gekozen.')
 
-        self.add_move(self.droomrobot.say, lambda: f'Als je straks aan de beurt bent ga ik je vragen om in gedachten terug te gaan naar {self.user_model['droomplek_locatie']}.')
+        self.add_move(self.droomrobot.say, lambda: f'Als je straks aan de beurt bent ga ik je vragen om in fantasie terug te gaan naar {self.user_model['droomplek_locatie']}.')
+        self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)  ## Smile
+        self.add_move(self.droomrobot.say,  f'Tot straks, {self.user_model['child_name']}.')
 
     def _intervention(self):
         self.phases = [
@@ -200,6 +201,7 @@ class Sonde4(DroomrobotScript):
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'De verpleegkundige vertelt je wanneer je bij de schat bent.')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Je zwemt soepel verder.')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Kijk maar of je al iets van de schat kunt zien!')
+        phase_moves.add_choice(InterventionPhase.PROCEDURE.name, intervention_proc_choice)
 
         sentences = [
             "Wat doe jij dit goed! Voel maar hoe sterk en rustig je bent.",
@@ -212,7 +214,6 @@ class Sonde4(DroomrobotScript):
             "Wist je dat je gedachten je kunnen helpen? Stel je maar voor dat je nog lichter en sterker wordt."
         ]
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.repeat_sentences, sentences)
-        phase_moves.add_choice(InterventionPhase.PROCEDURE.name, intervention_proc_choice)
         return phase_moves
 
     def _intervention_wrapup(self, phase_moves: InteractionChoice) -> InteractionChoice:
@@ -255,6 +256,9 @@ class Sonde4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Je kunt dit ook zonder mij oefenen.')
         self.add_move(self.droomrobot.say, 'Je hoeft alleen maar je ogen dicht te doen en terug te denken aan jouw plek in gedachten.')
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed je het de volgende keer gaat doen. Je doet het op jouw eigen manier, en dat is precies goed.')
+        self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
+        self.add_move(self.droomrobot.say, f'Doei, {self.user_model['child_name']}.', animated=False)
 
     def _build_interaction_choice_droomplek(self) -> InteractionChoice:
         interaction_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
@@ -273,8 +277,10 @@ class Sonde4(DroomrobotScript):
                                         self.user_model['droomplek_motivatie'])))
         motivation_choice.add_move('fail', self.droomrobot.say, "Oke, super.")
         interaction_choice.add_choice('raceauto', motivation_choice)
-        interaction_choice.add_move('raceauto', self.droomrobot.say, 'Weet je wat mij helpt? Ik stem me voor dat de sonde een raceauto is die snel en soepel door een tunnel rijdt!')
         interaction_choice.add_move('raceauto', self.set_user_model_variable, 'droomplek_locatie', 'de racebaan')
+
+        interaction_choice.add_move('raceauto', self.droomrobot.say, 'Weet je wat mij helpt? Ik stem me voor dat de sonde een raceauto is die snel en soepel door een tunnel rijdt!')
+
 
 
         # Waterglijbaan
@@ -291,9 +297,11 @@ class Sonde4(DroomrobotScript):
                                         self.user_model['droomplek_motivatie'])))
         motivation_choice.add_move('fail', self.droomrobot.say, "Oke, super.")
         interaction_choice.add_choice('waterglijbaan', motivation_choice)
+        interaction_choice.add_move('waterglijbaan', self.set_user_model_variable, 'droomplek_locatie', 'het waterpretpark')
+
         interaction_choice.add_move('waterglijbaan', self.droomrobot.say,
                                     'Wat mij helpt, is denken dat de sonde net als een waterglijbaan is: hij glijdt zo naar beneden, makkelijk en snel!')
-        interaction_choice.add_move('waterglijbaan', self.set_user_model_variable, 'droomplek_locatie', 'het waterpretpark')
+
 
         # Dolfijn
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Een dolfijn, die vind ik zo leuk!')
@@ -309,9 +317,11 @@ class Sonde4(DroomrobotScript):
                                         self.user_model['droomplek_motivatie'])))
         motivation_choice.add_move('fail', self.droomrobot.say, "Oke, super.")
         interaction_choice.add_choice('dolfijn', motivation_choice)
+        interaction_choice.add_move('dolfijn', self.set_user_model_variable, 'droomplek_locatie', 'de zee')
+
         interaction_choice.add_move('dolfijn', self.droomrobot.say,
                                     'Ik stel me voor dat de sonde een dolfijn is die makkelijk door het water zwemt, op zoek naar een schat!')
-        interaction_choice.add_move('dolfijn', self.set_user_model_variable, 'droomplek_locatie', 'de zee')
+
 
         # Fail
         interaction_choice.add_move('waterglijbaan', self.droomrobot.say, 'Wauw, een waterglijbaan!')
@@ -339,7 +349,7 @@ class Sonde4(DroomrobotScript):
         interaction_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
 
         # Raceauto
-        interaction_choice.add_move('raceauto', self.droomrobot.say,'Terwijl je zo rustig ademt, stel je je voor dat je op een racebaan bent.')
+        interaction_choice.add_move('raceauto', self.droomrobot.say, 'Terwijl je zo rustig ademt, stel je je voor dat je op een racebaan bent.')
         interaction_choice.add_move('raceauto', self.droomrobot.say, 'En op die plek staat een mooie raceauto, speciaal voor jou!')
         interaction_choice.add_move('raceauto', self.droomrobot.say, 'Daar staat een supermooie raceauto, helemaal voor jou!', sleep_time=1)
         interaction_choice.add_move('raceauto', self.droomrobot.ask_entity_llm, 'Kijk maar goed, welke kleur heeft jouw raceauto?', strict=True, user_model_key='kleur')
@@ -381,10 +391,8 @@ class Sonde4(DroomrobotScript):
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Welke kleuren zie je in het water?', sleep_time=2)
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Voelt het water warm en zacht, of juist een beetje fris en koel.')
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Je voelt je licht, alsof je zweeft in het water.')
-        interaction_choice.add_move('dolfijn', self.droomrobot.ask_entity_llm,
-                                    'Welke kleur dolfijn ben jij?', strict=True, user_model_key='kleur')
-        interaction_choice.add_move('dolfijn', self.droomrobot.get_adjective,
-                                    lambda: self.user_model['kleur'], user_model_key='kleur_adjective')
+        interaction_choice.add_move('dolfijn', self.droomrobot.ask_entity_llm, 'Welke kleur dolfijn ben jij?', strict=True, user_model_key='kleur')
+        interaction_choice.add_move('dolfijn', self.droomrobot.get_adjective, lambda: self.user_model['kleur'], user_model_key='kleur_adjective')
         interaction_choice.add_move('dolfijn', self.droomrobot.say, lambda: f'Wauw, een {self.user_model['kleur_adjective']} dolfijn! Die zijn extra krachtig.')
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Kijk maar eens goed, je ziet misschien zonnestralen door het water schijnen.', sleep_time=1)
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Om je heen zwemmen vrolijke visjes.')
