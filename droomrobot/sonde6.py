@@ -3,27 +3,28 @@ from time import sleep
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
 from core import AnimationType
-from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession
+from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InterventionPhase, \
+    InteractionChoice, InteractionChoiceCondition
 
 
 class Sonde6(DroomrobotScript):
 
     def __init__(self, *args, **kwargs):
-        super(Sonde6, self).__init__(*args, **kwargs)
-        self.script_id = InteractionContext.SONDE
+        super(Sonde6, self).__init__(*args, **kwargs, interaction_context=InteractionContext.BLOEDAFNAME)
 
-    def run(self, participant_id: str, session: InteractionSession, user_model: dict):
-        super().run(participant_id, session, user_model)
+    def prepare(self, participant_id: str, session: InteractionSession, user_model_addendum: dict):
+        super().prepare(participant_id, session, user_model_addendum)
 
         if session == InteractionSession.INTRODUCTION:
-            self.introductie()
+            self._introduction()
         elif session == InteractionSession.INTERVENTION:
-            self.interventie()
+            self._intervention()
+        elif session == InteractionSession.GOODBYE:
+            self._goodbye()
         else:
             print("Interaction part not recognized")
-        self.droomrobot.stop_logging()
 
-    def introductie(self):
+    def _introduction(self):
         self.droomrobot.animate(AnimationType.ACTION, "009")
         self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand up
         self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile        
@@ -124,9 +125,19 @@ class Sonde6(DroomrobotScript):
                 self.droomrobot.say('Als je zometeen aan de beurt bent, ga ik je helpen om weer naar het waterpretpark te gaan in gedachten.')
             elif 'dolfijn' in self.user_model['droomplek']:
                 self.droomrobot.say('Als je zometeen aan de beurt bent, ga ik je helpen om weer naar de zee te gaan in gedachten.')
-        
-        ## INTERVENTIE
-    def interventie(self):
+
+    def _intervention(self):
+        self.phases = [
+            InterventionPhase.PREPARATION.name,
+            InterventionPhase.PROCEDURE.name,
+            InterventionPhase.WRAPUP.name
+        ]
+        self.phase_moves_build = InteractionChoice('Sonde6', InteractionChoiceCondition.PHASE)
+        self.phase_moves_build = self._intervention_preparation(self.phase_moves_build)
+        self.phase_moves_build = self._intervention_procedure(self.phase_moves_build)
+        self.phase_moves = self._intervention_wrapup(self.phase_moves_build)
+
+    def _intervention_preparation(self):
         self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
         self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.droomrobot.say('Wat fijn dat ik je weer mag helpen, we gaan weer samen een droomreis maken.')
@@ -143,16 +154,10 @@ class Sonde6(DroomrobotScript):
         self.droomrobot.say('en rustig uit.', speaking_rate=0.9)
         self.droomrobot.play_audio('resources/audio/breath_out.wav')
 
-        if self.user_model['droomplek']:
-            if 'raceauto' in self.user_model['droomplek']:
-                self.raceauto_interventie()
-            elif 'waterglijbaan' in self.user_model['droomplek']:
-                self.waterglijbaan_interventie()
-            elif 'dolfijn' in self.user_model['droomplek']:
-                self.dolfijn_interventie()
+
         
         ## AFSCHEID/OUTRO
-    def afscheid(self):
+    def _goodbye(self):
         self.droomrobot.say('Wat heb je jezelf goed geholpen om alles makkelijker te maken.')
         ging_goed = self.droomrobot.ask_opinion_llm("Hoe goed is het gegaan?")
         if 'positive' in ging_goed:

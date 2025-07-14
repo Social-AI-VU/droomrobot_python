@@ -74,6 +74,29 @@ class AnimationType(Enum):
     EXPRESSION = 2
 
 
+class InteractionConf:
+
+    def __init__(self, speaking_rate=None, sleep_time=0, animated=False, max_attempts=2):
+        self.speaking_rate = speaking_rate
+        self.sleep_time = sleep_time
+        self.animated = animated
+        self.max_attempts = max_attempts
+
+    @staticmethod
+    def apply_config_defaults(config_attr, param_names):
+        def decorator(func):
+            def wrapper(self, *args, **kwargs):
+                config = getattr(self, config_attr)
+                for name in param_names:
+                    if kwargs.get(name) is None:
+                        kwargs[name] = getattr(config, name)
+                return func(self, *args, **kwargs)
+
+            return wrapper
+
+        return decorator
+
+
 class Droomrobot:
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
                  google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
@@ -81,10 +104,13 @@ class Droomrobot:
                  openai_key_path=None, default_speaking_rate=1.0,
                  computer_test_mode=False):
 
-        print("\n SETTING UP LOGGING")
+        print("\n SETTING UP BASIC PROCESSING")
         # Logging
         self._log_queue = None
         self._log_thread = None
+
+        # Interaction configuration
+        self.interaction_conf = InteractionConf()
         print('complete')
 
         print("\n SETTING UP OPENAI")
@@ -198,7 +224,8 @@ class Droomrobot:
             timestamp = strftime("%Y-%m-%d %H:%M:%S")
             self._log_queue.put(f"[{timestamp}] recognition result: {recognition_result}")
 
-    def say(self, text, speaking_rate=None, sleep_time=0, animated=False):
+    @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'sleep_time', 'animated'])
+    def say(self, text, speaking_rate=None, sleep_time=None, animated=None):
         if speaking_rate:
             reply = self.tts.request(GetSpeechRequest(text=text,
                                                       voice_name=self.google_tts_voice_name,
@@ -213,7 +240,7 @@ class Droomrobot:
         if animated:
             self.animate(AnimationType.ACTION, self._random_speaking_act(), run_async=True)
         self.log_utterance(speaker='robot', text=text)
-        if sleep_time > 0:
+        if sleep_time and sleep_time > 0:
             sleep(sleep_time)
 
     def play_audio(self, audio_file):
@@ -230,7 +257,8 @@ class Droomrobot:
             self.speaker.request(AudioRequest(wf.readframes(n_frames), framerate))
             self.log_utterance(speaker='robot', text=f'plays {audio_file}')
 
-    def ask_yesno(self, question, max_attempts=2, speaking_rate=None, animated=False):
+    @InteractionConf.apply_config_defaults('interaction_conf', ['max_attempts', 'speaking_rate', 'animated'])
+    def ask_yesno(self, question, max_attempts=None, speaking_rate=None, animated=None):
         attempts = 0
         while attempts < max_attempts:
             # ask question
@@ -257,7 +285,8 @@ class Droomrobot:
         self.log_recognition_result(f'context: answer_yesno, intent recognition failed')
         return None
 
-    def ask_entity(self, question, context, target_intent, target_entity, max_attempts=2, speaking_rate=None, animated=False):
+    @InteractionConf.apply_config_defaults('interaction_conf', ['max_attempts', 'speaking_rate', 'animated'])
+    def ask_entity(self, question, context, target_intent, target_entity, max_attempts=None, speaking_rate=None, animated=None):
         attempts = 0
 
         while attempts < max_attempts:
@@ -284,7 +313,8 @@ class Droomrobot:
         self.log_recognition_result(f'context: {context}, intent recognition failed')
         return None
 
-    def ask_open(self, question, max_attempts=2, speaking_rate=None, animated=False):
+    @InteractionConf.apply_config_defaults('interaction_conf', ['max_attempts', 'speaking_rate', 'animated'])
+    def ask_open(self, question, max_attempts=None, speaking_rate=None, animated=None):
         attempts = 0
 
         while attempts < max_attempts:
@@ -304,13 +334,15 @@ class Droomrobot:
             attempts += 1
         return None
 
-    def ask_fake(self, question, duration, speaking_rate=None, animated=False):
+    @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'animated'])
+    def ask_fake(self, question, duration, speaking_rate=None, animated=None):
         self.say(question, speaking_rate=speaking_rate, animated=animated)
         self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
         sleep(duration)
         self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
-    def ask_entity_llm(self, question, strict=False, max_attempts=2, speaking_rate=None, animated=False):
+    @InteractionConf.apply_config_defaults('interaction_conf', ['max_attempts', 'speaking_rate', 'animated'])
+    def ask_entity_llm(self, question, strict=False, max_attempts=None, speaking_rate=None, animated=None):
         attempts = 0
 
         while attempts < max_attempts:
@@ -354,7 +386,8 @@ class Droomrobot:
         self.log_recognition_result('llm extracted entity: None')
         return None
 
-    def ask_opinion_llm(self, question, max_attempts=2, speaking_rate=None, animated=False):
+    @InteractionConf.apply_config_defaults('interaction_conf', ['max_attempts', 'speaking_rate', 'animated'])
+    def ask_opinion_llm(self, question, max_attempts=None, speaking_rate=None, animated=None):
         attempts = 0
 
         while attempts < max_attempts:

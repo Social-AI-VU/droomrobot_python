@@ -405,5 +405,8 @@ class Bloedafname4(DroomrobotScript):
                                         self.user_model['droomplek_motivatie'])))
         motivation_choice.add_move('fail', self.droomrobot.say, "Oke, super.", animated=True)
         interaction_choice.add_choice('fail', motivation_choice)
+        interaction_choice.add_move('fail', self.set_user_model_variable, 'droomplek', 'strand')
+        interaction_choice.add_move('fail', self.droomrobot.get_article, lambda: self.user_model['droomplek'],
+                                    user_model_key='droomplek_lidwoord')
 
         return interaction_choice
