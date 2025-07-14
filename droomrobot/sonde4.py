@@ -1,5 +1,5 @@
 
-from core import AnimationType
+from core import AnimationType, InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InteractionChoice, \
     InteractionChoiceCondition, InterventionPhase
 
@@ -67,6 +67,9 @@ class Sonde4(DroomrobotScript):
         zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed zit.')
         self.add_choice(zit_goed_choice)
 
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5)
+        self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
+
         self.add_move(self.droomrobot.say, 'Leg je nu je handen op je buik en adem rustig in.')
         self.add_move(self.droomrobot.play_audio, 'resources/audio/breath_in.wav')
         self.add_move(self.droomrobot.say, 'En adem rustig uit.')
@@ -74,6 +77,8 @@ class Sonde4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Voel maar hoe je buik rustig op en neer beweegt.')
 
         self.add_choice(self._build_interaction_choice_oefenen())
+
+        self.add_move(self.droomrobot.reset_interaction_conf)
 
         self.add_move(self.droomrobot.say, 'En weet je wat fijn is? Als je dit rustige gevoel later weer nodig hebt, kun je er altijd naar terug.')
         self.add_move(self.droomrobot.say, 'Je hoeft alleen maar rustig diep in en uit te ademen, en daar ben je weer.')
@@ -98,13 +103,14 @@ class Sonde4(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Wat fijn dat ik je mag helpen! We gaan samen weer op een mooie droomreis.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, self.droomrobot.say, 'Omdat je net al zo goed hebt geoefend, zal het nu nog makkelijker gaan.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, self.droomrobot.say, 'Ga maar lekker zitten zoals jij dat fijn vindt.', sleep_time=1)
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5)
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, self.droomrobot.say, 'Sluit je ogen maar, dan werkt de droomreis het allerbeste.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, self.droomrobot.say, 'Luister goed naar mijn stem. Alle andere geluiden in het ziekenhuis worden steeds zachter..')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, self.droomrobot.say, 'Leg je handen op je buik en adem rustig in.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, self.droomrobot.play_audio, 'resources/audio/breath_in.wav')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, self.droomrobot.say, 'en weer rustig uit.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, self.droomrobot.play_audio, 'resources/audio/breath_out.wav')
-
         intervention_prep_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
 
         # Raceauto
@@ -143,13 +149,11 @@ class Sonde4(DroomrobotScript):
         intervention_prep_choice.add_move('dolfijn', self.droomrobot.say, 'Adem maar rustig in, en voel hoe de frisse zeelucht je energie geeft.')
         intervention_prep_choice.add_move('dolfijn', self.droomrobot.say, 'En als je uitademt, laat je alle spanningen los.')
         intervention_prep_choice.add_move('dolfijn', self.droomrobot.say, 'Heel ontspannen, net als een dolfijn, die rustig zwemt.')
-
         phase_moves.add_choice(InterventionPhase.PREPARATION.name, intervention_prep_choice)
 
         return phase_moves
 
     def _intervention_procedure(self, phase_moves: InteractionChoice) -> InteractionChoice:
-
         intervention_proc_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
         # Raceauto
         intervention_proc_choice.add_move('raceauto', self.droomrobot.say, 'En daar, voor je, een tunnel! Een hele speciale tunnel, precies groot genoeg voor jouw auto.')
@@ -195,10 +199,11 @@ class Sonde4(DroomrobotScript):
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Je zwemt soepel verder.')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Kijk maar of je al iets van de schat kunt zien!')
 
-        self.phase_moves.add_choice(InterventionPhase.PROCEDURE.name, intervention_proc_choice)
+        phase_moves.add_choice(InterventionPhase.PROCEDURE.name, intervention_proc_choice)
         return phase_moves
 
     def _intervention_wrapup(self, phase_moves: InteractionChoice) -> InteractionChoice:
+        phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.reset_interaction_conf)
         intervention_wrapup_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
         # Raceauto
         intervention_wrapup_choice.add_move('raceauto', self.droomrobot.say, 'Wow! Jij bent als een supersnelle coureur door de tunnel gereden!')
@@ -212,7 +217,7 @@ class Sonde4(DroomrobotScript):
         intervention_wrapup_choice.add_move('raceauto', self.droomrobot.say, 'Nu mag je je ogen weer open doen.')
 
         # Waterglijbaan
-        intervention_wrapup_choice.add_move('waterglijbaan', self.droomrobot.play_audio, 'resources/sounds/splash.wav')
+        intervention_wrapup_choice.add_move('waterglijbaan', self.droomrobot.play_audio, 'resources/audio/splash.wav')
         intervention_wrapup_choice.add_move('waterglijbaan', self.droomrobot.say, 'Daar plons je in het zwembad, precies zoals je wilde!')
         intervention_wrapup_choice.add_move('waterglijbaan', self.droomrobot.say, 'Wat een supercoole rit was dat!')
         intervention_wrapup_choice.add_move('waterglijbaan', self.droomrobot.say, 'Jij bent helemaal beneden gekomen, goed gedaan!')
@@ -228,7 +233,7 @@ class Sonde4(DroomrobotScript):
         intervention_wrapup_choice.add_move('dolfijn', self.droomrobot.say, 'Wat heb jij dit supergoed gedaan! Jij bent net een echte slimme en sterke dolfijn!')
         intervention_wrapup_choice.add_move('dolfijn', self.droomrobot.say, 'Zwem maar rustig omhoog en als je klaar bent, mag je je ogen weer open doen.')
 
-        self.phase_moves.add_choice(InterventionPhase.WRAPUP.name, intervention_wrapup_choice)
+        phase_moves.add_choice(InterventionPhase.WRAPUP.name, intervention_wrapup_choice)
         return phase_moves
 
     def _goodbye(self):

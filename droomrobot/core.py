@@ -76,7 +76,7 @@ class AnimationType(Enum):
 
 class InteractionConf:
 
-    def __init__(self, speaking_rate=None, sleep_time=0, animated=False, max_attempts=2):
+    def __init__(self, speaking_rate=None, sleep_time=0, animated=True, max_attempts=2):
         self.speaking_rate = speaking_rate
         self.sleep_time = sleep_time
         self.animated = animated
@@ -541,6 +541,12 @@ class Droomrobot:
             json.dump(user_model, f, indent=4)
             f.flush()  # flush internal buffers
             fsync(f.fileno())  # flush OS buffers to disk
+
+    def set_interaction_conf(self, interaction_conf: InteractionConf):
+        self.interaction_conf = interaction_conf
+
+    def reset_interaction_conf(self):
+        self.interaction_conf = InteractionConf()
 
     @staticmethod
     def _random_speaking_act():
