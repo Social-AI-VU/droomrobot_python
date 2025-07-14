@@ -99,9 +99,9 @@ class InteractionConf:
 
 class Droomrobot:
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
-                 google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
-                 google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE",
-                 openai_key_path=None, default_speaking_rate=1.0,
+                 google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl", dialogflow_timeout=None,
+                 google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE", default_speaking_rate=1.0,
+                 openai_key_path=None,
                  computer_test_mode=False):
 
         print("\n SETTING UP BASIC PROCESSING")
@@ -129,7 +129,9 @@ class Droomrobot:
         print("\n SETTING UP DIALOGFLOW")
         # set up the config for dialogflow
         dialogflow_conf = DialogflowConf(keyfile_json=json.load(open(google_keyfile_path)),
-                                         sample_rate_hertz=sample_rate_dialogflow_hertz, language=dialogflow_language)
+                                         sample_rate_hertz=sample_rate_dialogflow_hertz,
+                                         language=dialogflow_language,
+                                         timeout=dialogflow_timeout)
 
         # initiate Dialogflow object
         self.dialogflow = Dialogflow(ip="localhost", conf=dialogflow_conf)

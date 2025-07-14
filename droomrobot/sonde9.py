@@ -1,7 +1,3 @@
-from time import sleep
-
-from sic_framework.services.openai_gpt.gpt import GPTRequest
-
 from core import AnimationType, InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InterventionPhase, \
     InteractionChoice, InteractionChoiceCondition
@@ -33,28 +29,17 @@ class Sonde9(DroomrobotScript):
         self.add_move(self.droomrobot.say, lambda: f'{self.user_model['child_name']}, wat een leuke naam.')
         self.add_move(self.droomrobot.ask_fake, 'En hoe oud ben je?', 3)
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)  ## Smile
-        self.add_move(self.droomrobot.say,
-            lambda: f'{str(self.user_model['child_age'])} jaar. Oh wat goed, dan kan ik je een truukje leren om alles in het ziekenhuis makkelijker te maken.')
-        self.add_move(self.droomrobot.say,  'Dat truukje werkt bij veel kinderen heel goed.')
-        self.add_move(self.droomrobot.say,  'Ik ben benieuwd hoe goed het bij jou gaat werken.')
-        self.add_move(self.droomrobot.say,
-            'Jij kunt namelijk heel makkelijk jezelf helpen in het ziekenhuis door je lichaam en hoofd te ontspannen.')
-        self.add_move(self.droomrobot.say,  'Ik ga je wat meer vertellen over het truukje wat ik kan.')
-        self.add_move(self.droomrobot.say,  'Let maar goed op, dan kan jij het ook leren.')
-        self.add_move(self.droomrobot.say,
-            'We gaan samen een reis maken in je fantasie wat ervoor zorgt dat jij je fijn, rustig en sterk voelt.')
-        self.add_move(self.droomrobot.say,  'Met je fantasie kun je aan iets fijns denken terwijl je hier bent, als een soort droom.')
-        self.add_move(self.droomrobot.say,  'Ik zal het trucje even voor doen.')
-        self.add_move(self.droomrobot.say,  'Ik ga in mijn droomreis het liefst in gedachten naar de wolken.')
-        self.add_move(self.droomrobot.say,
-            'En wat nu zo handig is aan dit truukje is dat het je ook kan helpen met het inbrengen van de sonde.')
-
-        self.add_move(self.droomrobot.say,
-            'Door ergens anders aan te denken, zoals iets dat jij leuk vind, richt je je aandacht daarop in plaats van de sonde.')
-        self.add_move(self.droomrobot.say,  'Dat maakt het vaker minder ongemakkelijk, en kan het fijner laten voelen.')
-        self.add_move(self.droomrobot.say,
-           'Wat goed helpt is om je voor te stellen dat je in een raceauto door een tunnel scheurt, of van een waterglijbaan gaat, of als dolfijn door het water beweegt.')
-        self.add_move(self.droomrobot.say,  'Welke lijkt jij het leukste?')
+        self.add_move(self.droomrobot.say, lambda: f'{str(self.user_model['child_age'])} jaar. Oh wat goed, dan kan ik je een truukje leren om alles in het ziekenhuis makkelijker te maken.')
+        self.add_move(self.droomrobot.say, 'Dat truukje werkt bij veel kinderen heel goed.')
+        self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het bij jou gaat werken.')
+        self.add_move(self.droomrobot.say, 'Jij kunt namelijk heel makkelijk jezelf helpen in het ziekenhuis door je lichaam en hoofd te ontspannen.')
+        self.add_move(self.droomrobot.say, 'We gaan samen een reis maken in je fantasie wat ervoor zorgt dat jij je fijn, rustig en sterk voelt.')
+        self.add_move(self.droomrobot.say, 'Met je fantasie kun je aan iets fijns denken terwijl je hier bent, als een soort droom.')
+        self.add_move(self.droomrobot.say, 'En wat nu zo handig is aan dit truukje is dat het je ook kan helpen met het inbrengen van de sonde.')
+        self.add_move(self.droomrobot.say, 'Door ergens anders aan te denken, zoals iets dat jij leuk vind, richt je je aandacht daarop in plaats van de sonde.')
+        self.add_move(self.droomrobot.say, 'Dat maakt het vaker minder ongemakkelijk, en kan het fijner laten voelen.')
+        self.add_move(self.droomrobot.say, 'Wat goed helpt is om je voor te stellen dat je in een raceauto door een tunnel scheurt, of van een waterglijbaan gaat, of als dolfijn door het water beweegt.')
+        self.add_move(self.droomrobot.say, 'Welke lijkt jij het leukste?')
 
         self.add_move(self.droomrobot.ask_entity, 'De waterglijbaan, de race-auto of dolfijn?',
                       {'droomplek': 1},
@@ -342,7 +327,7 @@ class Sonde9(DroomrobotScript):
                                     'Wat mij altijd goed helpt is om in gedachten te denken dat de sonde door een waterglijbaan gaat, lekker snel en makkelijk.')
 
         # Waterglijbaan
-        interaction_choice.add_move('waterglijbaan', self.droomrobot.say, 'Wat leuk, het waterpretpark!')
+        interaction_choice.add_move('waterglijbaan', self.droomrobot.say, 'Wat leuk, de waterglijbaan!')
         interaction_choice.add_move('waterglijbaan', self.droomrobot.say,
                                     'Gelukkig kan ik tegen water zodat ik met je mee kan gaan.')
         interaction_choice.add_move('waterglijbaan', self.droomrobot.ask_open,
@@ -382,10 +367,11 @@ class Sonde9(DroomrobotScript):
                                     'Wat mij altijd goed helpt is om in gedachten te denken dat de sonde een dolfijn is die heel makkelijk en snel door het water beweegt, op zoek naar een schat.')
 
         # Fail
-        interaction_choice.add_move('waterglijbaan', self.droomrobot.say, 'Wauw, een waterglijbaan!')
-        interaction_choice.add_move('waterglijbaan', self.droomrobot.say, 'Ik hou van spetteren in het water.')
+        interaction_choice.add_move('fail', self.droomrobot.say, 'Sorry dat verstond ik even niet.')
+        interaction_choice.add_move('fail', self.droomrobot.say, 'Weet je wat leuk is. De waterglijbaan.')
+        interaction_choice.add_move('fail', self.droomrobot.say, 'Lekker spetteren in het water.')
 
-        interaction_choice.add_move('waterglijbaan', self.droomrobot.ask_open,
+        interaction_choice.add_move('fail', self.droomrobot.ask_open,
                                     'Glij jij liever snel of langzaam naar beneden?',
                                     user_model_key='droomplek_motivatie')
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
@@ -394,8 +380,8 @@ class Sonde9(DroomrobotScript):
                                         self.user_model['child_age'],
                                         self.user_model['droomplek_motivatie'])))
         motivation_choice.add_move('fail', self.droomrobot.say, "Oke, super.")
-        interaction_choice.add_choice('waterglijbaan', motivation_choice)
-        interaction_choice.add_move('waterglijbaan', self.droomrobot.say,
+        interaction_choice.add_choice('fail', motivation_choice)
+        interaction_choice.add_move('fail', self.droomrobot.say,
                                     'Wat mij helpt, is denken dat de sonde net als een waterglijbaan is: hij glijdt zo naar beneden, makkelijk en snel!')
         interaction_choice.add_move('fail', self.set_user_model_variable, 'droomplek_locatie', 'het waterpretpark')
         interaction_choice.add_move('fail', self.set_user_model_variable, 'droomplek', 'waterglijbaan')

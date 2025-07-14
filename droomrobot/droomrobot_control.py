@@ -20,14 +20,14 @@ class DroomrobotControl:
         self.interaction_script = None
 
     def connect(self, mini_ip, mini_id, mini_password, redis_ip,
-                google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
-                google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE",
-                openai_key_path=None, default_speaking_rate=1.0,
+                google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl", dialogflow_timeout=10,
+                google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE", default_speaking_rate=1.0,
+                openai_key_path=None,
                 computer_test_mode=False):
 
-        self.droomrobot = Droomrobot(mini_ip, mini_id, mini_password, redis_ip, google_keyfile_path,
+        self.droomrobot = Droomrobot(mini_ip, mini_id, mini_password, redis_ip, google_keyfile_path, dialogflow_timeout,
                                      sample_rate_dialogflow_hertz, dialogflow_language, google_tts_voice_name,
-                                     google_tts_voice_gender, openai_key_path, default_speaking_rate,
+                                     google_tts_voice_gender, default_speaking_rate, openai_key_path,
                                      computer_test_mode)
 
     def disconnect(self):
