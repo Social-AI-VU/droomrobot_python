@@ -209,6 +209,7 @@ class Sonde6(DroomrobotScript):
         phase_moves.add_choice(InterventionPhase.PROCEDURE.name, intervention_proc_choice)
 
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, "Wat doe jij dit goed! Voel maar hoe sterk en rustig je bent.")
+
         sentences = [
             "Je bent precies op de juiste weg, blijf maar lekker doorgaan.",
             "Elke keer als je rustig in- en uitademt, voel je je nog fijner en sterker.",
