@@ -100,7 +100,8 @@ class DroomrobotControl:
 
     def dance(self):
         if self.droomrobot:
-            self.droomrobot.animate(AnimationType.ACTION, 'dance_0007en', run_async=True)
+            self.droomrobot.say("Laten we dansen.")
+            self.droomrobot.animate(AnimationType.ACTION, "dance_0007en", run_async=True)
             self.droomrobot.play_audio('resources/audio/happy_dance.wav')
 
 # if __name__ == '__main__':

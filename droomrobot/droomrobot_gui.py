@@ -155,9 +155,9 @@ class DroomrobotGUI:
 
         self.add_field_button = ttk.Button(self.advanced_frame, text="Add Field", command=self.add_advanced_field)
         self.add_field_button.pack(anchor="w", pady=(5, 5))
-        #
-        # self.dance_button = ttk.Button(self.advanced_frame, text="💃 Let Robot Dance", command=self.dance)
-        # self.dance_button.pack(anchor="w", pady=(5, 10))
+
+        self.dance_button = ttk.Button(self.advanced_frame, text="💃 Let Robot Dance", command=self.dance)
+        self.dance_button.pack(anchor="w", pady=(5, 10))
 
         # Control Buttons
         button_frame = ttk.Frame(self.full_control_frame)
