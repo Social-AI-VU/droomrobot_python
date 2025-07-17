@@ -1,3 +1,4 @@
+from itertools import chain
 from os.path import abspath, join
 from time import sleep
 
@@ -11,14 +12,17 @@ Demo: Animation with alphamini.
 
 class AnimationTest:
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
-                 google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl", dialogflow_timeout=None,
+                 google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
+                 dialogflow_timeout=None,
                  google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE", default_speaking_rate=1.0,
                  openai_key_path=None, computer_test_mode=False):
         self.mini_id = mini_id
         self.droomrobot = Droomrobot(mini_ip=mini_ip, mini_id=mini_id, mini_password=mini_password, redis_ip=redis_ip,
-                                     google_keyfile_path=google_keyfile_path, sample_rate_dialogflow_hertz=sample_rate_dialogflow_hertz,
+                                     google_keyfile_path=google_keyfile_path,
+                                     sample_rate_dialogflow_hertz=sample_rate_dialogflow_hertz,
                                      dialogflow_language=dialogflow_language, dialogflow_timeout=dialogflow_timeout,
-                                     google_tts_voice_name=google_tts_voice_name, google_tts_voice_gender=google_tts_voice_gender,
+                                     google_tts_voice_name=google_tts_voice_name,
+                                     google_tts_voice_gender=google_tts_voice_gender,
                                      default_speaking_rate=default_speaking_rate,
                                      openai_key_path=openai_key_path,
                                      computer_test_mode=computer_test_mode)
@@ -60,10 +64,35 @@ class AnimationTest:
         self.droomrobot.play_audio('../resources/audio/happy_dance.wav')
         self.droomrobot.say('Klaar')
 
-    def expressions(self):
-        self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True)
-        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True)
-        self.droomrobot.say('Hallo, ik ben de droomrobot!')
+    def expressions(self, expression_type="all"):
+        speaking_expressions = {
+            "codemao": [
+                "codemao1", "codemao2", "codemao3", "codemao4", "codemao5",
+                "codemao6", "codemao7", "codemao8", "codemao9", "codemao10",
+                "codemao11", "codemao12", "codemao13", "codemao14", "codemao15",
+                "codemao16", "codemao17", "codemao18", "codemao19", "codemao20"],
+
+            "basic": ["w_basic_0003_1", "w_basic_0005_1", "w_basic_0010_1", "w_basic_0011_1", "w_basic_0012_1"],
+
+            "emo": ["emo_007", "emo_008", "emo_009", "emo_010", "emo_011",
+                    "emo_013", "emo_014", "emo_015", "emo_016", "emo_019",
+                    "emo_020", "emo_022", "emo_023", "emo_026", "emo_028"]
+        }
+
+        try:
+            if expression_type == "all":
+                expression_list = list(chain.from_iterable(speaking_expressions.values()))
+            else:
+                expression_list = list(speaking_expressions[expression_type])
+            for expression in expression_list:
+
+                self.droomrobot.say(f"Volgende is {expression}", animated=False)
+                self.droomrobot.animate(AnimationType.EXPRESSION, expression)
+                sleep(1)
+        except Exception as e:
+            print(e)
+
+        self.droomrobot.say('Klaar', animated=False)
 
 
 if __name__ == '__main__':
