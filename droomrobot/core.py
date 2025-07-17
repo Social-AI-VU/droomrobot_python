@@ -179,7 +179,7 @@ class Droomrobot:
             self.mini_api = None
             future = asyncio.run_coroutine_threadsafe(self._connect_once(), self.background_loop)
             try:
-                future.result(timeout=10)
+                future.result()
                 self.animate(AnimationType.ACTION, "009")  # Wake up
                 self.animate(AnimationType.EXPRESSION, "codemao20")  # Blink
             except Exception as e:

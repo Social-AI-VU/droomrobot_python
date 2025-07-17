@@ -345,8 +345,8 @@ class DroomrobotGUI:
             mini_password=self.mini_password.get(),
             redis_ip=self.redis_ip.get(),
             google_keyfile_path=abspath(self.google_keyfile.get()),
-            dialogflow_timeout=self.float_validation(self.dialogflow_timeout.get()),
-            default_speaking_rate=self.float_validation(self.default_speaking_rate.get()),
+            dialogflow_timeout=self.float_validation(self.dialogflow_timeout.get(), "Dialogflow timeout"),
+            default_speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"),
             openai_key_path=abspath(self.openai_keyfile.get()),
             computer_test_mode=self.debug_mode.get()
         )
@@ -487,27 +487,24 @@ class DroomrobotGUI:
         if self.droomrobot_control:
             try:
                 self.droomrobot_control.dance()
-                print("Robot is dancing!")
             except Exception as e:
-                print("Dance failed:", e)
+                self.logger.error("Dance failed:", exc_info=e)
         else:
-            print("Robot is not connected.")
+            self.logger.warning("Robot is not connected.")
 
-    @staticmethod
-    def load_config(path=abspath(join("../conf", "droomrobot", "default_settings.json"))):
+    def load_config(self, path=abspath(join("../conf", "droomrobot", "default_settings.json"))):
         try:
             with open(path, "r") as f:
                 return load(f)
         except (FileNotFoundError, JSONDecodeError) as e:
-            print(f"Error loading config: {e}")
+            self.logger.error(f"Error loading config: {e}", exc_info=e)
             return {}
 
-    @staticmethod
-    def float_validation(value, name=""):
+    def float_validation(self, value, name=""):
         try:
             return float(value)
         except ValueError:
-            print(f"Warning: Invalid input for '{name}'.")
+            self.logger.warning(f"Warning: Invalid input for '{name}'.")
             return
 
 
