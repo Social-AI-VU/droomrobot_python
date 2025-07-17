@@ -1,5 +1,5 @@
 
-from core import AnimationType, InteractionConf
+from droomrobot.core  import AnimationType, InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InteractionChoice, \
     InteractionChoiceCondition, InterventionPhase
 
@@ -23,7 +23,7 @@ class Sonde4(DroomrobotScript):
     def _introduction(self):
         self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand up
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
-        self.add_move(self.droomrobot.say, 'Hallo, ik ben de droomrobot!', animate=False)
+        self.add_move(self.droomrobot.say, 'Hallo, ik ben de droomrobot!')
         self.add_move(self.droomrobot.say, 'Wat fijn dat ik je mag helpen vandaag.')
         self.add_move(self.droomrobot.ask_fake, 'Hoe heet jij?', 3)
         self.add_move(self.droomrobot.say, lambda: f'{self.user_model['child_name']}, wat leuk je te ontmoeten.')
@@ -157,6 +157,9 @@ class Sonde4(DroomrobotScript):
         return phase_moves
 
     def _intervention_procedure(self, phase_moves: InteractionChoice) -> InteractionChoice:
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False)
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.set_interaction_conf, interaction_conf)
+
         intervention_proc_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
         # Raceauto
         intervention_proc_choice.add_move('raceauto', self.droomrobot.say, 'En daar, voor je, een tunnel! Een hele speciale tunnel, precies groot genoeg voor jouw auto.')

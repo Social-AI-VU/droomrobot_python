@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import queue
 import wave
 from enum import Enum
@@ -105,7 +106,10 @@ class Droomrobot:
                  computer_test_mode=False):
 
         print("\n SETTING UP BASIC PROCESSING")
-        # Logging
+        # Development logging
+        self.logger = logging.getLogger("droomrobot")
+
+        # Data logging
         self._log_queue = None
         self._log_thread = None
 
@@ -168,13 +172,19 @@ class Droomrobot:
 
             print("Connecting to miniSDK")
             # Create asyncio event loop to keep connection open to miniSDK.
+            self.animation_futures = []
             self.background_loop = asyncio.new_event_loop()
             self.background_thread = Thread(target=self._start_loop, daemon=True)
             self.background_thread.start()
             self.mini_api = None
             future = asyncio.run_coroutine_threadsafe(self._connect_once(), self.background_loop)
-            future.result()  # blocks result
-            self.animate(AnimationType.ACTION, "009")  # Wake up
+            try:
+                future.result(timeout=10)
+                self.animate(AnimationType.EXPRESSION, "codemao20")
+                self.animate(AnimationType.ACTION, "009")  # Wake up
+            except Exception as e:
+                self.logger.error("Failed to connect to mini device", exc_info=e)
+
         else:
             print("\n SETTING UP COMPUTER")
             desktop = Desktop()
@@ -459,13 +469,30 @@ class Droomrobot:
         return gpt_response.response
 
     def animate(self, animation_type: AnimationType, animation_id: str, run_async=False):
-        # run_async for synchronised animation and text.
-        if 'computer' in self.device_name:
-            print(f"Animation simulation: {animation_id}")
-        else:
-            future = asyncio.run_coroutine_threadsafe(self._animation_action(animation_id, animation_type), self.background_loop)
-            if not run_async:
-                future.result()
+        try:
+            future = asyncio.run_coroutine_threadsafe(
+                self._animation_action(animation_id, animation_type),
+                self.background_loop
+            )
+        except Exception as e:
+            self.logger.error(f'Animation {animation_id} failed: {e}', exc_info=e)
+            return
+
+        self.animation_futures.append(future)
+
+        if not run_async:
+            future.result()
+
+    async def _animation_action(self, action_name, animation_type):
+        try:
+            if animation_type == AnimationType.ACTION:
+                action: PlayAction = PlayAction(action_name=action_name)
+                await action.execute()
+            elif animation_type == AnimationType.EXPRESSION:
+                action: PlayExpression = PlayExpression(express_name=action_name)
+                await action.execute()
+        except Exception as e:
+            self.logger.error(f'Animation action {action_name} failed {e}', exc_info=e)
 
     def set_mouth_lamp(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000,
                        run_async=False):
@@ -474,16 +501,30 @@ class Droomrobot:
         else:
             future = asyncio.run_coroutine_threadsafe(self._mouth_lamp_expression(color, mode, duration, breath_duration),
                                                       self.background_loop)
+            self.animation_futures.append(future)
+
             if not run_async:
                 future.result()
 
+    async def _mouth_lamp_expression(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000):
+        if mode == MouthLampMode.BREATH:
+            mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.BREATH,
+                                                           breath_duration=breath_duration)
+        else:
+            mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.NORMAL, duration=duration)
+        await mouth_lamp_action.execute()
+
     def disconnect(self):
         if self.device_name == 'alphamini':
+            for fut in self.animation_futures:
+                fut.cancel()
+
             # Disconnect from miniSDK
             future = asyncio.run_coroutine_threadsafe(self._disconnect_alphamini_api(), self.background_loop)
             future.result()
             # Schedule loop shutdown
-            self.background_loop.call_soon_threadsafe(self.background_loop.stop)
+            if self.background_loop.is_running():
+                self.background_loop.call_soon_threadsafe(self.background_loop.stop)
             # Wait for the thread to finish
             self.background_thread.join()
 
@@ -506,22 +547,6 @@ class Droomrobot:
     @staticmethod
     async def _disconnect_alphamini_api():
         await MiniSdk.release()
-
-    async def _animation_action(self, action_name, animation_type):
-        if animation_type == AnimationType.ACTION:
-            action: PlayAction = PlayAction(action_name=action_name)
-            await action.execute()
-        elif animation_type == AnimationType.EXPRESSION:
-            action: PlayExpression = PlayExpression(express_name=action_name)
-            await action.execute()
-
-    async def _mouth_lamp_expression(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000):
-        if mode == MouthLampMode.BREATH:
-            mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.BREATH,
-                                                           breath_duration=breath_duration)
-        else:
-            mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.NORMAL, duration=duration)
-        await mouth_lamp_action.execute()
 
     @staticmethod
     def _get_user_model_file_path(participant_id: str):

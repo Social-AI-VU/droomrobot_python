@@ -1,8 +1,8 @@
 from sic_framework.services.openai_gpt.gpt import GPTRequest
 
-from core import AnimationType
-from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InteractionChoice, \
-    InteractionChoiceCondition, InterventionPhase
+from droomrobot.core import AnimationType, InteractionConf
+from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InterventionPhase, \
+    InteractionChoice, InteractionChoiceCondition
 
 
 class Bloedafname6(DroomrobotScript):
@@ -26,38 +26,40 @@ class Bloedafname6(DroomrobotScript):
         self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
         self.add_move(self.droomrobot.say, 'Hallo, ik ben de droomrobot!')
-        self.add_move(self.droomrobot.say, 'Wat fijn dat ik je mag helpen vandaag.', animated=True)
-        self.add_move(self.droomrobot.ask_fake, 'Hoe heet jij?', 3, animated=True)
-        self.add_move(self.droomrobot.say, lambda: f'{self.user_model['child_name']}, wat leuk je te ontmoeten.', animated=True)
-        self.add_move(self.droomrobot.ask_fake, 'En hoe oud ben je?', 3, animated=True)
+        self.add_move(self.droomrobot.say, 'Wat fijn dat ik je mag helpen vandaag.')
+        self.add_move(self.droomrobot.ask_fake, 'Hoe heet jij?', 3)
+        self.add_move(self.droomrobot.say, lambda: f'{self.user_model['child_name']}, wat leuk je te ontmoeten.')
+        self.add_move(self.droomrobot.ask_fake, 'En hoe oud ben je?', 3)
         self.add_move(self.droomrobot.say, lambda: f'{str(self.user_model['child_age'])} jaar. '
-                                                   f'Oh wat goed, dan ben je al oud genoeg om mijn speciale trucje te leren.', animated=True)
+                                                   f'Oh wat goed, dan ben je al oud genoeg om mijn speciale trucje te leren.')
         self.add_move(self.droomrobot.say,
-                      'Ik heb namelijk een truukje dat bij heel veel kinderen goed werkt om alles in het ziekenhuis makkelijker te maken.', animated=True)
-        self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het bij jou gaat werken.', animated=True)
+                      'Ik heb namelijk een truukje dat bij heel veel kinderen goed werkt om alles in het ziekenhuis makkelijker te maken.')
+        self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het bij jou gaat werken.')
         self.add_move(self.droomrobot.say,
-                      'We gaan samen een verhaal maken dat jou helpt om je fijn, rustig en sterk te voelen.', animated=True)
-        self.add_move(self.droomrobot.say, 'We gaan het samen doen, op jouw eigen manier.', animated=True)
-        self.add_move(self.droomrobot.say, 'Het heet een droomreis.', animated=True)
-        self.add_move(self.droomrobot.say, 'Met een droomreis kun je aan iets fijns denken terwijl je hier bent.', animated=True)
-        self.add_move(self.droomrobot.say, 'Dat helpt je om rustig en sterk te blijven.', animated=True)
-        self.add_move(self.droomrobot.say, 'Ik zal het trucje even voor doen.', animated=True)
-        self.add_move(self.droomrobot.say, 'Ik ga het liefst in gedachten naar de wolken.', animated=True)
+                      'We gaan samen een verhaal maken dat jou helpt om je fijn, rustig en sterk te voelen.')
+        self.add_move(self.droomrobot.say, 'We gaan het samen doen, op jouw eigen manier.')
+        self.add_move(self.droomrobot.say, 'Het heet een droomreis.')
+        self.add_move(self.droomrobot.say, 'Met een droomreis kun je aan iets fijns denken terwijl je hier bent.')
+        self.add_move(self.droomrobot.say, 'Dat helpt je om rustig en sterk te blijven.')
+        self.add_move(self.droomrobot.say, 'Ik zal het trucje even voor doen.')
+        self.add_move(self.droomrobot.say, 'Ik ga het liefst in gedachten naar de wolken.')
         self.add_move(self.droomrobot.say,
-                      'Maar het hoeft niet de wolken te zijn. Iedereen heeft een eigen fijne plek.', animated=True)
-        self.add_move(self.droomrobot.say, 'Laten we nu samen bedenken wat jouw fijne plek is.', animated=True)
+                      'Maar het hoeft niet de wolken te zijn. Iedereen heeft een eigen fijne plek.')
+        self.add_move(self.droomrobot.say, 'Laten we nu samen bedenken wat jouw fijne plek is.')
         self.add_move(self.droomrobot.say,
-                      'Je kan bijvoorbeeld in gedachten naar het strand, het bos, de speeltuin, de ruimte of wat anders.', animated=True)
+                      'Je kan bijvoorbeeld in gedachten naar het strand, het bos, de speeltuin, de ruimte of wat anders.')
 
         self.add_move(self.droomrobot.ask_entity_llm, 'Wat is een plek waar jij je fijn voelt?',
-                      user_model_key='droomplek', animated=True)
+                      user_model_key='droomplek')
         self.add_move(self.droomrobot.get_article, lambda: self.user_model['droomplek'],
                       user_model_key='droomplek_lidwoord')
         self.add_choice(self._build_interaction_choice_droomplek())
 
         # SAMEN OEFENEN
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False)
+        self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         self.add_move(self.droomrobot.say,
-                      lambda: f'Oke {self.user_model['child_name']}, laten we alvast een keer oefenen om samen een mooie droomreis te maken.', animated=True)
+                      lambda: f'Oke {self.user_model['child_name']}, laten we alvast een keer oefenen om samen een mooie droomreis te maken.')
         self.add_move(self.droomrobot.say, 'Ga even lekker zitten zoals jij dat fijn vindt.', sleep_time=1)
 
         self.add_move(self.droomrobot.ask_yesno, "Zit je zo goed?", user_model_key='zit_goed')
@@ -72,25 +74,17 @@ class Bloedafname6(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'dan werkt het truukje het beste.', sleep_time=1)
 
         self.add_move(self.droomrobot.say,
-                      'Stel je voor, dat je op een hele fijne mooie plek bent, in je eigen gedachten.',
-                      speaking_rate=0.75, sleep_time=0.7)
+                      'Stel je voor, dat je op een hele fijne mooie plek bent, in je eigen gedachten.')
         self.add_move(self.droomrobot.say,
-                      lambda: f'Misschien is het weer {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']}, of een nieuwe droomwereld',
-                      speaking_rate=0.75, sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'Kijk maar eens om je heen, wat je allemaal op die mooie plek ziet.',
-                      speaking_rate=0.75, sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'Misschien ben je er alleen of is er iemand bij je.', speaking_rate=0.75,
-                      sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'Kijk maar welke mooie kleuren je allemaal om je heen ziet.',
-                      speaking_rate=0.75, sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'Misschien wel groen, of paars, of regenboog kleuren.', speaking_rate=0.75,
-                      sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'En merk maar hoe fijn jij je op deze plek voelt.', speaking_rate=0.75,
-                      sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'En stel je dan nu voor, dat je in jouw droomreis een superheld bent.',
-                      speaking_rate=0.75, sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'Met een speciale kracht.', speaking_rate=0.75, sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'Jij mag kiezen.', speaking_rate=0.75, sleep_time=0.7)
+                      lambda: f'Misschien is het weer {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']}, of een nieuwe droomwereld')
+        self.add_move(self.droomrobot.say, 'Kijk maar eens om je heen, wat je allemaal op die mooie plek ziet.')
+        self.add_move(self.droomrobot.say, 'Misschien ben je er alleen of is er iemand bij je.')
+        self.add_move(self.droomrobot.say, 'Kijk maar welke mooie kleuren je allemaal om je heen ziet.')
+        self.add_move(self.droomrobot.say, 'Misschien wel groen, of paars, of regenboog kleuren.')
+        self.add_move(self.droomrobot.say, 'En merk maar hoe fijn jij je op deze plek voelt.')
+        self.add_move(self.droomrobot.say, 'En stel je dan nu voor, dat je in jouw droomreis een superheld bent.')
+        self.add_move(self.droomrobot.say, 'Met een speciale kracht.')
+        self.add_move(self.droomrobot.say, 'Jij mag kiezen.')
         self.add_move(self.droomrobot.ask_entity_llm, 'Welke kracht kies je?', user_model_key='superkracht')
 
         superkracht_choice = InteractionChoice('superkracht', InteractionChoiceCondition.HASVALUE)
@@ -108,84 +102,73 @@ class Bloedafname6(DroomrobotScript):
 
         superkracht_choice.add_move('success', self.droomrobot.say,
                                     lambda: f'Laten we samen oefenen hoe je '
-                                            f'jouw superkracht {self.user_model['superkracht']} kunt activeren.',
-                                    speaking_rate=0.75, sleep_time=0.7)
+                                            f'jouw superkracht {self.user_model['superkracht']} kunt activeren.')
         superkracht_choice.add_move('fail', self.droomrobot.say,
-                                    'Laten we samen oefenen hoe je die kracht kunt activeren.',
-                                    speaking_rate=0.75,
-                                    sleep_time=0.7)
+                                    'Laten we samen oefenen hoe je die kracht kunt activeren.')
         self.add_choice(superkracht_choice)
 
-        self.add_move(self.droomrobot.say, 'Adem diep in door je neus.', speaking_rate=0.75, sleep_time=0.7)
+        self.add_move(self.droomrobot.say, 'Adem diep in door je neus.')
         self.add_move(self.droomrobot.play_audio, 'resources/audio/breath_in.wav')
-        self.add_move(self.droomrobot.say, 'en blaas langzaam uit door je mond.', speaking_rate=0.75, sleep_time=0.7)
+        self.add_move(self.droomrobot.say, 'en blaas langzaam uit door je mond.')
         self.add_move(self.droomrobot.play_audio, 'resources/audio/breath_out.wav')
-        self.add_move(self.droomrobot.say, lambda: f'Goed zo {self.user_model['child_name']}, dat gaat al heel goed.',
-                      speaking_rate=0.75, sleep_time=0.7)
+        self.add_move(self.droomrobot.say, lambda: f'Goed zo {self.user_model['child_name']}, dat gaat al heel goed.')
         self.add_move(self.droomrobot.say,
-                      'En terwijl je zo goed aan het ademen bent, stel je voor dat er een klein, warm lichtje op je arm verschijnt.',
-                      speaking_rate=0.75, sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'Dat lichtje is magisch en laadt jouw kracht op.', speaking_rate=0.75,
-                      sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'Stel je eens voor hoe dat lichtje eruit ziet.', speaking_rate=0.75,
-                      sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'Is het geel, blauw of misschien jouw lievelingskleur?', speaking_rate=0.75,
-                      sleep_time=0.7)
+                      'En terwijl je zo goed aan het ademen bent, stel je voor dat er een klein, warm lichtje op je arm verschijnt.')
+        self.add_move(self.droomrobot.say, 'Dat lichtje is magisch en laadt jouw kracht op.')
+        self.add_move(self.droomrobot.say, 'Stel je eens voor hoe dat lichtje eruit ziet.')
+        self.add_move(self.droomrobot.say, 'Is het geel, blauw of misschien jouw lievelingskleur?')
         self.add_move(self.droomrobot.ask_entity_llm, 'Welke kleur heeft jouw lichtje?', strict=True,
                       user_model_key='kleur')
 
         kleur_choice = InteractionChoice('kleur', InteractionChoiceCondition.HASVALUE)
-        kleur_choice.add_move('success', self.droomrobot.say, lambda: f'{self.user_model['kleur']}, wat goed, die heb je goed gekozen, {self.user_model['child_name']}.', speaking_rate=0.75,
-                      sleep_time=0.7)
+        kleur_choice.add_move('success', self.droomrobot.say, lambda: f'{self.user_model['kleur']}, wat goed, die heb je goed gekozen, {self.user_model['child_name']}.')
         kleur_choice.add_move('fail', self.droomrobot.say, 'Sorry, dat verstond ik even niet goed. Weet je wat? Ik vind groen een mooie kleur. Laten we het lichtje groen maken.')
         kleur_choice.add_move('fail', lambda: self.set_user_model_variable('kleur', 'groen'))
         self.add_choice(kleur_choice)
         self.add_move(self.droomrobot.get_adjective, lambda: self.user_model['kleur'], user_model_key='kleur_adjective')
-        self.add_move(self.droomrobot.say, lambda: f'Merk maar eens hoe dat {self.user_model['kleur_adjective']} lichtje je een heel fijn, krachtig gevoel geeft.',
-                      speaking_rate=0.75, sleep_time=0.7)
-        self.add_move(self.droomrobot.say, 'En hoe jij nu een superheld bent met jouw superkracht en alles aankan.',
-                      speaking_rate=0.75, sleep_time=0.7)
+        self.add_move(self.droomrobot.say, lambda: f'Merk maar eens hoe dat {self.user_model['kleur_adjective']} lichtje je een heel fijn, krachtig gevoel geeft.')
+        self.add_move(self.droomrobot.say, 'En hoe jij nu een superheld bent met jouw superkracht en alles aankan.')
         self.add_move(self.droomrobot.say,
-                      'En iedere keer als je het nodig hebt, kun je zoals je nu geleerd hebt, een paar keer diep in en uit ademen.',
-                      speaking_rate=0.75, sleep_time=0.7)
+                      'En iedere keer als je het nodig hebt, kun je zoals je nu geleerd hebt, een paar keer diep in en uit ademen.')
         self.add_move(self.droomrobot.say,
-                      'Hartstikke goed, ik ben benieuwd hoe goed het lichtje je zometeen gaat helpen.',
-                      speaking_rate=0.75, sleep_time=0.7)
+                      'Hartstikke goed, ik ben benieuwd hoe goed het lichtje je zometeen gaat helpen.')
         self.add_move(self.droomrobot.say,
                       'Als je genoeg geoefend hebt, mag je je ogen weer lekker open doen en zeggen, het lichtje gaat mij helpen.',
-                      speaking_rate=0.75, sleep_time=1)
+                      sleep_time=2)
 
-        self.add_move(self.droomrobot.ask_yesno, 'Ging het oefenen goed?', user_model_key='oefenen_goed')
-        oefenen_choice = InteractionChoice('oefenen_goed', InteractionChoiceCondition.MATCHVALUE)
-        oefenen_choice.add_move('yes', self.droomrobot.ask_open, 'Wat fijn. Wat vond je goed gaan?',
-                                user_model_key='oefenen_goed_uitleg', animated=True)
-        oefenen_goed_choice = InteractionChoice('oefenen_goed_uitleg', InteractionChoiceCondition.HASVALUE)
-        oefenen_goed_choice.add_move('success', lambda: self.droomrobot.say(
-            self.droomrobot.personalize('Wat fijn. Wat vond je goed gaan?',
-                                        self.user_model['child_age'],
-                                        self.user_model['oefenen_goed_uitleg'])))
-        oefenen_goed_choice.add_move('fail', self.droomrobot.say, "Wat knap van jou.", animated=True)
-        oefenen_choice.add_choice('yes', oefenen_goed_choice)
-        oefenen_choice.add_move('yes', self.droomrobot.say,
-                                lambda: f'Ik vind {self.user_model['kleur']} een hele mooie kleur, die heb je goed gekozen.', animated=True)
+        # self.add_move(self.droomrobot.ask_yesno, 'Ging het oefenen goed?', user_model_key='oefenen_goed')
+        # oefenen_choice = InteractionChoice('oefenen_goed', InteractionChoiceCondition.MATCHVALUE)
+        # oefenen_choice.add_move('yes', self.droomrobot.ask_open, 'Wat fijn. Wat vond je goed gaan?',
+        #                         user_model_key='oefenen_goed_uitleg')
+        # oefenen_goed_choice = InteractionChoice('oefenen_goed_uitleg', InteractionChoiceCondition.HASVALUE)
+        # oefenen_goed_choice.add_move('success', lambda: self.droomrobot.say(
+        #     self.droomrobot.personalize('Wat fijn. Wat vond je goed gaan?',
+        #                                 self.user_model['child_age'],
+        #                                 self.user_model['oefenen_goed_uitleg'])))
+        # oefenen_goed_choice.add_move('fail', self.droomrobot.say, "Wat knap van jou.")
+        # oefenen_choice.add_choice('yes', oefenen_goed_choice)
+        # oefenen_choice.add_move('yes', self.droomrobot.say,
+        #                         lambda: f'Ik vind {self.user_model['kleur']} een hele mooie kleur, die heb je goed gekozen.')
+        # 
+        # oefenen_choice.add_move('other', self.droomrobot.ask_open, 'Wat ging er nog niet zo goed?',
+        #                         user_model_key='oefenen_slecht_uitleg')
+        # 
+        # oefenen_slecht_choice = InteractionChoice('oefenen_slecht_uitleg', InteractionChoiceCondition.HASVALUE)
+        # oefenen_slecht_choice.add_move('success', lambda: self.droomrobot.say(
+        #     self.droomrobot.personalize('Wat ging er nog niet zo goed?',
+        #                                 self.user_model['child_age'],
+        #                                 self.user_model['oefenen_slecht_uitleg'])))
+        # oefenen_slecht_choice.add_move('fail', self.droomrobot.say,
+        #                                "Wat jammer zeg. Probeer ik het de volgende keer beter te doen.")
+        # oefenen_choice.add_choice('other', oefenen_slecht_choice)
+        # oefenen_choice.add_move('fail', self.droomrobot.say, "Oke.")
+        # self.add_choice(oefenen_choice)
 
-        oefenen_choice.add_move('other', self.droomrobot.ask_open, 'Wat ging er nog niet zo goed?',
-                                user_model_key='oefenen_slecht_uitleg')
+        self.add_move(self.droomrobot.reset_interaction_conf)
 
-        oefenen_slecht_choice = InteractionChoice('oefenen_slecht_uitleg', InteractionChoiceCondition.HASVALUE)
-        oefenen_slecht_choice.add_move('success', lambda: self.droomrobot.say(
-            self.droomrobot.personalize('Wat ging er nog niet zo goed?',
-                                        self.user_model['child_age'],
-                                        self.user_model['oefenen_slecht_uitleg'])))
-        oefenen_slecht_choice.add_move('fail', self.droomrobot.say,
-                                       "Wat jammer zeg. Probeer ik het de volgende keer beter te doen.", animated=True)
-        oefenen_choice.add_choice('other', oefenen_slecht_choice)
-        oefenen_choice.add_move('fail', self.droomrobot.say, "Oke.")
-        self.add_choice(oefenen_choice)
-
-        self.add_move(self.droomrobot.say, 'Gelukkig wordt het steeds makkelijker als je het vaker oefent.', animated=True)
-        self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het zometeen gaat.', animated=True)
-        self.add_move(self.droomrobot.say, 'Je zult zien dat dit je gaat helpen.', animated=True)
+        self.add_move(self.droomrobot.say, 'Gelukkig wordt het steeds makkelijker als je het vaker oefent.')
+        self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het zometeen gaat.')
+        self.add_move(self.droomrobot.say, 'Je zult zien dat dit je gaat helpen.')
         self.add_move(self.droomrobot.say,
                       'Als je zometeen aan de beurt bent, ga ik je helpen om het lichtje weer samen aan te zetten, zodat je weer die superheld bent.')
 
@@ -214,29 +197,26 @@ class Bloedafname6(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              'Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter, en makkelijker gaat.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Je mag weer goed gaan zitten en je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.',
-                             sleep_time=0.7)
+                             'Je mag weer goed gaan zitten en je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.', sleep_time=1)
+
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False)
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Luister maar weer goed naar mijn stem, en merk maar dat andere geluiden in het ziekenhuis veel stiller worden.',
-                             speaking_rate=0.75, sleep_time=0.7)
+                             'Luister maar weer goed naar mijn stem, en merk maar dat andere geluiden in het ziekenhuis veel stiller worden.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Ga maar rustig ademen, zoals je dat gewend bent.', speaking_rate=0.75, sleep_time=0.7)
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Adem rustig in.',
-                             speaking_rate=0.75, sleep_time=0.7)
+                             'Ga maar rustig ademen, zoals je dat gewend bent.')
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Adem rustig in.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.play_audio,
                              'resources/audio/breath_in.wav')
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'en rustig uit.',
-                             speaking_rate=0.75, sleep_time=0.7)
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'en rustig uit.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.play_audio,
                              'resources/audio/breath_out.wav')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             lambda: f'Stel je maar voor dat je bij {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} bent.',
-                             speaking_rate=0.75, sleep_time=0.7)
+                             lambda: f'Stel je maar voor dat je bij {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} bent.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Kijk maar weer naar alle mooie kleuren die om je heen zijn, en merk hoe fijn je je voelt op deze plek.',
-                             speaking_rate=0.75, sleep_time=0.7)
+                             'Kijk maar weer naar alle mooie kleuren die om je heen zijn, en merk hoe fijn je je voelt op deze plek.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Luister maar naar alle fijne geluiden op die plek.', speaking_rate=0.75, sleep_time=0.7)
+                             'Luister maar naar alle fijne geluiden op die plek.')
 
         sentences = [
             'Kijk maar naar de leuke dingen die je daar kunt doen',
@@ -247,53 +227,42 @@ class Bloedafname6(DroomrobotScript):
         return phase_moves
 
     def _intervention_procedure(self, phase_moves: InteractionChoice) -> InteractionChoice:
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False)
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.set_interaction_conf, interaction_conf)
+
         # Sound should be here but this is not possible with the LLM generated content
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             'Nu gaan we je superkracht weer activeren zoals je dat geleerd hebt.',
-                             speaking_rate=0.75, sleep_time=0.7)
-        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Adem in via je neus.',
-                             speaking_rate=0.75, sleep_time=0.7)
+                             'Nu gaan we je superkracht weer activeren zoals je dat geleerd hebt.')
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Adem in via je neus.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,
                              'resources/audio/breath_in.wav')
-        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'en blaas rustig uit via je mond.',
-                             speaking_rate=0.75, sleep_time=0.7)
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'en blaas rustig uit via je mond.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,
                              'resources/audio/breath_out.wav')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             lambda: f'En kijk maar hoe je krachtige {self.user_model['kleur']} lichtje weer op je arm verschijnt, in precies de goede kleur die je nodig hebt.',
-                             speaking_rate=0.75, sleep_time=0.7)
+                             lambda: f'En kijk maar hoe je krachtige {self.user_model['kleur']} lichtje weer op je arm verschijnt, in precies de goede kleur die je nodig hebt.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             'Zie het lichtje steeds sterker en krachtiger worden.', speaking_rate=0.75,
-                             sleep_time=0.7)
+                             'Zie het lichtje steeds sterker en krachtiger worden.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             'Zodat jij weer een superheld wordt en jij jezelf kan helpen.',
-                             speaking_rate=0.75, sleep_time=0.7)
+                             'Zodat jij weer een superheld wordt en jij jezelf kan helpen.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             lambda: f'En als je het nodig hebt, stel je voor dat je {self.user_model['kleur']} lichtje nog helderder gaat schijnen.',
-                             speaking_rate=0.75, sleep_time=0.7)
+                             lambda: f'En als je het nodig hebt, stel je voor dat je {self.user_model['kleur']} lichtje nog helderder gaat schijnen.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             'Dat betekent dat jouw kracht helemaal wordt opgeladen.', speaking_rate=0.75,
-                             sleep_time=0.7)
+                             'Dat betekent dat jouw kracht helemaal wordt opgeladen.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             'Als het nodig is, kan je de kracht nog groter maken door met je tenen te wiebelen.',
-                             speaking_rate=0.75, sleep_time=0.7)
+                             'Als het nodig is, kan je de kracht nog groter maken door met je tenen te wiebelen.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             'Het geeft een veilige en zachte gloed om je te helpen.', speaking_rate=0.75,
-                             sleep_time=0.7)
+                             'Het geeft een veilige en zachte gloed om je te helpen.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             'Als je iets voelt op je arm, dan is dat een teken dat je superkrachten volledig werken.',
-                             speaking_rate=0.75, sleep_time=0.7)
-        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Adem diep in.', speaking_rate=0.75,
-                             sleep_time=0.7)
+                             'Als je iets voelt op je arm, dan is dat een teken dat je superkrachten volledig werken.')
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Adem diep in.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,
                              'resources/audio/breath_in.wav')
-        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'en blaas uit.', speaking_rate=0.75,
-                             sleep_time=0.7)
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'en blaas uit.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,
                              'resources/audio/breath_out.wav')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             'Merk maar hoe goed jij jezelf kan helpen, je bent echt een superheld.',
-                             speaking_rate=0.75, sleep_time=0.7)
+                             'Merk maar hoe goed jij jezelf kan helpen, je bent echt een superheld.')
         sentences = [
             "Je doet het fantastisch! Wat een geweldige kleur heeft jouw lichtje nu.",
             "Adem rustig door, je bent helemaal in controle. Goed bezig!",
@@ -304,32 +273,33 @@ class Bloedafname6(DroomrobotScript):
         return phase_moves
 
     def _intervention_wrapup(self, phase_moves: InteractionChoice) -> InteractionChoice:
+        phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.reset_interaction_conf)
         phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.say, 'Dat was het weer.')
         phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.say, 'Je hebt het heel goed gedaan.')
-        phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.say, 'We gaan zo nog even doei zeggen.', animated=True)
+        phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.say, 'We gaan zo nog even doei zeggen.')
         phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.say,
-                             'Maar eerst ronden we dit even af. Tot zo', animated=True)
+                             'Maar eerst ronden we dit even af. Tot zo')
         return phase_moves
 
     def _goodbye(self):
-        self.add_move(self.droomrobot.ask_opinion_llm, "Was het goed gegaan?", user_model_key='interventie_ervaring', animated=True)
+        self.add_move(self.droomrobot.ask_opinion_llm, "Was het goed gegaan?", user_model_key='interventie_ervaring')
         ervaring_choice = InteractionChoice('interventie_ervaring', InteractionChoiceCondition.MATCHVALUE)
         ervaring_choice.add_move('positive', self.droomrobot.say,
-                                 lambda: f'Wat fijn! je hebt jezelf echt goed geholpen, {self.user_model['child_name']}', animated=True)
-        ervaring_choice.add_move('other', self.droomrobot.say, 'Dat geeft niet.', animated=True)
-        ervaring_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Je hebt goed je best gedaan.', animated=True)
-        ervaring_choice.add_move(['other', 'fail'], self.droomrobot.say, 'En kijk welke stapjes je allemaal al goed gelukt zijn.', animated=True)
+                                 lambda: f'Wat fijn! je hebt jezelf echt goed geholpen, {self.user_model['child_name']}')
+        ervaring_choice.add_move('other', self.droomrobot.say, 'Dat geeft niet.')
+        ervaring_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Je hebt goed je best gedaan.')
+        ervaring_choice.add_move(['other', 'fail'], self.droomrobot.say, 'En kijk welke stapjes je allemaal al goed gelukt zijn.')
         self.add_choice(ervaring_choice)
-        self.add_move(self.droomrobot.say, lambda: f'je kon al goed een {self.user_model['kleur']} lichtje uitzoeken.', animated=True)
+        self.add_move(self.droomrobot.say, lambda: f'je kon al goed een {self.user_model['kleur']} lichtje uitzoeken.')
         self.add_move(self.droomrobot.say,
-                      'En weet je wat nu zo fijn is, hoe vaker je dit truukje oefent, hoe makkelijker het wordt.', animated=True)
-        self.add_move(self.droomrobot.say, 'Je kunt dit ook zonder mij oefenen.', animated=True)
-        self.add_move(self.droomrobot.say, 'Je hoeft alleen maar je ogen dicht te doen en aan je lichtje te denken.', animated=True)
-        self.add_move(self.droomrobot.say, 'Dan word jij weer een superheld met extra kracht.', animated=True)
-        self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed je het de volgende keer gaat doen.', animated=True)
-        self.add_move(self.droomrobot.say, 'Je doet het op jouw eigen manier, en dat is precies goed.', animated=True)
-        self.add_move(self.droomrobot.say, 'Ik ga nu een ander kindje helpen, net zoals ik jou nu heb geholpen.', animated=True)
-        self.add_move(self.droomrobot.say, 'Misschien zien we elkaar de volgende keer!', animated=True)
+                      'En weet je wat nu zo fijn is, hoe vaker je dit truukje oefent, hoe makkelijker het wordt.')
+        self.add_move(self.droomrobot.say, 'Je kunt dit ook zonder mij oefenen.')
+        self.add_move(self.droomrobot.say, 'Je hoeft alleen maar je ogen dicht te doen en aan je lichtje te denken.')
+        self.add_move(self.droomrobot.say, 'Dan word jij weer een superheld met extra kracht.')
+        self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed je het de volgende keer gaat doen.')
+        self.add_move(self.droomrobot.say, 'Je doet het op jouw eigen manier, en dat is precies goed.')
+        self.add_move(self.droomrobot.say, 'Ik ga nu een ander kindje helpen, net zoals ik jou nu heb geholpen.')
+        self.add_move(self.droomrobot.say, 'Misschien zien we elkaar de volgende keer!')
         self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.add_move(self.droomrobot.say, 'Doei')
@@ -339,72 +309,72 @@ class Bloedafname6(DroomrobotScript):
 
         # Strand
         interaction_choice.add_move('strand', self.droomrobot.say,
-                                    'Ah, het strand! Ik kan de golven bijna horen en het zand onder mijn voeten voelen.', animated=True)
+                                    'Ah, het strand! Ik kan de golven bijna horen en het zand onder mijn voeten voelen.')
         interaction_choice.add_move('strand', self.droomrobot.say,
-                                    'Weet je wat ik daar graag doe? Een zandkasteel bouwen met een vlag er op.', animated=True)
+                                    'Weet je wat ik daar graag doe? Een zandkasteel bouwen met een vlag er op.')
         interaction_choice.add_move('strand', self.droomrobot.ask_open,
                                     f'Wat zou jij op het stand willen doen {self.user_model['child_name']}?',
-                                    user_model_key='droomplek_motivatie', animated=True)
+                                    user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
         motivation_choice.add_move('success', lambda: self.droomrobot.say(
             self.droomrobot.personalize('Wat zou jij op het strand willen doen?',
                                         self.user_model['child_age'],
                                         self.user_model['droomplek_motivatie'])))
-        motivation_choice.add_move('fail', self.droomrobot.say, "Dat klinkt heerlijk! Ik kan me dat helemaal voorstellen.", animated=True)
+        motivation_choice.add_move('fail', self.droomrobot.say, "Dat klinkt heerlijk! Ik kan me dat helemaal voorstellen.")
         interaction_choice.add_choice('strand', motivation_choice)
 
         # Bos
         interaction_choice.add_move('bos', self.droomrobot.say,
                                     'Het bos, wat een rustige plek!'
-                                    'Ik hou van de hoge bomen en het zachte mos op de grond.', animated=True)
+                                    'Ik hou van de hoge bomen en het zachte mos op de grond.')
         interaction_choice.add_move('bos', self.droomrobot.say,
                                     'Weet je wat ik daar graag doe? Ik zoek naar dieren die zich verstoppen,'
-                                    ' zoals vogels of eekhoorns.', animated=True)
+                                    ' zoals vogels of eekhoorns.')
         interaction_choice.add_move('bos', self.droomrobot.ask_open,
                                     f'Wat zou je in het bos willen doen {self.user_model['child_name']}?',
-                                    user_model_key='droomplek_motivatie', animated=True)
+                                    user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
         motivation_choice.add_move('success', lambda: self.droomrobot.say(
             self.droomrobot.personalize('Wat zou jij in het bos willen doen?',
                                         self.user_model['child_age'],
                                         self.user_model['droomplek_motivatie'])))
-        motivation_choice.add_move('fail', self.droomrobot.say, "Wat een leuk idee! Het bos is echt een magische plek.", animated=True)
+        motivation_choice.add_move('fail', self.droomrobot.say, "Wat een leuk idee! Het bos is echt een magische plek.")
         interaction_choice.add_choice('bos', motivation_choice)
 
         # Speeltuin
         interaction_choice.add_move('speeltuin', self.droomrobot.say,
-                                    'De speeltuin, wat een vrolijke plek! Ik hou van de glijbaan en de schommel.', animated=True)
+                                    'De speeltuin, wat een vrolijke plek! Ik hou van de glijbaan en de schommel.')
         interaction_choice.add_move('speeltuin', self.droomrobot.say,
-                                    'Weet je wat ik daar graag doe? Heel hoog schommelen, bijna tot aan de sterren.', animated=True)
+                                    'Weet je wat ik daar graag doe? Heel hoog schommelen, bijna tot aan de sterren.')
         interaction_choice.add_move('speeltuin', self.droomrobot.ask_open,
                                     f'Wat vind jij het leukste om te doen in de speeltuin {self.user_model['child_name']}?',
-                                    user_model_key='droomplek_motivatie', animated=True)
+                                    user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
         motivation_choice.add_move('success', lambda: self.droomrobot.say(
             self.droomrobot.personalize('Wat vind jij het leukste om te doen in de speeltuin?',
                                         self.user_model['child_age'],
                                         self.user_model['droomplek_motivatie'])))
-        motivation_choice.add_move('fail', self.droomrobot.say, "Dat klinkt heerlijk! Ik kan me dat helemaal voorstellen.", animated=True)
+        motivation_choice.add_move('fail', self.droomrobot.say, "Dat klinkt heerlijk! Ik kan me dat helemaal voorstellen.")
         interaction_choice.add_choice('speeltuin', motivation_choice)
 
         # Ruimte
         interaction_choice.add_move('ruimte', self.droomrobot.say,
-                                    'De ruimte, wat een avontuurlijke plek! Ik stel me voor dat ik in een raket zit en langs de sterren vlieg.', animated=True)
+                                    'De ruimte, wat een avontuurlijke plek! Ik stel me voor dat ik in een raket zit en langs de sterren vlieg.')
         interaction_choice.add_move('ruimte', self.droomrobot.say,
-                                    'Weet je wat ik daar graag zou doen? Zwaaien naar de planeten en zoeken naar aliens die willen spelen.', animated=True)
+                                    'Weet je wat ik daar graag zou doen? Zwaaien naar de planeten en zoeken naar aliens die willen spelen.')
         interaction_choice.add_move('ruimte', self.droomrobot.ask_open,
                                     f'Wat zou jij in de ruimte willen doen {self.user_model['child_name']}?',
-                                    user_model_key='droomplek_motivatie', animated=True)
+                                    user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
         motivation_choice.add_move('success', lambda: self.droomrobot.say(
             self.droomrobot.personalize('Wat zou jij in de ruimte willen doen?',
                                         self.user_model['child_age'],
                                         self.user_model['droomplek_motivatie'])))
-        motivation_choice.add_move('fail', self.droomrobot.say, "Dat klinkt heerlijk! Ik kan me dat helemaal voorstellen.", animated=True)
+        motivation_choice.add_move('fail', self.droomrobot.say, "Dat klinkt heerlijk! Ik kan me dat helemaal voorstellen.")
         interaction_choice.add_choice('ruimte', motivation_choice)
 
         # Other
@@ -426,24 +396,24 @@ class Bloedafname6(DroomrobotScript):
                 f'Gebruik kindvriendelijke verbeelding wat te maken heeft met de plek. ')).response))
         interaction_choice.add_move('other', self.droomrobot.ask_open,
                                     lambda: f'Wat zou jij willen doen in {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} {self.user_model['child_name']}?',
-                                    user_model_key='droomplek_motivatie', animated=True)
+                                    user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
         motivation_choice.add_move('success', lambda: self.droomrobot.say(
             self.droomrobot.personalize(f'Wat zou jij willen doen bij jouw droomplek {self.user_model['droomplek']}?',
                                         self.user_model['child_age'],
-                                        self.user_model['droomplek_motivatie'])), animated=True)
-        motivation_choice.add_move('fail', self.droomrobot.say, "Dat klinkt heerlijk! Ik kan me dat helemaal voorstellen.", animated=True)
+                                        self.user_model['droomplek_motivatie'])))
+        motivation_choice.add_move('fail', self.droomrobot.say, "Dat klinkt heerlijk! Ik kan me dat helemaal voorstellen.")
         interaction_choice.add_choice('other', motivation_choice)
 
         # Fail
-        interaction_choice.add_move('fail', self.droomrobot.say, 'Oh sorry ik begreep je even niet.', animated=True)
-        interaction_choice.add_move('fail', self.droomrobot.say, 'Weetje wat. Ik vind het stand echt super leuk.', animated=True)
-        interaction_choice.add_move('fail', self.droomrobot.say, 'Laten we naar het strand gaan als droomplek.', animated=True)
+        interaction_choice.add_move('fail', self.droomrobot.say, 'Oh sorry ik begreep je even niet.')
+        interaction_choice.add_move('fail', self.droomrobot.say, 'Weetje wat. Ik vind het stand echt super leuk.')
+        interaction_choice.add_move('fail', self.droomrobot.say, 'Laten we naar het strand gaan als droomplek.')
         interaction_choice.add_move('fail', self.droomrobot.say,
-                                    'Ah, het strand! Ik kan de golven bijna horen en het zand onder mijn voeten voelen.', animated=True)
+                                    'Ah, het strand! Ik kan de golven bijna horen en het zand onder mijn voeten voelen.')
         interaction_choice.add_move('fail', self.droomrobot.say,
-                                    'Weet je wat ik daar graag doe? Een zandkasteel bouwen met een vlag er op.', animated=True)
+                                    'Weet je wat ik daar graag doe? Een zandkasteel bouwen met een vlag er op.')
         interaction_choice.add_move('fail', self.droomrobot.ask_open,
                                     f'Wat zou jij op het stand willen doen {self.user_model['child_name']}?',
                                     user_model_key='droomplek_motivatie')
@@ -452,8 +422,8 @@ class Bloedafname6(DroomrobotScript):
         motivation_choice.add_move('success', lambda: self.droomrobot.say(
             self.droomrobot.personalize('Wat zou jij op het strand willen doen?',
                                         self.user_model['child_age'],
-                                        self.user_model['droomplek_motivatie'])), animated=True)
-        motivation_choice.add_move('fail', self.droomrobot.say, "Dat klinkt heerlijk! Ik kan me dat helemaal voorstellen.", animated=True)
+                                        self.user_model['droomplek_motivatie'])))
+        motivation_choice.add_move('fail', self.droomrobot.say, "Dat klinkt heerlijk! Ik kan me dat helemaal voorstellen.")
         interaction_choice.add_choice('fail', motivation_choice)
         interaction_choice.add_move('fail', self.set_user_model_variable, 'droomplek', 'strand')
         interaction_choice.add_move('fail', self.droomrobot.get_article, lambda: self.user_model['droomplek'],

@@ -1,4 +1,4 @@
-from core import AnimationType, InteractionConf
+from droomrobot.core import AnimationType, InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InterventionPhase, \
     InteractionChoice, InteractionChoiceCondition
 
@@ -23,12 +23,11 @@ class Sonde9(DroomrobotScript):
     def _introduction(self):
         self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand up
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
-        self.add_move(self.droomrobot.say, 'Hallo, ik ben de droomrobot!', animated=False)
+        self.add_move(self.droomrobot.say, 'Hallo, ik ben de droomrobot!')
         self.add_move(self.droomrobot.say, 'Wat fijn dat ik je mag helpen vandaag.')
         self.add_move(self.droomrobot.ask_fake, 'Wat is jouw naam?', 3)
         self.add_move(self.droomrobot.say, lambda: f'{self.user_model['child_name']}, wat een leuke naam.')
         self.add_move(self.droomrobot.ask_fake, 'En hoe oud ben je?', 3)
-        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)  ## Smile
         self.add_move(self.droomrobot.say, lambda: f'{str(self.user_model['child_age'])} jaar. Oh wat goed, dan kan ik je een truukje leren om alles in het ziekenhuis makkelijker te maken.')
         self.add_move(self.droomrobot.say, 'Dat truukje werkt bij veel kinderen heel goed.')
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het bij jou gaat werken.')

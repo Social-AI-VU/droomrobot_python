@@ -1,3 +1,4 @@
+import logging
 import sys
 import tkinter as tk
 from json import load, JSONDecodeError
@@ -27,6 +28,17 @@ class TextRedirector:
 
 class DroomrobotGUI:
     def __init__(self, root):
+        # Logging
+        self.logger = logging.getLogger("droomrobot")
+        self.logger.setLevel(logging.DEBUG)  # DEBUG, INFO, WARNING, ERROR, or CRITICAL
+
+        # Avoid adding multiple handlers if re-running in an interactive environment
+        if not self.logger.handlers:
+            console_handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+            console_handler.setFormatter(formatter)
+            self.logger.addHandler(console_handler)
+
         self.root = root
         self.root.title("Droomrobot Controller")
         self.advanced_fields = []
@@ -342,14 +354,33 @@ class DroomrobotGUI:
             self.resume_btn.config(state="disabled")
 
     def stop_script(self):
-        if self.droomrobot_control:
-            self.droomrobot_control.stop()
-            self.script_thread.join()
+        # Step 1: Update GUI immediately
+        self.stop_btn.config(text="Stopping...", state="disabled")
+        self.root.update_idletasks()
 
+        # Step 2: Start background thread to stop things
+        Thread(target=self._stop_script_thread, daemon=True).start()
+
+    def _stop_script_thread(self):
+        try:
+            # Stop and disconnect robot control gracefully
+            if self.droomrobot_control:
+                self.droomrobot_control.stop()
+
+            # Wait for script thread to finish if alive
+            if self.script_thread and self.script_thread.is_alive():
+                self.script_thread.join(timeout=5)
+        except Exception as e:
+            self.logger.error("Error stopping script", exc_info=e)
+        finally:
+            # Step 3: Update GUI safely in the main thread
+            self.root.after(0, self._reset_gui_after_stop)
+
+    def _reset_gui_after_stop(self):
         self.start_btn.config(state="normal")
         self.pause_btn.config(state="disabled")
         self.resume_btn.config(state="disabled")
-        self.stop_btn.config(state="disabled")
+        self.stop_btn.config(text="Stop", state="disabled")
 
     def toggle_console(self):
         if self.console_visible:

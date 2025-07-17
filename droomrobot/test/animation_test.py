@@ -60,6 +60,11 @@ class AnimationTest:
         self.droomrobot.play_audio('../resources/audio/happy_dance.wav')
         self.droomrobot.say('Klaar')
 
+    def expressions(self):
+        self.droomrobot.animate(AnimationType.ACTION, "random_short4", run_async=True)
+        self.droomrobot.animate(AnimationType.EXPRESSION, "emo_007", run_async=True)
+        self.droomrobot.say('Hallo, ik ben de droomrobot!')
+
 
 if __name__ == '__main__':
     droomrobot = AnimationTest(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago",
@@ -67,4 +72,4 @@ if __name__ == '__main__':
                                google_keyfile_path=abspath(join("../../conf", "dialogflow", "google_keyfile.json")),
                                openai_key_path=abspath(join("../../conf", "openai", ".openai_env")),
                                computer_test_mode=False)
-    droomrobot.dance()
+    droomrobot.expressions()
