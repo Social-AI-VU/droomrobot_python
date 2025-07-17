@@ -136,6 +136,9 @@ class DroomrobotScript:
         if 'droomplek' in self.user_model:
             self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
 
+        if 'kleur' in self.user_model:
+            self.user_model['kleur_adjective'] = self.droomrobot.get_adjective(self.user_model['kleur'])
+
     def add_move(self, func, *args, **kwargs):
         self.interaction_moves.append(InteractionMove(func, *args, **kwargs))
 

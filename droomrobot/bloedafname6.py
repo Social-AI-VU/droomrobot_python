@@ -240,13 +240,13 @@ class Bloedafname6(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,
                              'resources/audio/breath_out.wav')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             lambda: f'En kijk maar hoe je krachtige {self.user_model['kleur']} lichtje weer op je arm verschijnt, in precies de goede kleur die je nodig hebt.')
+                             lambda: f'En kijk maar hoe je krachtige {self.user_model['kleur_adjective']} lichtje weer op je arm verschijnt, in precies de goede kleur die je nodig hebt.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
                              'Zie het lichtje steeds sterker en krachtiger worden.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
                              'Zodat jij weer een superheld wordt en jij jezelf kan helpen.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             lambda: f'En als je het nodig hebt, stel je voor dat je {self.user_model['kleur']} lichtje nog helderder gaat schijnen.')
+                             lambda: f'En als je het nodig hebt, stel je voor dat je {self.user_model['kleur_adjective']} lichtje nog helderder gaat schijnen.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
                              'Dat betekent dat jouw kracht helemaal wordt opgeladen.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
@@ -294,7 +294,7 @@ class Bloedafname6(DroomrobotScript):
         self.add_move(self.droomrobot.say,
                       'En weet je wat nu zo fijn is, hoe vaker je dit truukje oefent, hoe makkelijker het wordt.')
         self.add_move(self.droomrobot.say, 'Je kunt dit ook zonder mij oefenen.')
-        self.add_move(self.droomrobot.say, 'Je hoeft alleen maar je ogen dicht te doen en aan je lichtje te denken.')
+        self.add_move(self.droomrobot.say, lambda: f'Je hoeft alleen maar je ogen dicht te doen en aan je {self.user_model['kleur_adjective']} lichtje te denken.')
         self.add_move(self.droomrobot.say, 'Dan word jij weer een superheld met extra kracht.')
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed je het de volgende keer gaat doen.')
         self.add_move(self.droomrobot.say, 'Je doet het op jouw eigen manier, en dat is precies goed.')

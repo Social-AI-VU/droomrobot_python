@@ -180,8 +180,8 @@ class Droomrobot:
             future = asyncio.run_coroutine_threadsafe(self._connect_once(), self.background_loop)
             try:
                 future.result(timeout=10)
-                self.animate(AnimationType.EXPRESSION, "codemao20")
                 self.animate(AnimationType.ACTION, "009")  # Wake up
+                self.animate(AnimationType.EXPRESSION, "codemao20")  # Blink
             except Exception as e:
                 self.logger.error("Failed to connect to mini device", exc_info=e)
 
