@@ -21,7 +21,7 @@ class DroomrobotControl:
 
     def connect(self, mini_ip, mini_id, mini_password, redis_ip,
                 google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
-                dialogflow_timeout=10.0,
+                dialogflow_timeout=None,
                 google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE", default_speaking_rate=1.0,
                 openai_key_path=None,
                 computer_test_mode=False):

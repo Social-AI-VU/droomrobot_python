@@ -78,6 +78,8 @@ class DroomrobotGUI:
         self.redis_ip = tk.StringVar(value=config.get("redis_ip", "192.168.178.84"))
         self.google_keyfile = tk.StringVar(value=config.get("google_keyfile", "../conf/dialogflow/google_keyfile.json"))
         self.openai_keyfile = tk.StringVar(value=config.get("openai_keyfile", "../conf/openai/.openai_env"))
+        self.dialogflow_timeout = tk.StringVar(value=str(config.get("dialogflow_timeout", "15.0")))
+        self.default_speaking_rate = tk.StringVar(value=str(config.get("default_speaking_rate", "0.9")))
         self.debug_mode = tk.BooleanVar(value=config.get("debug_mode", False))
 
         setup_frame = ttk.LabelFrame(self.connect_frame, text="Robot Setup")
@@ -95,13 +97,41 @@ class DroomrobotGUI:
         ttk.Label(setup_frame, text="Redis IP").grid(row=3, column=0)
         ttk.Entry(setup_frame, textvariable=self.redis_ip).grid(row=3, column=1)
 
-        ttk.Label(setup_frame, text="Google Keyfile").grid(row=4, column=0)
-        ttk.Entry(setup_frame, textvariable=self.google_keyfile).grid(row=4, column=1)
+        # --- Advanced Settings Toggle ---
+        self.connect_advanced_visible = tk.BooleanVar(value=False)
+        toggle_button = ttk.Button(
+            setup_frame,
+            text="▸ Advanced Settings",
+            command=self.toggle_connect_advanced_settings,
+            style="TButton"
+        )
+        toggle_button.grid(row=5, column=0, columnspan=2, sticky="w", pady=(10, 0))
+        self.connect_advanced_button = toggle_button
 
-        ttk.Label(setup_frame, text="OpenAI Keyfile").grid(row=5, column=0)
-        ttk.Entry(setup_frame, textvariable=self.openai_keyfile).grid(row=5, column=1)
+        # --- Advanced Frame (Initially Hidden) ---
+        self.connect_advanced_frame = ttk.Frame(setup_frame)
+        self.connect_advanced_frame.grid(row=6, column=0, columnspan=2, sticky="w", pady=(0, 10))
+        self.connect_advanced_frame.grid_remove()  # Start hidden
 
-        ttk.Checkbutton(setup_frame, text="Debug mode", variable=self.debug_mode).grid(row=6, column=0, columnspan=2)
+        # Populate advanced frame
+        ttk.Label(self.connect_advanced_frame, text="Google Keyfile Path").grid(row=0, column=0, sticky="w")
+        ttk.Entry(self.connect_advanced_frame, textvariable=self.google_keyfile, width=50).grid(row=0, column=1)
+
+        ttk.Label(self.connect_advanced_frame, text="OpenAI Keyfile Path").grid(row=1, column=0, sticky="w")
+        ttk.Entry(self.connect_advanced_frame, textvariable=self.openai_keyfile, width=50).grid(row=1, column=1)
+
+        ttk.Label(self.connect_advanced_frame, text="Dialogflow Timeout").grid(row=2, column=0, sticky="w")
+        ttk.Entry(self.connect_advanced_frame, textvariable=self.dialogflow_timeout, width=10).grid(row=2, column=1,
+                                                                                                    sticky="w")
+
+        ttk.Label(self.connect_advanced_frame, text="Speaking Rate").grid(row=3, column=0, sticky="w")
+        ttk.Entry(self.connect_advanced_frame, textvariable=self.default_speaking_rate, width=10).grid(row=3, column=1,
+                                                                                              sticky="w")
+        ttk.Checkbutton(
+            self.connect_advanced_frame,
+            text="No robot debug mode",
+            variable=self.debug_mode
+        ).grid(row=4, column=0, columnspan=2, sticky="w")
 
         self.connect_btn = ttk.Button(self.connect_frame, text="Connect", command=self.handle_connect)
         self.connect_btn.grid(row=1, column=0, pady=10)
@@ -229,6 +259,16 @@ class DroomrobotGUI:
             self.toggle_button.config(text="Hide Advanced Settings ⯆")
         self.advanced_visible = not self.advanced_visible
 
+    def toggle_connect_advanced_settings(self):
+        visible = self.connect_advanced_visible.get()
+        if visible:
+            self.connect_advanced_frame.grid_remove()
+            self.connect_advanced_button.config(text="▸ Advanced Settings")
+        else:
+            self.connect_advanced_frame.grid()
+            self.connect_advanced_button.config(text="▼ Advanced Settings")
+        self.connect_advanced_visible.set(not visible)
+
     def add_advanced_field(self, key_default="", val_default=""):
         key_var = tk.StringVar(value=key_default)
         val_var = tk.StringVar(value=val_default)
@@ -305,8 +345,9 @@ class DroomrobotGUI:
             mini_password=self.mini_password.get(),
             redis_ip=self.redis_ip.get(),
             google_keyfile_path=abspath(self.google_keyfile.get()),
+            dialogflow_timeout=self.float_validation(self.dialogflow_timeout.get()),
+            default_speaking_rate=self.float_validation(self.default_speaking_rate.get()),
             openai_key_path=abspath(self.openai_keyfile.get()),
-            default_speaking_rate=0.9,
             computer_test_mode=self.debug_mode.get()
         )
 
@@ -460,6 +501,14 @@ class DroomrobotGUI:
         except (FileNotFoundError, JSONDecodeError) as e:
             print(f"Error loading config: {e}")
             return {}
+
+    @staticmethod
+    def float_validation(value, name=""):
+        try:
+            return float(value)
+        except ValueError:
+            print(f"Warning: Invalid input for '{name}'.")
+            return
 
 
 # --- Run GUI ---
