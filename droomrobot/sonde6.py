@@ -140,7 +140,7 @@ class Sonde6(DroomrobotScript):
 
         # Dolfijn
         intervention_prep_choice.add_move('dolfijn', self.droomrobot.say, lambda: f'Stel je je maar weer voor dat je een {self.user_model['kleur']} dolfijn in de zee bent.')
-        intervention_prep_choice.add_move('dolfijn', self.droomrobot.say, 'Kijk maar weer om je heen wat je allemaal ziet.')
+        intervention_prep_choice.add_move('dolfijn', self.droomrobot.say, 'Kijk maar weer in gedachten om je heen wat je allemaal ziet.')
         intervention_prep_choice.add_move('dolfijn', self.droomrobot.say, 'De visjes om je heen en de mooie kleuren.')
         intervention_prep_choice.add_move('dolfijn', self.droomrobot.say, 'Merk maar hoe soepel je je door het water heen beweegt, en hoe fijn je je voelt op die plek.')
         intervention_prep_choice.add_move('dolfijn', self.droomrobot.say, 'Als je goed kijkt zie je in de verte een oude schatkist op de oceaanbodem.')
@@ -213,7 +213,7 @@ class Sonde6(DroomrobotScript):
         sentences = [
             "Je bent precies op de juiste weg, blijf maar lekker doorgaan.",
             "Elke keer als je rustig in- en uitademt, voel je je nog fijner en sterker.",
-            "Kijk eens hoeveel moois er om je heen is, misschien zie je nog iets bijzonders!",
+            "Kijk eens hoeveel moois er is, misschien zie je nog iets bijzonders!",
             "Jij hebt alles onder controle, je lichaam weet precies wat het moet doen.",
             "Misschien voel je iets geks of kriebelt het een beetje, dat is helemaal normaal!",
             "Je mag zelf kiezen hoe snel of langzaam je gaat, precies zoals jij fijn vindt.",
@@ -372,7 +372,7 @@ class Sonde6(DroomrobotScript):
         interaction_choice.add_move('waterglijbaan', self.droomrobot.say, 'Het is een lekker warme dag en je voelt de zon op je gezicht.')
         interaction_choice.add_move('waterglijbaan', self.droomrobot.say, 'Om je heen hoor je het spetterende water en vrolijke stemmen.')
         interaction_choice.add_move('waterglijbaan', self.droomrobot.say, 'En voor je zie je de grootste, gaafste waterglijbanen die je ooit hebt gezien!')
-        interaction_choice.add_move('waterglijbaan', self.droomrobot.say, 'Kijk maar eens om je heen, welke glijbanen je allemaal ziet, en welke kleuren de glijbanen hebben.')
+        interaction_choice.add_move('waterglijbaan', self.droomrobot.say, 'Kijk maar eens in gedachten om je heen, welke glijbanen je allemaal ziet, en welke kleuren de glijbanen hebben.')
         interaction_choice.add_move('waterglijbaan', self.droomrobot.ask_entity_llm, 'Welke kleur heeft de glijbaan waar jij vanaf wilt gaan?', strict=True, user_model_key='kleur')
         interaction_choice.add_move('waterglijbaan', self.droomrobot.get_adjective, lambda: self.user_model['kleur'], user_model_key='kleur_adjective')
         interaction_choice.add_move('waterglijbaan', self.droomrobot.say, lambda: f'Wat goed! Die mooie {self.user_model['kleur_adjective']} glijbaan gaat jou vandaag helpen.')
@@ -390,7 +390,7 @@ class Sonde6(DroomrobotScript):
         # Dolfijn
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'En terwijl je zo rustig aan het ademhalen bent, mag je je gaan voorstellen dat je een dolfijn bent die aan het zwemmen is.')
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Je bent in een mooie, blauwe zee.')
-        interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Kijk maar eens om je heen wat je allemaal kan zien.')
+        interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Kijk maar eens in gedachten om je heen wat je allemaal kan zien.')
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Welke kleuren er allemaal zijn en hoe het er voelt.', sleep_time=2)
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Misschien is het water warm en zacht, of fris en koel.')
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Je voelt hoe je licht wordt, alsof je zweeft.')

@@ -210,7 +210,7 @@ class Sonde4(DroomrobotScript):
             "Wat doe jij dit goed! Voel maar hoe sterk en rustig je bent.",
             "Je bent precies op de juiste weg, blijf maar lekker doorgaan.",
             "Elke keer als je rustig in- en uitademt, voel je je nog fijner en sterker.",
-            "Kijk eens hoeveel moois er om je heen is, misschien zie je nog iets bijzonders!",
+            "Kijk eens hoeveel moois er is, misschien zie je nog iets bijzonders!",
             "Jij hebt alles onder controle, je lichaam weet precies wat het moet doen.",
             "Misschien voel je iets geks of kriebelt het een beetje, dat is helemaal normaal!",
             "Je mag zelf kiezen hoe snel of langzaam je gaat, precies zoals jij fijn vindt.",
@@ -390,7 +390,7 @@ class Sonde4(DroomrobotScript):
         # Dolfijn
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Terwijl je rustig ademt, stel je voor dat je een dolfijn bent die lekker aan het zwemmen is.')
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Je zwemt in een mooie, blauwe zee.')
-        interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Kijk maar eens om je heen wat je allemaal ziet.')
+        interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Kijk maar eens in je hoofd om je heen wat je allemaal ziet.')
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Welke kleuren zie je in het water?', sleep_time=2)
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Voelt het water warm en zacht, of juist een beetje fris en koel.')
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Je voelt je licht, alsof je zweeft in het water.')

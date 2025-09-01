@@ -77,9 +77,9 @@ class Bloedafname6(DroomrobotScript):
                       'Stel je voor, dat je op een hele fijne mooie plek bent, in je eigen gedachten.')
         self.add_move(self.droomrobot.say,
                       lambda: f'Misschien is het weer {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']}, of een nieuwe droomwereld')
-        self.add_move(self.droomrobot.say, 'Kijk maar eens om je heen, wat je allemaal op die mooie plek ziet.')
+        self.add_move(self.droomrobot.say, 'Kijk maar eens in gedachten om je heen, wat je allemaal op die mooie plek ziet.')
         self.add_move(self.droomrobot.say, 'Misschien ben je er alleen of is er iemand bij je.')
-        self.add_move(self.droomrobot.say, 'Kijk maar welke mooie kleuren je allemaal om je heen ziet.')
+        self.add_move(self.droomrobot.say, 'Kijk maar welke mooie kleuren je allemaal ziet.')
         self.add_move(self.droomrobot.say, 'Misschien wel groen, of paars, of regenboog kleuren.')
         self.add_move(self.droomrobot.say, 'En merk maar hoe fijn jij je op deze plek voelt.')
         self.add_move(self.droomrobot.say, 'En stel je dan nu voor, dat je in jouw droomreis een superheld bent.')
@@ -214,7 +214,7 @@ class Bloedafname6(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              lambda: f'Stel je maar voor dat je bij {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} bent.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Kijk maar weer naar alle mooie kleuren die om je heen zijn, en merk hoe fijn je je voelt op deze plek.')
+                             'Kijk maar weer naar alle mooie kleuren die er zijn, en merk hoe fijn je je voelt op deze plek.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              'Luister maar naar alle fijne geluiden op die plek.')
 

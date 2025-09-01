@@ -238,9 +238,9 @@ class Kapinductie6(DroomrobotScript):
         interaction_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
 
         interaction_choice.add_move('strand', self.droomrobot.say, 'En terwijl je zo rustig aan het ademhalen bent mag je gaan voorstellen dat je op het strand bent.')
-        interaction_choice.add_move('strand', self.droomrobot.say, 'Kijk maar eens in gedachten om je heen wat je allemaal op die mooie plek ziet.')
+        interaction_choice.add_move('strand', self.droomrobot.say, 'Kijk maar eens in je gedachten om je heen wat je allemaal op die mooie plek ziet.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Misschien ben je er alleen, of is er iemand bij je.')
-        interaction_choice.add_move('strand', self.droomrobot.say, 'Kijk maar welke mooie kleuren je allemaal om je heen ziet.')
+        interaction_choice.add_move('strand', self.droomrobot.say, 'Kijk maar welke mooie kleuren je allemaal ziet.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Misschien wel groen of paars of regenboog kleuren.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'En merk maar hoe fijn jij je op deze plek voelt.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Luister maar lekker naar de golven van de zee.')
@@ -263,7 +263,7 @@ class Kapinductie6(DroomrobotScript):
 
         # Bos
         interaction_choice.add_move('bos', self.droomrobot.say, 'En terwijl je zo rustig aan het ademhalen bent, mag je gaan voorstellen dat je in een prachtig bos bent.')
-        interaction_choice.add_move('bos', self.droomrobot.say, 'Kijk maar eens om je heen wat je allemaal op die mooie plek ziet.')
+        interaction_choice.add_move('bos', self.droomrobot.say, 'Kijk maar eens in je gedachten om je heen wat je allemaal op die mooie plek ziet.')
         interaction_choice.add_move('bos', self.droomrobot.say, 'Misschien zie je grote bomen, of kleine bloemen die zachtjes in de wind bewegen.')
         interaction_choice.add_move('bos', self.droomrobot.say, 'En merk maar hoe fijn jij je op deze plek voelt.')
         interaction_choice.add_move('bos', self.droomrobot.say, 'Luister maar naar het geluid van de vogeltjes die fluiten.')
@@ -285,7 +285,7 @@ class Kapinductie6(DroomrobotScript):
         # Ruimte
         interaction_choice.add_move('ruimte', self.droomrobot.say, 'En terwijl je zo rustig aan het ademhalen bent, mag je gaan voorstellen dat je in de ruimte bent, hoog boven de aarde.')
         interaction_choice.add_move('ruimte', self.droomrobot.say, 'Misschien ben je er alleen, of is er iemand bij je.')
-        interaction_choice.add_move('ruimte', self.droomrobot.say, 'Kijk maar eens om je heen, wat zie je daar allemaal?')
+        interaction_choice.add_move('ruimte', self.droomrobot.say, 'Kijk maar eens in gedachten om je heen, wat zie je daar allemaal?')
         interaction_choice.add_move('ruimte', self.droomrobot.say, 'Misschien zie je de aarde heel klein worden, helemaal onder je, alsof je heel hoog in de lucht vliegt.')
         interaction_choice.add_move('ruimte', self.droomrobot.say, 'Misschien zie je sterren die heel fel schijnen, in verschillende kleuren.')
         interaction_choice.add_move('ruimte', self.droomrobot.say, 'Je voelt je heel rustig en veilig in de ruimte, want er is zoveel te ontdekken.')
@@ -332,7 +332,7 @@ class Kapinductie6(DroomrobotScript):
 
         # Strand
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Stel je maar voor dat je weer op het strand bent, op die fijne plek.')
-        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Kijk maar weer naar alle mooie kleuren die om je heen zijn en merk hoe fijn je je voelt op deze plek.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Kijk maar weer naar alle mooie kleuren die er zijn en merk hoe fijn je je voelt op deze plek.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Luister maar naar alle fijne geluiden op het strand.')
         intervention_prep_choice.add_move('strand', self.droomrobot.play_audio, 'resources/sounds/ocean_waves.wav')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Het zand onder je voeten is heerlijk zacht.')
@@ -342,7 +342,7 @@ class Kapinductie6(DroomrobotScript):
 
         # Bos
         intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Stel je maar voor dat je weer in het bos bent, op die fijne plek.')
-        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Kijk maar weer naar alle mooie kleuren die om je heen zijn en merk hoe fijn je je voelt op deze plek.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Kijk maar weer naar alle mooie kleuren die er zijn en merk hoe fijn je je voelt op deze plek.')
         intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Luister maar naar alle fijne geluiden in het bos.')
         intervention_prep_choice.add_move('bos', self.droomrobot.play_audio, 'resources/audio/forest-sounds.wav')
         intervention_prep_choice.add_move('bos', self.droomrobot.say, 'De grond onder je voeten is zacht en bedekt met een klein laagje mos.')
