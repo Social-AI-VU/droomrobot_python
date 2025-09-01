@@ -201,6 +201,18 @@ class DroomrobotGUI:
         self.dance_button = ttk.Button(self.advanced_frame, text="💃 Let Robot Dance", command=self.dance)
         self.dance_button.pack(anchor="w", pady=(5, 10))
 
+        # --- Say Command (Robot Speak) ---
+        say_frame = ttk.Frame(self.advanced_frame)
+        say_frame.pack(anchor="w", pady=(5, 10))
+
+        ttk.Label(say_frame, text="Say:").pack(side="left")
+
+        self.say_text = tk.StringVar()
+        ttk.Entry(say_frame, textvariable=self.say_text, width=40).pack(side="left", padx=(5, 5))
+
+        self.say_button = ttk.Button(say_frame, text="🗣️ Speak", command=self.say_text_command, state="disabled")
+        self.say_button.pack(side="left")
+
         # Control Buttons
         button_frame = ttk.Frame(self.full_control_frame)
         button_frame.grid(row=4, column=0, pady=10)
@@ -356,6 +368,7 @@ class DroomrobotGUI:
         self.console_toggle_btn.grid()
         self.disconnect_btn.config(state="normal")
         self.start_btn.config(state="normal")
+        self.say_button.config(state="normal")
 
     def disconnect(self):
         if self.droomrobot_control:
@@ -491,6 +504,20 @@ class DroomrobotGUI:
                 self.logger.error("Dance failed:", exc_info=e)
         else:
             self.logger.warning("Robot is not connected.")
+
+    def say_text_command(self):
+        if self.droomrobot_control:
+            text = self.say_text.get().strip()
+            if text:
+                try:
+                    self.droomrobot_control.say(text)
+                except Exception as e:
+                    self.logger.error("Say command failed:", exc_info=e)
+            else:
+                self.logger.warning("No text entered to speak.")
+        else:
+            self.logger.warning("Robot is not connected.")
+
 
     def load_config(self, path=abspath(join("../conf", "droomrobot", "default_settings.json"))):
         try:

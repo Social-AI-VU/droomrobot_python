@@ -104,6 +104,10 @@ class DroomrobotControl:
             self.droomrobot.animate(AnimationType.ACTION, "dance_0007en", run_async=True)
             self.droomrobot.play_audio('resources/audio/happy_dance.wav')
 
+    def say(self, text: str):
+        if self.droomrobot:
+            self.droomrobot.say(text, animated=False)
+
 # if __name__ == '__main__':
 #     droomrobot_control = DroomrobotControl()
 #
