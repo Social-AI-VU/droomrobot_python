@@ -101,4 +101,4 @@ if __name__ == '__main__':
                                google_keyfile_path=abspath(join("../../conf", "dialogflow", "google_keyfile.json")),
                                openai_key_path=abspath(join("../../conf", "openai", ".openai_env")),
                                computer_test_mode=False)
-    droomrobot.expressions()
+    droomrobot.expressions('codemao')

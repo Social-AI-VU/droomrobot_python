@@ -250,6 +250,7 @@ class Droomrobot:
 
         self.speaker.request(AudioRequest(reply.waveform, reply.sample_rate))
         if animated:
+            self.animate(AnimationType.EXPRESSION, self._random_speaking_eye_expression(), run_async=True)
             self.animate(AnimationType.ACTION, self._random_speaking_act(), run_async=True)
         self.log_utterance(speaker='robot', text=text)
         if sleep_time and sleep_time > 0:
@@ -597,3 +598,12 @@ class Droomrobot:
             "speakingAct17"
         ]
         return rand.choice(speaking_acts)
+
+    @staticmethod
+    def _random_speaking_eye_expression():
+        speaking_expressions = [
+                "codemao1", "codemao2", "codemao3", "codemao4", "codemao5",
+                "codemao6", "codemao7", "codemao8", "codemao9", "codemao10",
+                "codemao11", "codemao12", "codemao13", "codemao14", "codemao15",
+                "codemao16", "codemao17", "codemao18", "codemao19", "codemao20"]
+        return rand.choice(speaking_expressions)
