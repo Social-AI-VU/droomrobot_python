@@ -112,7 +112,7 @@ class Bloedafname6(DroomrobotScript):
         self.add_move(self.droomrobot.play_audio, 'resources/audio/breath_out.wav')
         self.add_move(self.droomrobot.say, lambda: f'Goed zo {self.user_model['child_name']}, dat gaat al heel goed.')
         self.add_move(self.droomrobot.say,
-                      'En terwijl je zo goed aan het ademen bent, stel je voor dat er een klein, warm lichtje op je arm verschijnt.')
+                      lambda: f'En terwijl je zo goed aan het ademen bent, stel je voor dat er een klein, warm lichtje op je {self.user_model['priklocatie']} verschijnt.')
         self.add_move(self.droomrobot.say, 'Dat lichtje is magisch en laadt jouw kracht op.')
         self.add_move(self.droomrobot.say, 'Stel je eens voor hoe dat lichtje eruit ziet.')
         self.add_move(self.droomrobot.say, 'Is het geel, blauw of misschien jouw lievelingskleur?')
@@ -238,7 +238,7 @@ class Bloedafname6(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,
                              'resources/audio/breath_out.wav')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             lambda: f'En kijk maar hoe je krachtige {self.user_model['kleur_adjective']} lichtje weer op je arm verschijnt, in precies de goede kleur die je nodig hebt.')
+                             lambda: f'En kijk maar hoe je krachtige {self.user_model['kleur_adjective']} lichtje weer op je {self.user_model['priklocatie']} verschijnt, in precies de goede kleur die je nodig hebt.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
                              'Zie het lichtje steeds sterker en krachtiger worden.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
@@ -252,7 +252,7 @@ class Bloedafname6(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
                              'Het geeft een veilige en zachte gloed om je te helpen.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             'Als je iets voelt op je arm, dan is dat een teken dat je superkrachten volledig werken.')
+                             lambda: f'Als je iets voelt op je {self.user_model['priklocatie']}, dan is dat een teken dat je superkrachten volledig werken.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Adem diep in.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,
                              'resources/audio/breath_in.wav')

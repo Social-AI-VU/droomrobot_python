@@ -146,6 +146,7 @@ class DroomrobotGUI:
         self.participant_id = tk.StringVar()
         self.child_name = tk.StringVar()
         self.child_age = tk.IntVar()
+        self.priklocatie = tk.StringVar(value="arm")
         try:
             context_enum = InteractionContext[config.get("context")]
         except KeyError:
@@ -171,12 +172,23 @@ class DroomrobotGUI:
         ttk.Entry(interaction_frame, textvariable=self.child_age).grid(row=2, column=1)
 
         ttk.Label(interaction_frame, text="Context").grid(row=3, column=0)
-        ttk.Combobox(interaction_frame, textvariable=self.context,
-                     values=[e.name for e in InteractionContext]).grid(row=3, column=1)
+        context_combo = ttk.Combobox(
+            interaction_frame,
+            textvariable=self.context,
+            values=[e.name for e in InteractionContext]
+        )
+        context_combo.grid(row=3, column=1)
+        context_combo.bind("<<ComboboxSelected>>", self.on_interaction_context_change)
+
 
         ttk.Label(interaction_frame, text="Onderdeel").grid(row=4, column=0)
         ttk.Combobox(interaction_frame, textvariable=self.session,
                      values=[e.name for e in InteractionSession]).grid(row=4, column=1)
+
+        self.priklocatie_frame = ttk.Frame(interaction_frame)
+        ttk.Label(self.priklocatie_frame, text="Priklocatie").grid(row=5, column=0)
+        ttk.Entry(self.priklocatie_frame, textvariable=self.priklocatie).grid(row=5, column=1)
+        self.priklocatie_frame.grid_remove()  # start hidden
 
         # Advanced Settings
         self.advanced_visible = False
@@ -244,6 +256,9 @@ class DroomrobotGUI:
         self.droomrobot_control = None
         self.script_thread = None
 
+        # Ensure priklocatie field visibility matches initial context
+        self.on_interaction_context_change()
+
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def on_close(self):
@@ -296,11 +311,20 @@ class DroomrobotGUI:
         frame.pack(anchor="w", pady=2)
         self.advanced_fields.append((key_var, val_var))
 
+    def on_interaction_context_change(self, event=None):
+        if self.context.get() == "BLOEDAFNAME":
+            self.priklocatie_frame.grid()
+        else:
+            self.priklocatie_frame.grid_remove()
+
+
     def collect_user_model(self):
         user_model = {
             "child_name": self.child_name.get(),
             "child_age": self.child_age.get(),
         }
+        if self.context.get() == "BLOEDAFNAME":
+            user_model["priklocatie"] = self.priklocatie.get()
         for key_var, val_var in self.advanced_fields:
             key = key_var.get().strip()
             val = val_var.get().strip()
