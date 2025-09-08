@@ -29,8 +29,6 @@ class Kapinductie6(DroomrobotScript):
         self.add_moves(intro_moves)
 
         self.add_move(self.droomrobot.say, 'Je kunt kiezen uit het strand, het bos, of de ruimte.')
-
-        self.add_move(self.droomrobot.say, 'Je kunt kiezen uit het strand, het bos, of de ruimte.')
         self.add_move(self.droomrobot.ask_entity,
                       'Wat is de plek waar jij je fijn voelt?',
                       {'droomplek': 1},
