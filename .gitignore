@@ -34,3 +34,6 @@ user_models/
 # Ignore droomrobot config files
 conf/droomrobot/*.json
 
+# Ignore droomrobot config files
+conf/env/.env
+

@@ -5,6 +5,7 @@ from sic_framework.services.openai_gpt.gpt import GPTRequest
 from droomrobot.core import AnimationType, InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InteractionChoice, \
     InteractionChoiceCondition, InterventionPhase
+from droomrobot.introduction_factory import IntroductionFactory
 
 
 class Kapinductie9(DroomrobotScript):
@@ -25,30 +26,17 @@ class Kapinductie9(DroomrobotScript):
             print("Interaction part not recognized")
 
     def _introduction(self):
-        self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
-        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
-        self.add_move(self.droomrobot.say, 'Hallo, ik ben de droomrobot!')
-        self.add_move(self.droomrobot.say, 'Wat fijn dat ik je mag helpen vandaag.')
-        self.add_move(self.droomrobot.ask_fake, 'Wat is jouw naam?', 3)
-        self.add_move(self.droomrobot.say, lambda: f'{self.user_model['child_name']}, wat een leuke naam.')
-        self.add_move(self.droomrobot.ask_fake, 'En hoe oud ben je?', 3)
-        self.add_move(self.droomrobot.say, lambda: f'{str(self.user_model['child_age'])} jaar. Oh wat goed, dan kan ik je een truc leren om alles in het ziekenhuis voor jou makkelijker te maken.')
-        self.add_move(self.droomrobot.say, 'Die truc werkt bij veel kinderen heel goed.')
-        self.add_move(self.droomrobot.say, 'En ik ben dan ook benieuwd hoe goed het bij jou gaat werken.')
-        self.add_move(self.droomrobot.say, 'Jij kunt jezelf helpen door je lichaam en je hoofd te ontspannen.')
-        self.add_move(self.droomrobot.say, 'We gaan het samen doen, op jouw eigen manier.')
-        self.add_move(self.droomrobot.say, 'Ik ga je wat vertellen over deze truc.')
-        self.add_move(self.droomrobot.say, 'Let maar goed op, dan ga jij het ook leren.')
-        self.add_move(self.droomrobot.say, 'We gaan samen een reis maken in je fantasie, wat ervoor zorgt dat jij je fijn, rustig en sterk voelt.')
-        self.add_move(self.droomrobot.say, 'Met je fantasie kun je aan iets fijns denken terwijl je hier bent, als een soort droom.')
-        self.add_move(self.droomrobot.say, 'En het grappige is dat als je denkt aan iets fijns, dat jij je dan ook fijner gaat voelen.')
-        self.add_move(self.droomrobot.say, 'Ik zal het even voordoen.')
-        self.add_move(self.droomrobot.say, 'Ik ga het liefst in gedachten naar de wolken, lekker relaxed zweven.')
-        self.add_move(self.droomrobot.say, 'Maar het hoeft niet de wolken te zijn. Iedereen heeft een eigen fijne plek.')
-        self.add_move(self.droomrobot.say, 'Laten we nu samen bedenken wat jouw fijne plek is.')
-        self.add_move(self.droomrobot.say, 'Je kan bijvoorbeeld in gedachten naar het strand, het bos, op vakantie of wat anders.')
+        intro_moves = IntroductionFactory.age6_9(droomrobot=self.droomrobot,
+                                                 interaction_context=self.interaction_context,
+                                                 user_model=self.user_model)
+        self.add_moves(intro_moves)
 
-        self.add_move(self.droomrobot.ask_entity_llm, 'Naar welke veilige plek zou jij in gedachten willen gaan?',
+        self.add_move(self.droomrobot.say, 'Je kunt kiezen uit het strand, het bos, of de ruimte.')
+        self.add_move(self.droomrobot.ask_entity,
+                      'Wat is de plek waar jij je fijn voelt?',
+                      {'droomplek': 1},
+                      'droomplek',
+                      'droomplek',
                       user_model_key='droomplek')
         self.add_move(self.droomrobot.get_article, lambda: self.user_model['droomplek'],
                       user_model_key='droomplek_lidwoord')

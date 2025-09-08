@@ -1,10 +1,7 @@
-from time import sleep
-
-from sic_framework.services.openai_gpt.gpt import GPTRequest
-
 from droomrobot.core import AnimationType, InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InteractionChoice, \
     InteractionChoiceCondition, InterventionPhase
+from droomrobot.introduction_factory import IntroductionFactory
 
 
 class Kapinductie4(DroomrobotScript):
@@ -25,25 +22,10 @@ class Kapinductie4(DroomrobotScript):
 
     def _introduction(self):
 
-        self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
-        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
-        self.add_move(self.droomrobot.say, 'Hallo, ik ben de droomrobot!')
-        self.add_move(self.droomrobot.say, 'Wat fijn dat ik je mag helpen vandaag.')
-        self.add_move(self.droomrobot.ask_fake, 'Hoe heet jij?', 3)
-        self.add_move(self.droomrobot.say, lambda: f'{self.user_model['child_name']}, wat leuk je te ontmoeten.')
-        self.add_move(self.droomrobot.ask_fake, 'En hoe oud ben je?', 3)
-        self.add_move(self.droomrobot.say, lambda: f'{str(self.user_model['child_age'])} jaar. '
-                                           f'Oh wat goed, dan ben je al oud genoeg om mijn speciale trucje te leren.')
-        self.add_move(self.droomrobot.say, 'Het is een truukje dat kinderen helpt om zich fijn en'
-                                           'sterk te voelen in het ziekenhuis.')
-        self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het bij jou gaat werken.')
-        self.add_move(self.droomrobot.say, 'Het werkt zo')
-        self.add_move(self.droomrobot.say, 'Ik kan jou meenemen op een droomreis!')
-        self.add_move(self.droomrobot.say, 'Een droomreis is een trucje waarbij je aan iets heel leuks denkt.')
-        self.add_move(self.droomrobot.say, 'Dat helpt je om rustig en sterk te blijven.')
-        self.add_move(self.droomrobot.say, 'Nu mag jij kiezen waar je heen wil in jouw droomreis.'
-                                           'Je kunt kiezen uit het strand, het bos, of de ruimte.')
+        intro_moves = IntroductionFactory.age4(droomrobot=self.droomrobot, interaction_context=self.interaction_context, user_model=self.user_model)
+        self.add_moves(intro_moves)
 
+        self.add_move(self.droomrobot.say, 'Je kunt kiezen uit het strand, het bos, of de ruimte.')
         self.add_move(self.droomrobot.ask_entity,
                       'Wat is de plek waar jij je fijn voelt?',
                       {'droomplek': 1},
@@ -58,7 +40,7 @@ class Kapinductie4(DroomrobotScript):
         interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
 
-        self.add_move(self.droomrobot.say, 'Oke, laten we samen gaan oefenen.')
+        self.add_move(self.droomrobot.say, 'Oke, laten we samen gaan oefenen met het maken van de droomreis.')
         self.add_move(self.droomrobot.say, 'Ga even lekker zitten zoals jij dat fijn vindt.', sleep_time=1)
 
         self.add_move(self.droomrobot.ask_yesno, "Zit je zo goed?", user_model_key='zit_goed')
@@ -261,7 +243,7 @@ class Kapinductie4(DroomrobotScript):
         interaction_choice.add_move('bos', self.droomrobot.say, 'Misschien zie je hoe bomen, groene blaadjes of een klein diertje.')
         interaction_choice.add_move('bos', self.droomrobot.say, 'En merk maar hoe fijn jij je op deze plek voelt.')
         interaction_choice.add_move('bos', self.droomrobot.say, 'Luister maar naar de vogels die zingen.')
-        interaction_choice.add_move('strand', self.droomrobot.play_audio, 'resources/audio/forest-sounds.wav')
+        interaction_choice.add_move('bos', self.droomrobot.play_audio, 'resources/audio/forest-sounds.wav')
         interaction_choice.add_move('bos', self.droomrobot.say, 'Misschien voel je de frisse lucht, of schijnt de zon door de bomen op je gezicht.')
         interaction_choice.add_move('bos', self.droomrobot.say, 'Hier kun je alles doen wat je leuk vindt.')
         interaction_choice.add_move('bos', self.droomrobot.say, 'Misschien klim je in een boom, of zoek je naar dieren.')

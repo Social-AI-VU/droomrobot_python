@@ -145,6 +145,9 @@ class DroomrobotScript:
     def add_choice(self, interaction_choice: InteractionChoice):
         self.interaction_moves.append(interaction_choice)
 
+    def add_moves(self, moves: list):
+        self.interaction_moves.extend(moves)
+
     def run(self):
         if self.phases and self.phase_moves:
             self.interaction_moves = self.phase_moves.execute(self.phases[self.current_phase])

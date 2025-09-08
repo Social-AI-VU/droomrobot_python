@@ -458,6 +458,17 @@ class Droomrobot:
                        f'Het mag geen vraag zijn. De woordenschat en het taalniveau moeten op B2 niveau zijn.'))
         return gpt_response.response
 
+    def generate_funny_response(self, user_age, context, user_input):
+        gpt_response = self.gpt.request(
+            GPTRequest(f'Je bent een sociale robot die praat met een kind van {str(user_age)} jaar oud.'
+                       f'Het kind ligt in het ziekenhuis.'
+                       f'Jij bent daar om het kind af te leiden met een leuk gesprek.'
+                       f'Dit is de context van het gesprek: {context}'
+                       f'Het kind reageerde met het volgende: "{user_input}"'
+                       f'Genereer nu een grappige reactie in één of twee zinnen. '
+                       f'Het mag geen vraag zijn. De woordenschat en het taalniveau moeten op B2 niveau zijn.'))
+        return gpt_response.response
+
     def generate_question(self, user_age, robot_input, user_input):
         gpt_response = self.gpt.request(
             GPTRequest(f'Je bent een sociale robot die praat met een kind van {str(user_age)} jaar oud.'
