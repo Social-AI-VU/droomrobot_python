@@ -125,9 +125,13 @@ class Droomrobot:
         if openai_key_path:
             load_dotenv(openai_key_path)
 
-        # Setup GPT client
-        conf = GPTConf(openai_key=environ["OPENAI_API_KEY"])
-        self.gpt = GPT(conf=conf)
+        try:
+            # Setup GPT client
+            conf = GPTConf(openai_key=environ["OPENAI_API_KEY"])
+            self.gpt = GPT(conf=conf)
+        except KeyError:
+            self.logger.warning("No openAI key available")
+            self.gpt = None
         print('Complete')
 
         print("\n SETTING UP DIALOGFLOW")
