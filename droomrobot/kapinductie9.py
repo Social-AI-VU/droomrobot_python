@@ -281,53 +281,135 @@ class Kapinductie9(DroomrobotScript):
                              "random_short4", run_async=True)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.EXPRESSION,
                              "emo_007", run_async=True)
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Wat fijn dat ik je mag helpen! We gaan samen weer op een mooie droomreis.',
-                             animated=False)
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Omdat je net al zo goed hebt geoefend, zal het nu nog makkelijker gaan.')
         interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Je mag weer goed gaan zitten en je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.', sleep_time=1)
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Luister maar weer goed naar mijn stem en merk maar dat andere geluiden in het ziekenhuis veel stiller worden.')
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Ga maar rustig ademen zoals je dat gewend bent.')
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Adem rustig in.')
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.play_audio,
-                             'resources/audio/breath_in.wav')
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'en rustig uit.')
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.play_audio,
-                             'resources/audio/breath_out.wav')
+                             'Wat fijn dat ik je mag helpen! We gaan samen weer op een mooie droomreis.',
+                             animated=False)
+
+        # phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
+        #                      'Omdat je net al zo goed hebt geoefend, zal het nu nog makkelijker gaan.')
+        #
+        # phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
+        #                      'Je mag weer goed gaan zitten en je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.', sleep_time=1)
+        # phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
+        #                      'Luister maar weer goed naar mijn stem en merk maar dat andere geluiden in het ziekenhuis veel stiller worden.')
+        # phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Ga maar rustig ademen zoals je dat gewend bent.')
+        # phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Adem rustig in.')
+        # phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.play_audio,
+        #                      'resources/audio/breath_in.wav')
+        # phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'en rustig uit.')
+        # phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.play_audio,
+        #                      'resources/audio/breath_out.wav')
         intervention_prep_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
 
         # Strand
-        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Stel je maar voor dat je weer op het strand bent, op die fijne plek.')
-        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Kijk maar weer naar alle mooie kleuren die om je heen zijn en merk hoe fijn je je voelt op deze plek.')
-        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Luister maar naar alle fijne geluiden op het strand.')
-        intervention_prep_choice.add_move('strand', self.droomrobot.play_audio, 'resources/sounds/ocean_waves.wav')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'Stel je maar voor dat je weer op het strand bent, op die fijne plek.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'Kijk maar weer naar alle mooie kleuren die er zijn en merk hoe fijn je je voelt op deze plek.')
+        # intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Luister maar naar alle fijne geluiden op het strand.')
+        # intervention_prep_choice.add_move('strand', self.droomrobot.play_audio, 'resources/sounds/ocean_waves.wav')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Het zand onder je voeten is heerlijk zacht.')
-        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Als je je tenen beweegt, voel je hoe lekker het zand voelt.')
-        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'En terwijl je nu zo lekker op het strand bent, zie je een mooie schommel staan.')
+        # intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Als je je tenen beweegt, voel je hoe lekker het zand voelt.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'En terwijl je nu zo lekker op het strand bent, zie je een mooie schommel staan.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Precies in de kleur die jij mooi vindt.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'Je mag naar de schommel toe gaan en lekker gaan schommelen.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'Voel maar hoe makkelijk de schommel met je mee beweegt, heen en weer, heen en weer.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'De schommel gaat precies zo hoog als dat jij het fijn vindt.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Jij hebt namelijk alle controle.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'Het kan ook een lekker kriebellend gevoel in je buik geven.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'En terwijl je zo lekker aan het schommelen bent, voel je de zachte warme wind op je gezicht.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'Merk maar hoe lekker rustig je lichaam wordt en hoe veilig en fijn jij je voelt op het strand.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'Je hoort de golven van de zee, terwijl je lekker blijft schommelen.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'De zon is net als een warme zachte deken die over je heen gaat.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'Voel maar hoe je lichaam steeds lichter wordt nu je zo lekker aan het schommelen bent.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,
+                                          'Steeds lichter, steeds rustiger, helemaal ontspannen.')
 
         # Bos
-        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Stel je maar voor dat je weer in het bos bent, op die fijne plek.')
-        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Kijk maar weer naar alle mooie kleuren die om je heen zijn en merk hoe fijn je je voelt op deze plek.')
-        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Luister maar naar alle fijne geluiden in het bos.')
-        intervention_prep_choice.add_move('bos', self.droomrobot.play_audio, 'resources/audio/forest-sounds.wav')
-        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'De grond onder je voeten is zacht en bedekt met een klein laagje mos.')
-        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Voel maar hoe lekker het is om op deze plek te staan.')
-        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'En terwijl je nu zo lekker in het bos bent, zie je een mooie schommel tussen twee grote bomen hangen.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'Stel je maar voor dat je weer in het bos bent, op die fijne plek.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'Kijk maar weer naar alle mooie kleuren die er zijn en merk hoe fijn je je voelt op deze plek.')
+        # intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Luister maar naar alle fijne geluiden in het bos.')
+        # intervention_prep_choice.add_move('bos', self.droomrobot.play_audio, 'resources/audio/forest-sounds.wav')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'De grond onder je voeten is zacht en bedekt met een klein laagje mos.')
+        # intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Voel maar hoe lekker het is om op deze plek te staan.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'En terwijl je nu zo lekker in het bos bent, zie je een mooie schommel tussen twee grote bomen hangen.')
         intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Precies in de kleur die jij mooi vindt.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'Je mag naar de schommel toe gaan en lekker gaan schommelen.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'Voel maar hoe makkelijk de schommel met je mee beweegt, heen en weer, heen en weer.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'De schommel gaat precies zo hoog als dat jij het fijn vindt.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Jij hebt namelijk alle controle.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'Het kan ook een lekker kriebelend gevoel in je buik geven.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'En terwijl je zo lekker aan het schommelen bent, voel je de frisse lucht op je gezicht.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'Merk maar hoe lekker rustig je lichaam wordt en hoe veilig en fijn jij je voelt in het bos.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Je hoort de vogels zachtjes fluiten.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'De zon is net als een warme zachte deken die over je heen gaat.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'Voel maar hoe je lichaam steeds lichter wordt nu je zo lekker aan het schommelen bent.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,
+                                          'Steeds lichter, steeds rustiger, helemaal ontspannen.')
 
         # Ruimte
-        intervention_prep_choice.add_move('ruimte', self.droomrobot.say, 'Stel je maar voor dat je weer in de ruimte bent, boven de aarde, omgeven door de sterren.')
-        intervention_prep_choice.add_move('ruimte', self.droomrobot.say, 'Kijk maar naar de sterren die glinsteren, voel maar hoe rustig het is in deze uitgestrekte ruimte.')
-        intervention_prep_choice.add_move('ruimte', self.droomrobot.say, 'Luister naar het zachte geluid van je ademhaling en de stilte om je heen.')
-        intervention_prep_choice.add_move('ruimte', self.droomrobot.say, 'Je mag naar het ruimteschip toe zweven en er lekker in gaan zitten.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'Stel je maar voor dat je weer in de ruimte bent, boven de aarde, omgeven door de sterren.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'Kijk maar naar de sterren die glinsteren, voel maar hoe rustig het is in deze uitgestrekte ruimte.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'Luister naar het zachte geluid van je ademhaling en de stilte om je heen.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'Je mag naar het ruimteschip toe zweven en er lekker in gaan zitten.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'In het ruimteschip krijg je een ruimtekapje op.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'Het voelt heerlijk zacht tegen je gezicht en het zal je beschermen.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'Het houdt je helemaal veilig, zodat je nergens anders aan hoeft te denken dan aan je avontuur in de ruimte.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'En terwijl je in het ruimteschip zit, voel je hoe het ruimteschip met je meebeweegt, zacht en langzaam.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'Je hebt alle controle over waar je naartoe wilt, je kunt naar de sterren vliegen of verder weg gaan, het maakt niet uit.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'Voel de rust om je heen, terwijl je door de ruimte zweeft.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'Nu zweef je rustig langs een prachtige planeet die helemaal van kleur is, misschien wel in een fel blauw, of paars, of misschien zie je wel ringen om de planeet heen.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'Jij voelt je veilig en rustig, als een astronaut in je eigen avontuur.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'Voel maar hoe je lichaam steeds lichter wordt nu je zo lekker in de ruimte zweeft.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say,
+                                          'Steeds lichter, steeds rustiger, helemaal ontspannen.')
 
         phase_moves.add_choice(InterventionPhase.PREPARATION.name, intervention_prep_choice)
+
+        sentences = [
+            'Adem rustig door, je bent helemaal in controle. Goed bezig!',
+            'Merk maar hoe fijn jij je voelt op je fijne veilige plek.',
+            'Je wordt steeds lichter en zachter. Merk maar hoe fijn dat is.',
+            'Je bent veilig en je hebt alles onder controle.'
+        ]
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.repeat_sentences, sentences)
 
         return phase_moves
 
