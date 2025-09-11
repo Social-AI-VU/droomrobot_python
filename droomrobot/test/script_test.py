@@ -9,7 +9,7 @@ class ScriptTest(DroomrobotScript):
     def __init__(self, droomrobot: Droomrobot, interaction_context=InteractionContext.BLOEDAFNAME) -> None:
         super(ScriptTest, self).__init__(droomrobot=droomrobot, interaction_context=interaction_context)
 
-    def prepare(self, participant_id: str, session: InteractionSession, user_model_addendum: dict):
+    def prepare(self, participant_id: str, session: InteractionSession, user_model_addendum: dict = False):
         super().prepare(participant_id, session, user_model_addendum)
         self._test()
 

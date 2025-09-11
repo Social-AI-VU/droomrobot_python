@@ -81,6 +81,7 @@ class DroomrobotGUI:
         self.dialogflow_timeout = tk.StringVar(value=str(config.get("dialogflow_timeout", "15.0")))
         self.default_speaking_rate = tk.StringVar(value=str(config.get("default_speaking_rate", "0.9")))
         self.debug_mode = tk.BooleanVar(value=config.get("debug_mode", False))
+        self.audio_amplified = tk.BooleanVar(value=config.get("versterkt", False))
 
         setup_frame = ttk.LabelFrame(self.connect_frame, text="Robot Setup")
         setup_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
@@ -123,7 +124,6 @@ class DroomrobotGUI:
         ttk.Label(self.connect_advanced_frame, text="Dialogflow Timeout").grid(row=2, column=0, sticky="w")
         ttk.Entry(self.connect_advanced_frame, textvariable=self.dialogflow_timeout, width=10).grid(row=2, column=1,
                                                                                                     sticky="w")
-
         ttk.Label(self.connect_advanced_frame, text="Speaking Rate").grid(row=3, column=0, sticky="w")
         ttk.Entry(self.connect_advanced_frame, textvariable=self.default_speaking_rate, width=10).grid(row=3, column=1,
                                                                                               sticky="w")
@@ -185,10 +185,17 @@ class DroomrobotGUI:
         ttk.Combobox(interaction_frame, textvariable=self.session,
                      values=[e.name for e in InteractionSession]).grid(row=4, column=1)
 
-        self.priklocatie_frame = ttk.Frame(interaction_frame)
-        ttk.Label(self.priklocatie_frame, text="Priklocatie").grid(row=5, column=0)
-        ttk.Entry(self.priklocatie_frame, textvariable=self.priklocatie).grid(row=5, column=1)
-        self.priklocatie_frame.grid_remove()  # start hidden
+        ttk.Label(interaction_frame, text="Versterkt").grid(row=5, column=0)
+        ttk.Checkbutton(interaction_frame, variable=self.audio_amplified).grid(row=5, column=1, sticky="w")
+
+        self.priklocatie_label = ttk.Label(interaction_frame, text="Priklocatie")
+        self.priklocatie_entry = ttk.Entry(interaction_frame, textvariable=self.priklocatie)
+
+        # Place them but hidden initially
+        self.priklocatie_label.grid(row=6, column=0)
+        self.priklocatie_entry.grid(row=6, column=1)
+        self.priklocatie_label.grid_remove()
+        self.priklocatie_entry.grid_remove()
 
         # Advanced Settings
         self.advanced_visible = False
@@ -313,10 +320,11 @@ class DroomrobotGUI:
 
     def on_interaction_context_change(self, event=None):
         if self.context.get() == "BLOEDAFNAME":
-            self.priklocatie_frame.grid()
+            self.priklocatie_label.grid(row=6, column=0)
+            self.priklocatie_entry.grid(row=6, column=1)
         else:
-            self.priklocatie_frame.grid_remove()
-
+            self.priklocatie_label.grid_remove()
+            self.priklocatie_entry.grid_remove()
 
     def collect_user_model(self):
         user_model = {
@@ -406,9 +414,10 @@ class DroomrobotGUI:
         user_model = self.collect_user_model()
         context = InteractionContext[self.context.get()]
         session = InteractionSession[self.session.get()]
+        audio_amplified = self.audio_amplified.get()
 
         def run():
-            self.droomrobot_control.start(participant_id, context, session, user_model)
+            self.droomrobot_control.start(participant_id, context, session, user_model, audio_amplified)
 
         self.script_thread = Thread(target=run)
         self.script_thread.start()

@@ -10,8 +10,9 @@ class Bloedafname4(DroomrobotScript):
     def __init__(self, *args, **kwargs):
         super(Bloedafname4, self).__init__(*args, **kwargs, interaction_context=InteractionContext.BLOEDAFNAME)
 
-    def prepare(self, participant_id: str, session: InteractionSession, user_model_addendum: dict):
-        super().prepare(participant_id, session, user_model_addendum)
+    def prepare(self, participant_id: str, session: InteractionSession, user_model_addendum: dict,
+                audio_amplified: bool = False):
+        super().prepare(participant_id, session, user_model_addendum, audio_amplified)
 
         if session == InteractionSession.INTRODUCTION:
             self._introduction()
