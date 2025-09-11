@@ -81,7 +81,7 @@ class DroomrobotGUI:
         self.dialogflow_timeout = tk.StringVar(value=str(config.get("dialogflow_timeout", "15.0")))
         self.default_speaking_rate = tk.StringVar(value=str(config.get("default_speaking_rate", "0.9")))
         self.debug_mode = tk.BooleanVar(value=config.get("debug_mode", False))
-        self.audio_amplified = tk.BooleanVar(value=config.get("versterkt", False))
+        self.audio_amplified = tk.BooleanVar(value=config.get("audio_amplification", False))
 
         setup_frame = ttk.LabelFrame(self.connect_frame, text="Robot Setup")
         setup_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")

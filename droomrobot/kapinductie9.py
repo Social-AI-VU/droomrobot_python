@@ -284,7 +284,7 @@ class Kapinductie9(DroomrobotScript):
                              "random_short4", run_async=True)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.EXPRESSION,
                              "emo_007", run_async=True)
-        interaction_conf = InteractionConf(speaking_rate=0.75, animated=False, amplified=self.audio_amplified)
+        interaction_conf = InteractionConf(speaking_rate=0.75, animated=True, amplified=self.audio_amplified)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              'Wat fijn dat ik je mag helpen! We gaan samen weer op een mooie droomreis.',
