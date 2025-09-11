@@ -69,41 +69,6 @@ Forth, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to b
 13. Run this script
 """
 
-def amplify_audio(waveform_bytes, sample_rate, compression_strength=2.0, target_level=0.9):
-    """
-    Amplify audio by normalizing and applying dynamic range compression.
-    
-    :param waveform_bytes: Raw PCM audio data as bytes (int16)
-    :param sample_rate: Sample rate of the audio
-    :param compression_strength: Compression strength (1.0=minimal, 2.0=moderate, 5.0=heavy)
-    :param target_level: Final output level (0.0-1.0, recommend 0.9 to avoid clipping)
-    :return: Processed audio as bytes (int16)
-    """
-    # Convert bytes to numpy array
-    audio_data = np.frombuffer(waveform_bytes, dtype=np.int16)
-    audio_float = audio_data.astype(np.float32) / 32767.0
-    
-    # Step 1: Initial normalization to [-1, 1] range
-    max_val = np.max(np.abs(audio_float))
-    if max_val > 0:
-        audio_normalized = audio_float / max_val
-    else:
-        audio_normalized = audio_float
-    
-    # Step 2: Apply logarithmic compression to boost quiet parts
-    sign = np.sign(audio_normalized)
-    magnitude = np.abs(audio_normalized)
-    compressed_magnitude = np.log1p(magnitude * compression_strength) / np.log1p(compression_strength)
-    compressed_audio = sign * compressed_magnitude
-    
-    # Step 3: Final normalization and scaling to target level
-    final_max = np.max(np.abs(compressed_audio))
-    if final_max > 0:
-        compressed_audio = compressed_audio / final_max * target_level
-    
-    # Convert back to int16 bytes
-    audio_int16 = (compressed_audio * 32767).astype(np.int16)
-    return audio_int16.tobytes()
 
 class AnimationType(Enum):
     ACTION = 1
@@ -112,11 +77,12 @@ class AnimationType(Enum):
 
 class InteractionConf:
 
-    def __init__(self, speaking_rate=None, sleep_time=0, animated=True, max_attempts=2):
+    def __init__(self, speaking_rate=None, sleep_time=0, animated=True, max_attempts=2, amplified=False):
         self.speaking_rate = speaking_rate
         self.sleep_time = sleep_time
         self.animated = animated
         self.max_attempts = max_attempts
+        self.amplified = amplified
 
     @staticmethod
     def apply_config_defaults(config_attr, param_names):
@@ -127,9 +93,7 @@ class InteractionConf:
                     if kwargs.get(name) is None:
                         kwargs[name] = getattr(config, name)
                 return func(self, *args, **kwargs)
-
             return wrapper
-
         return decorator
 
 
@@ -275,8 +239,8 @@ class Droomrobot:
             timestamp = strftime("%Y-%m-%d %H:%M:%S")
             self._log_queue.put(f"[{timestamp}] recognition result: {recognition_result}")
 
-    @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'sleep_time', 'animated'])
-    def say(self, text, speaking_rate=None, sleep_time=None, animated=None):
+    @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'sleep_time', 'animated', 'amplified'])
+    def say(self, text, speaking_rate=None, sleep_time=None, animated=None, amplified=False):
         if speaking_rate:
             reply = self.tts.request(GetSpeechRequest(text=text,
                                                       voice_name=self.google_tts_voice_name,
@@ -287,9 +251,12 @@ class Droomrobot:
                                                       voice_name=self.google_tts_voice_name,
                                                       ssml_gender=self.google_tts_voice_gender))
 
-        amplified_waveform = amplify_audio(reply.waveform, reply.sample_rate)
+        if amplified:
+            waveform = self._amplify_audio(reply.waveform, reply.sample_rate)
+        else:
+            waveform = reply.waveform
 
-        self.speaker.request(AudioRequest(amplified_waveform, reply.sample_rate))
+        self.speaker.request(AudioRequest(waveform, reply.sample_rate))
         if animated:
             self.animate(AnimationType.EXPRESSION, self._random_speaking_eye_expression(), run_async=True)
             self.animate(AnimationType.ACTION, self._random_speaking_act(), run_async=True)
@@ -659,3 +626,40 @@ class Droomrobot:
                 "codemao11", "codemao12", "codemao13", "codemao14", "codemao15",
                 "codemao16", "codemao17", "codemao18", "codemao19", "codemao20"]
         return rand.choice(speaking_expressions)
+
+    @staticmethod
+    def _amplify_audio(waveform_bytes, sample_rate, compression_strength=2.0, target_level=0.9):
+        """
+        Amplify audio by normalizing and applying dynamic range compression.
+
+        :param waveform_bytes: Raw PCM audio data as bytes (int16)
+        :param sample_rate: Sample rate of the audio
+        :param compression_strength: Compression strength (1.0=minimal, 2.0=moderate, 5.0=heavy)
+        :param target_level: Final output level (0.0-1.0, recommend 0.9 to avoid clipping)
+        :return: Processed audio as bytes (int16)
+        """
+        # Convert bytes to numpy array
+        audio_data = np.frombuffer(waveform_bytes, dtype=np.int16)
+        audio_float = audio_data.astype(np.float32) / 32767.0
+
+        # Step 1: Initial normalization to [-1, 1] range
+        max_val = np.max(np.abs(audio_float))
+        if max_val > 0:
+            audio_normalized = audio_float / max_val
+        else:
+            audio_normalized = audio_float
+
+        # Step 2: Apply logarithmic compression to boost quiet parts
+        sign = np.sign(audio_normalized)
+        magnitude = np.abs(audio_normalized)
+        compressed_magnitude = np.log1p(magnitude * compression_strength) / np.log1p(compression_strength)
+        compressed_audio = sign * compressed_magnitude
+
+        # Step 3: Final normalization and scaling to target level
+        final_max = np.max(np.abs(compressed_audio))
+        if final_max > 0:
+            compressed_audio = compressed_audio / final_max * target_level
+
+        # Convert back to int16 bytes
+        audio_int16 = (compressed_audio * 32767).astype(np.int16)
+        return audio_int16.tobytes()

@@ -1,6 +1,6 @@
 from os.path import abspath, join
 
-from droomrobot.core import Droomrobot
+from droomrobot.core import Droomrobot, InteractionConf
 
 
 class TTSTest:
@@ -21,9 +21,12 @@ class TTSTest:
                                      computer_test_mode=computer_test_mode)
 
     def speak(self):
+        self.droomrobot.say("Normaal")
         self.droomrobot.say("Hallo, ik ben de droomrobot.")
-        self.droomrobot.say("Dit is om te testen of de spraaksynthese werkt.")
-        self.droomrobot.say("En hopelijk ook dat het audio signaal geboost kan worden.")
+
+        self.droomrobot.set_interaction_conf(InteractionConf(amplified=True))
+        self.droomrobot.say("Versterkt")
+        self.droomrobot.say("Hallo, ik ben de droomrobot.")
 
 
 if __name__ == '__main__':
