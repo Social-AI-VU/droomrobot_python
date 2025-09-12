@@ -1,5 +1,6 @@
 from droomrobot.core import Droomrobot, AnimationType
-from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext
+from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionChoice, \
+    InteractionChoiceCondition
 
 
 class IntroductionFactory:
@@ -35,12 +36,15 @@ class IntroductionFactory:
                         'animals',
                         'animals',
                         user_model_key='dier')
-        script.add_move(droomrobot.say, lambda: f'Een {user_model['dier']}')
-        script.add_move(lambda: droomrobot.say(
+        animal_choice = InteractionChoice('dier', InteractionChoiceCondition.HASVALUE)
+        animal_choice.add_move('success', droomrobot.say, lambda: f'Een {user_model['dier']}')
+        animal_choice.add_move('success', lambda: droomrobot.say(
             droomrobot.generate_funny_response(user_model['child_age'],
                                                'Je hebt een kennismakingsgesprek en je hebt net gevraagd '
                                                'naar een dier dat het kind heel cool vind.',
                                                user_model['dier'])))
+        animal_choice.add_move('fail', droomrobot.say, 'Cool zeg.')
+        script.add_choice(animal_choice)
         script.add_move(droomrobot.say, 'Ik zelf vind een schaap een prachtig dier.')
         script.add_move(droomrobot.say, 'Ik zou wel een ritje willen maken op een schaap.')
         script.add_move(droomrobot.say, 'Al val ik dan misschien wel in slaap in het zachte wol.')
@@ -84,12 +88,15 @@ class IntroductionFactory:
                         'animals',
                         'animals',
                         user_model_key='dier')
-        script.add_move(droomrobot.say, lambda: f'Een {user_model['dier']}')
-        script.add_move(lambda: droomrobot.say(
+        animal_choice = InteractionChoice('dier', InteractionChoiceCondition.HASVALUE)
+        animal_choice.add_move('success', droomrobot.say, lambda: f'Een {user_model['dier']}')
+        animal_choice.add_move('success', lambda: droomrobot.say(
             droomrobot.generate_funny_response(user_model['child_age'],
                                                'Je hebt een kennismakingsgesprek en je hebt net gevraagd '
                                                'naar een dier dat het kind heel cool vind.',
                                                user_model['dier'])))
+        animal_choice.add_move('fail', droomrobot.say, 'Cool zeg.')
+        script.add_choice(animal_choice)
         script.add_move(droomrobot.say, 'Ik zelf vind een schaap een prachtig dier.')
         script.add_move(droomrobot.say, 'Ik zou wel een ritje willen maken op een schaap.')
         script.add_move(droomrobot.say, 'Al val ik dan misschien wel in slaap in het zachte wol.')
