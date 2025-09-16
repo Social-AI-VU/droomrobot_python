@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import json
 import logging
 import queue
@@ -12,7 +13,9 @@ from threading import Thread, Event
 from time import sleep, strftime
 
 import numpy as np
+import sounddevice as sd
 import mini.mini_sdk as MiniSdk
+import websockets
 from mini import MouthLampColor, MouthLampMode
 from mini.apis.api_action import PlayAction
 from mini.apis.api_expression import SetMouthLamp, PlayExpression
@@ -32,6 +35,8 @@ from sic_framework.services.text2speech.text2speech_service import (
 )
 from sic_framework.services.openai_gpt.gpt import GPT, GPTConf, GPTRequest
 from dotenv import load_dotenv
+
+from droomrobot.droomrobot_tts_conf import VoiceConf, GoogleVoiceConf, ElevenLabsVoiceConf
 
 """
 Demo: AlphaMini recognizes user intent and replies using Dialogflow/Text-to-Speech and an LLM.
@@ -100,9 +105,7 @@ class InteractionConf:
 class Droomrobot:
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
                  google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl", dialogflow_timeout=None,
-                 google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE", default_speaking_rate=1.0,
-                 openai_key_path=None,
-                 computer_test_mode=False):
+                 voice_conf: VoiceConf = GoogleVoiceConf(), env_path=None, computer_test_mode=False):
 
         print("\n SETTING UP BASIC PROCESSING")
         # Development logging
@@ -121,8 +124,8 @@ class Droomrobot:
         # Either add your openai key to your systems variables (and comment the next line out) or
         # create a .openai_env file in the conf/openai folder and add your key there like this:
         # OPENAI_API_KEY="your key"
-        if openai_key_path:
-            load_dotenv(openai_key_path)
+        if env_path:
+            load_dotenv(env_path)
 
         try:
             # Setup GPT client
@@ -147,14 +150,21 @@ class Droomrobot:
         print('Complete')
 
         print("\n SETTING UP TTS")
-        # setup the tts service
-        self.google_tts_voice_name = google_tts_voice_name
-        self.google_tts_voice_gender = google_tts_voice_gender
-        self.tts = Text2Speech(conf=Text2SpeechConf(keyfile=google_keyfile_path,
-                                                    speaking_rate=default_speaking_rate))
-        init_reply = self.tts.request(GetSpeechRequest(text="Ik ben aan het initializeren",
-                                                       voice_name=self.google_tts_voice_name,
-                                                       ssml_gender=self.google_tts_voice_gender))
+        self.voice_conf = voice_conf
+        if isinstance(self.voice_conf, GoogleVoiceConf):
+            # setup the tts service
+            self.tts = Text2Speech(conf=Text2SpeechConf(keyfile=google_keyfile_path,
+                                                        speaking_rate=self.voice_conf.default_speaking_rate))
+            init_reply = self.tts.request(GetSpeechRequest(text="Ik ben aan het initializeren",
+                                                           voice_name=self.voice_conf.google_tts_voice_name,
+                                                           ssml_gender=self.voice_conf.google_tts_voice_gender))
+            self.sample_rate = init_reply.sample_rate
+        elif isinstance(self.voice_conf, ElevenLabsVoiceConf):
+            self.elevenlabs_key = environ["ELEVENLABS_API_KEY"]
+            self.sample_rate = 22050
+        else:
+            raise ValueError("Voice conf not recognized")
+
         print('Complete')
 
         if not computer_test_mode:
@@ -166,7 +176,7 @@ class Droomrobot:
                 mini_id=self.mini_id,
                 mini_password=mini_password,
                 redis_ip=redis_ip,
-                speaker_conf=MiniSpeakersConf(sample_rate=init_reply.sample_rate),
+                speaker_conf=MiniSpeakersConf(sample_rate=self.sample_rate),
                 bypass_install=True
             )
             self.speaker = self.mini.speaker
@@ -241,22 +251,29 @@ class Droomrobot:
 
     @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'sleep_time', 'animated', 'amplified'])
     def say(self, text, speaking_rate=None, sleep_time=None, animated=None, amplified=False):
-        if speaking_rate:
-            reply = self.tts.request(GetSpeechRequest(text=text,
-                                                      voice_name=self.google_tts_voice_name,
-                                                      ssml_gender=self.google_tts_voice_gender,
-                                                      speaking_rate=speaking_rate))
-        else:
-            reply = self.tts.request(GetSpeechRequest(text=text,
-                                                      voice_name=self.google_tts_voice_name,
-                                                      ssml_gender=self.google_tts_voice_gender))
+        if isinstance(self.voice_conf, GoogleVoiceConf):
+            if speaking_rate:
+                reply = self.tts.request(GetSpeechRequest(text=text,
+                                                          voice_name=self.voice_conf.google_tts_voice_name,
+                                                          ssml_gender=self.voice_conf.google_tts_voice_gender,
+                                                          speaking_rate=speaking_rate))
+            else:
+                reply = self.tts.request(GetSpeechRequest(text=text,
+                                                          voice_name=self.voice_conf.google_tts_voice_name,
+                                                          ssml_gender=self.voice_conf.google_tts_voice_gender))
 
-        if amplified:
-            waveform = self._amplify_audio(reply.waveform, reply.sample_rate)
-        else:
-            waveform = reply.waveform
+            if amplified:
+                waveform = self._amplify_audio(reply.waveform, reply.sample_rate)
+            else:
+                waveform = reply.waveform
 
-        self.speaker.request(AudioRequest(waveform, reply.sample_rate))
+            self.speaker.request(AudioRequest(waveform, reply.sample_rate))
+        elif isinstance(self.voice_conf, ElevenLabsVoiceConf):
+            asyncio.run(self.text_to_speech_ws_streaming(
+                self.voice_conf.voice_id,
+                self.voice_conf.model_id,
+                text
+            ))
         if animated:
             self.animate(AnimationType.EXPRESSION, self._random_speaking_eye_expression(), run_async=True)
             self.animate(AnimationType.ACTION, self._random_speaking_act(), run_async=True)
@@ -663,3 +680,53 @@ class Droomrobot:
         # Convert back to int16 bytes
         audio_int16 = (compressed_audio * 32767).astype(np.int16)
         return audio_int16.tobytes()
+
+    async def listen_and_forward(self, websocket):
+        """Listen to the websocket and forward audio chunks as AudioRequests."""
+        sample_rate = 22050  # matches ElevenLabs output_format=pcm_22050
+
+        while True:
+            try:
+                message = await websocket.recv()
+                data = json.loads(message)
+
+                if data.get("audio"):
+                    # decode base64 -> PCM bytes
+                    audio_bytes = base64.b64decode(data["audio"])
+
+                    # Wrap into AudioRequest and forward immediately
+                    self.speaker.request(AudioRequest(audio_bytes, sample_rate))
+
+                elif data.get("isFinal"):
+                    print("Stream ended.")
+                    break
+
+            except websockets.exceptions.ConnectionClosed:
+                print("Connection closed")
+                break
+
+    async def text_to_speech_ws_streaming(self, voice_id, model_id, text):
+        uri = f"wss://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream-input?model_id={model_id}&output_format=pcm_22050"
+
+        async with websockets.connect(uri) as websocket:
+            await websocket.send(json.dumps({
+                "text": " ",
+                "voice_settings": {
+                    "stability": 0.5,
+                    "similarity_boost": 0.8,
+                    "use_speaker_boost": False
+                },
+                "generation_config": {
+                    "chunk_length_schedule": [50, 120, 160, 290]
+                },
+                "xi_api_key": self.elevenlabs_key,
+            }))
+
+            # Send the actual text
+            await websocket.send(json.dumps({"text": text}))
+
+            # Empty string = end of input
+            await websocket.send(json.dumps({"text": ""}))
+
+            # Forward audio to your device
+            await self.listen_and_forward(websocket)

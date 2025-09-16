@@ -2,6 +2,7 @@ from os.path import abspath, join
 
 from droomrobot.core import AnimationType, Droomrobot
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession
+from droomrobot.droomrobot_tts_conf import GoogleVoiceConf
 
 
 class ScriptTest(DroomrobotScript):
@@ -23,11 +24,10 @@ if __name__ == '__main__':
     droomrobot = Droomrobot(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago",
                             redis_ip="192.168.178.84",
                             google_keyfile_path=abspath(join("../../conf", "dialogflow", "google_keyfile.json")),
-                            openai_key_path=abspath(join("../../conf", "openai", ".openai_env")),
+                            env_path=abspath(join("../../conf", "openai", ".openai_env")),
                             sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
                             dialogflow_timeout=10.0,
-                            google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE",
-                            default_speaking_rate=1.0,
+                            voice_conf=GoogleVoiceConf(),
                             computer_test_mode=False)
 
     script_test = ScriptTest(droomrobot)

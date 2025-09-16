@@ -8,6 +8,7 @@ from threading import Thread
 from os.path import abspath, join
 
 from droomrobot.droomrobot_script import InteractionContext, InteractionSession
+from droomrobot.droomrobot_tts_conf import VoiceConf, Voice, GoogleVoiceConf, ElevenLabsVoiceConf
 from droomrobot_control import DroomrobotControl
 
 
@@ -82,6 +83,11 @@ class DroomrobotGUI:
         self.default_speaking_rate = tk.StringVar(value=str(config.get("default_speaking_rate", "0.9")))
         self.debug_mode = tk.BooleanVar(value=config.get("debug_mode", False))
         self.audio_amplified = tk.BooleanVar(value=config.get("audio_amplification", False))
+        try:
+            voice_enum = Voice[config.get("voice")]
+        except KeyError:
+            voice_enum = Voice.GOOGLE
+        self.voice = tk.StringVar(value=voice_enum.name)
 
         setup_frame = ttk.LabelFrame(self.connect_frame, text="Robot Setup")
         setup_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
@@ -118,20 +124,25 @@ class DroomrobotGUI:
         ttk.Label(self.connect_advanced_frame, text="Google Keyfile Path").grid(row=0, column=0, sticky="w")
         ttk.Entry(self.connect_advanced_frame, textvariable=self.google_keyfile, width=50).grid(row=0, column=1)
 
-        ttk.Label(self.connect_advanced_frame, text="OpenAI Keyfile Path").grid(row=1, column=0, sticky="w")
+        ttk.Label(self.connect_advanced_frame, text="Env Path").grid(row=1, column=0, sticky="w")
         ttk.Entry(self.connect_advanced_frame, textvariable=self.openai_keyfile, width=50).grid(row=1, column=1)
 
         ttk.Label(self.connect_advanced_frame, text="Dialogflow Timeout").grid(row=2, column=0, sticky="w")
         ttk.Entry(self.connect_advanced_frame, textvariable=self.dialogflow_timeout, width=10).grid(row=2, column=1,
                                                                                                     sticky="w")
-        ttk.Label(self.connect_advanced_frame, text="Speaking Rate").grid(row=3, column=0, sticky="w")
+
+        ttk.Label(self.connect_advanced_frame, text="Stem").grid(row=4, column=0)
+        ttk.Combobox(self.connect_advanced_frame, textvariable=self.voice,
+                     values=[e.name for e in Voice]).grid(row=4, column=1)
+
+        ttk.Label(self.connect_advanced_frame, text="Speaking Rate").grid(row=4, column=0, sticky="w")
         ttk.Entry(self.connect_advanced_frame, textvariable=self.default_speaking_rate, width=10).grid(row=3, column=1,
                                                                                               sticky="w")
         ttk.Checkbutton(
             self.connect_advanced_frame,
             text="No robot debug mode",
             variable=self.debug_mode
-        ).grid(row=4, column=0, columnspan=2, sticky="w")
+        ).grid(row=5, column=0, columnspan=2, sticky="w")
 
         self.connect_btn = ttk.Button(self.connect_frame, text="Connect", command=self.handle_connect)
         self.connect_btn.grid(row=1, column=0, pady=10)
@@ -382,6 +393,11 @@ class DroomrobotGUI:
         self.root.update()
 
     def connect(self):
+        if self.voice == Voice.GOOGLE:
+            voice_conf = GoogleVoiceConf(default_speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"))
+        else:  # Elevenlabs
+            voice_conf = ElevenLabsVoiceConf(default_speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"))
+
         self.droomrobot_control = DroomrobotControl()
         self.droomrobot_control.connect(
             mini_ip=self.mini_ip.get(),
@@ -390,8 +406,8 @@ class DroomrobotGUI:
             redis_ip=self.redis_ip.get(),
             google_keyfile_path=abspath(self.google_keyfile.get()),
             dialogflow_timeout=self.float_validation(self.dialogflow_timeout.get(), "Dialogflow timeout"),
-            default_speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"),
-            openai_key_path=abspath(self.openai_keyfile.get()),
+            env_path=abspath(self.openai_keyfile.get()),
+            voice_conf=voice_conf,
             computer_test_mode=self.debug_mode.get()
         )
 

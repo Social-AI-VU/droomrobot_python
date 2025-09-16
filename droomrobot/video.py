@@ -29,7 +29,7 @@ if __name__ == '__main__':
                                redis_ip="192.168.1.180",
                                google_keyfile_path=abspath(
                                    join("../conf", "dialogflow", "google_keyfile.json")),
-                               openai_key_path=abspath(join("../conf", "openai", ".openai_env")),
+                               env_path=abspath(join("../conf", "openai", ".openai_env")),
                                default_speaking_rate=0.8, computer_test_mode=False)
 
     video_interaction(droomrobot_control.droomrobot)

@@ -1,16 +1,15 @@
-from os.path import abspath, join
-
 from droomrobot.bloedafname4 import Bloedafname4
 from droomrobot.bloedafname6 import Bloedafname6
 from droomrobot.bloedafname9 import Bloedafname9
 from droomrobot.core import Droomrobot, AnimationType
 from droomrobot.droomrobot_script import InteractionContext, InteractionSession
+from droomrobot.droomrobot_tts_conf import GoogleVoiceConf
 from droomrobot.kapinductie4 import Kapinductie4
 from droomrobot.kapinductie6 import Kapinductie6
 from droomrobot.sonde4 import Sonde4
 from droomrobot.sonde6 import Sonde6
-from sonde9 import Sonde9
-from kapinductie9 import Kapinductie9
+from droomrobot.sonde9 import Sonde9
+from droomrobot.kapinductie9 import Kapinductie9
 
 
 class DroomrobotControl:
@@ -22,16 +21,15 @@ class DroomrobotControl:
     def connect(self, mini_ip, mini_id, mini_password, redis_ip,
                 google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
                 dialogflow_timeout=None,
-                google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE", default_speaking_rate=1.0,
-                openai_key_path=None,
+                voice_conf=GoogleVoiceConf(),
+                env_path=None,
                 computer_test_mode=False):
 
         self.droomrobot = Droomrobot(mini_ip=mini_ip, mini_id=mini_id, mini_password=mini_password, redis_ip=redis_ip,
                                      google_keyfile_path=google_keyfile_path, sample_rate_dialogflow_hertz=sample_rate_dialogflow_hertz,
                                      dialogflow_language=dialogflow_language, dialogflow_timeout=dialogflow_timeout,
-                                     google_tts_voice_name=google_tts_voice_name, google_tts_voice_gender=google_tts_voice_gender,
-                                     default_speaking_rate=default_speaking_rate,
-                                     openai_key_path=openai_key_path,
+                                     voice_conf=voice_conf,
+                                     env_path=env_path,
                                      computer_test_mode=computer_test_mode)
 
     def disconnect(self):
