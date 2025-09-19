@@ -9,11 +9,10 @@ from os import environ, fsync
 from os.path import exists
 from pathlib import Path
 import random as rand
-from threading import Thread, Event
+from threading import Thread
 from time import sleep, strftime
 
 import numpy as np
-import sounddevice as sd
 import mini.mini_sdk as MiniSdk
 import websockets
 from mini import MouthLampColor, MouthLampMode
@@ -21,6 +20,7 @@ from mini.apis.api_action import PlayAction
 from mini.apis.api_expression import SetMouthLamp, PlayExpression
 from sic_framework.core.message_python2 import AudioRequest
 from sic_framework.devices.alphamini import Alphamini
+from sic_framework.devices.common_desktop.desktop_speakers import SpeakersConf
 from sic_framework.devices.common_mini.mini_speaker import MiniSpeakersConf
 from sic_framework.devices.desktop import Desktop
 from sic_framework.services.dialogflow.dialogflow import (
@@ -28,7 +28,7 @@ from sic_framework.services.dialogflow.dialogflow import (
     DialogflowConf,
     GetIntentRequest,
 )
-from sic_framework.services.text2speech.text2speech_service import (
+from sic_framework.services.google_tts.google_tts import (
     GetSpeechRequest,
     Text2Speech,
     Text2SpeechConf,
@@ -140,24 +140,11 @@ class Droomrobot:
             self.gpt = None
         print('Complete')
 
-        print("\n SETTING UP DIALOGFLOW")
-        # set up the config for dialogflow
-        dialogflow_conf = DialogflowConf(keyfile_json=json.load(open(google_keyfile_path)),
-                                         sample_rate_hertz=sample_rate_dialogflow_hertz,
-                                         language=dialogflow_language,
-                                         timeout=dialogflow_timeout)
-
-        # initiate Dialogflow object
-        self.dialogflow = Dialogflow(ip="localhost", conf=dialogflow_conf)
-        # flag to signal when the app should listen (i.e. transmit to dialogflow)
-        self.request_id = np.random.randint(10000)
-        print('Complete')
-
         print("\n SETTING UP TTS")
         self.voice_conf = voice_conf
         if isinstance(self.voice_conf, GoogleVoiceConf):
             # setup the tts service
-            self.tts = Text2Speech(conf=Text2SpeechConf(keyfile=google_keyfile_path,
+            self.tts = Text2Speech(conf=Text2SpeechConf(keyfile_json=json.load(open(google_keyfile_path)),
                                                         speaking_rate=self.voice_conf.default_speaking_rate))
             init_reply = self.tts.request(GetSpeechRequest(text="Ik ben aan het initializeren",
                                                            voice_name=self.voice_conf.google_tts_voice_name,
@@ -185,6 +172,8 @@ class Droomrobot:
             )
             self.speaker = self.mini.speaker
             self.mic = self.mini.mic
+            self.mic = self.mini.mic
+            self.mic = self.mini.mic
             self.device_name = "alphamini"
 
             print("Connecting to miniSDK")
@@ -204,15 +193,23 @@ class Droomrobot:
 
         else:
             print("\n SETTING UP COMPUTER")
-            desktop = Desktop()
+            desktop = Desktop(speakers_conf=SpeakersConf(sample_rate=self.sample_rate))
             self.speaker = desktop.speakers
             self.mic = desktop.mic
             self.device_name = "computer"
         print("Complete")
 
-        print("\n SETTING UP MIC CONNECTION")
-        # connect the output of Minimicrophone as the input of DialogflowComponent
-        self.dialogflow.connect(self.mic)
+        print("\n SETTING UP DIALOGFLOW")
+        # set up the config for dialogflow
+        dialogflow_conf = DialogflowConf(keyfile_json=json.load(open(google_keyfile_path)),
+                                         sample_rate_hertz=sample_rate_dialogflow_hertz,
+                                         language=dialogflow_language,
+                                         timeout=dialogflow_timeout)
+
+        # initiate Dialogflow object
+        self.dialogflow = Dialogflow(ip="localhost", conf=dialogflow_conf, input_source=self.mic)
+        # flag to signal when the app should listen (i.e. transmit to dialogflow)
+        self.request_id = np.random.randint(10000)
         self.dialogflow.register_callback(self._on_dialog)
         print("Complete and ready for interaction!")
 
