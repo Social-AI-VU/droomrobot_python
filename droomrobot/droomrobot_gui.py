@@ -131,12 +131,12 @@ class DroomrobotGUI:
         ttk.Entry(self.connect_advanced_frame, textvariable=self.dialogflow_timeout, width=10).grid(row=2, column=1,
                                                                                                     sticky="w")
 
-        ttk.Label(self.connect_advanced_frame, text="Stem").grid(row=4, column=0)
+        ttk.Label(self.connect_advanced_frame, text="Stem").grid(row=3, column=0, sticky="w")
         ttk.Combobox(self.connect_advanced_frame, textvariable=self.voice,
-                     values=[e.name for e in Voice]).grid(row=4, column=1)
+                     values=[e.name for e in Voice]).grid(row=3, column=1, sticky="w")
 
         ttk.Label(self.connect_advanced_frame, text="Speaking Rate").grid(row=4, column=0, sticky="w")
-        ttk.Entry(self.connect_advanced_frame, textvariable=self.default_speaking_rate, width=10).grid(row=3, column=1,
+        ttk.Entry(self.connect_advanced_frame, textvariable=self.default_speaking_rate, width=10).grid(row=4, column=1,
                                                                                               sticky="w")
         ttk.Checkbutton(
             self.connect_advanced_frame,

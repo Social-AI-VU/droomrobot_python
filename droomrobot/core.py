@@ -117,6 +117,10 @@ class Droomrobot:
 
         # Interaction configuration
         self.interaction_conf = InteractionConf()
+
+        # Computer test mode
+        self.computer_test_mode = computer_test_mode
+
         print('complete')
 
         print("\n SETTING UP OPENAI")
@@ -269,7 +273,7 @@ class Droomrobot:
 
             self.speaker.request(AudioRequest(waveform, reply.sample_rate))
         elif isinstance(self.voice_conf, ElevenLabsVoiceConf):
-            asyncio.run(self.text_to_speech_ws_streaming(
+            asyncio.run(self.elevenlabs_tts(
                 self.voice_conf.voice_id,
                 self.voice_conf.model_id,
                 text
@@ -506,19 +510,22 @@ class Droomrobot:
         return gpt_response.response
 
     def animate(self, animation_type: AnimationType, animation_id: str, run_async=False):
-        try:
-            future = asyncio.run_coroutine_threadsafe(
-                self._animation_action(animation_id, animation_type),
-                self.background_loop
-            )
-        except Exception as e:
-            self.logger.error(f'Animation {animation_id} failed: {e}', exc_info=e)
-            return
+        if self.computer_test_mode:
+            print(f'Animation played: {animation_type} [{animation_id}]')
+        else:
+            try:
+                future = asyncio.run_coroutine_threadsafe(
+                    self._animation_action(animation_id, animation_type),
+                    self.background_loop
+                )
+            except Exception as e:
+                self.logger.error(f'Animation {animation_id} failed: {e}', exc_info=e)
+                return
 
-        self.animation_futures.append(future)
+            self.animation_futures.append(future)
 
-        if not run_async:
-            future.result()
+            if not run_async:
+                future.result()
 
     async def _animation_action(self, action_name, animation_type):
         try:
@@ -681,31 +688,7 @@ class Droomrobot:
         audio_int16 = (compressed_audio * 32767).astype(np.int16)
         return audio_int16.tobytes()
 
-    async def listen_and_forward(self, websocket):
-        """Listen to the websocket and forward audio chunks as AudioRequests."""
-        sample_rate = 22050  # matches ElevenLabs output_format=pcm_22050
-
-        while True:
-            try:
-                message = await websocket.recv()
-                data = json.loads(message)
-
-                if data.get("audio"):
-                    # decode base64 -> PCM bytes
-                    audio_bytes = base64.b64decode(data["audio"])
-
-                    # Wrap into AudioRequest and forward immediately
-                    self.speaker.request(AudioRequest(audio_bytes, sample_rate))
-
-                elif data.get("isFinal"):
-                    print("Stream ended.")
-                    break
-
-            except websockets.exceptions.ConnectionClosed:
-                print("Connection closed")
-                break
-
-    async def text_to_speech_ws_streaming(self, voice_id, model_id, text):
+    async def elevenlabs_tts(self, voice_id, model_id, text):
         uri = f"wss://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream-input?model_id={model_id}&output_format=pcm_22050"
 
         async with websockets.connect(uri) as websocket:
@@ -728,5 +711,25 @@ class Droomrobot:
             # Empty string = end of input
             await websocket.send(json.dumps({"text": ""}))
 
-            # Forward audio to your device
-            await self.listen_and_forward(websocket)
+            # Listen to the websocket and forward audio chunks as AudioRequests.
+            sample_rate = 22050  # matches ElevenLabs output_format=pcm_22050
+
+            while True:
+                try:
+                    message = await websocket.recv()
+                    data = json.loads(message)
+
+                    if data.get("audio"):
+                        # decode base64 -> PCM bytes
+                        audio_bytes = base64.b64decode(data["audio"])
+
+                        # Wrap into AudioRequest and forward immediately
+                        self.speaker.request(AudioRequest(audio_bytes, sample_rate))
+
+                    elif data.get("isFinal"):
+                        print("Stream ended.")
+                        break
+
+                except websockets.exceptions.ConnectionClosed:
+                    print("Connection closed")
+                    break
