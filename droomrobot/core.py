@@ -293,7 +293,7 @@ class Droomrobot:
             self.speaker.request(AudioRequest(waveform, reply.sample_rate))
 
         elif isinstance(self.voice_conf, ElevenLabsVoiceConf):
-            self.speak_with_elevenlabs(text)
+            self.speak_with_elevenlabs(text, speaking_rate)
 
         self.log_utterance(speaker='robot', text=text)
 
@@ -712,12 +712,12 @@ class Droomrobot:
         audio_int16 = (compressed_audio * 32767).astype(np.int16)
         return audio_int16.tobytes()
 
-    def speak_with_elevenlabs(self, text, run_async=False):
+    def speak_with_elevenlabs(self, text, speaking_rate=None, run_async=False):
         if not isinstance(self.voice_conf, ElevenLabsVoiceConf):
             raise RuntimeError("VoiceConf is not ElevenLabsVoiceConf")
 
         future = asyncio.run_coroutine_threadsafe(
-            self.tts.speak(text),
+            self.tts.speak(text, speaking_rate),
             self.background_loop
         )
         self.animation_futures.append(future)

@@ -30,20 +30,21 @@ class GoogleVoiceConf(VoiceConf):
 
 
 class ElevenLabsVoiceConf(VoiceConf):
-    def __init__(self, default_speaking_rate=1.0, voice_id='yO6w2xlECAQRFP6pX7Hw', model_id='eleven_flash_v2_5'):
+    def __init__(self, default_speaking_rate=None, voice_id='yO6w2xlECAQRFP6pX7Hw', model_id='eleven_flash_v2_5'):
         super().__init__(default_speaking_rate)
         self.voice_id = voice_id
         self.model_id = model_id
 
 
 class ElevenLabsTTS:
-    def __init__(self, speaker, elevenlabs_key, voice_id, model_id, sample_rate=22050):
+    def __init__(self, speaker, elevenlabs_key, voice_id, model_id, sample_rate=22050, speaking_rate=None):
         self.speaker = speaker
         self.elevenlabs_key = elevenlabs_key
         self.voice_id = voice_id
         self.model_id = model_id
         self.sample_rate = sample_rate
         self.websocket = None
+        self.speaking_rate = max(0.7, min(speaking_rate, 1.2)) if speaking_rate else speaking_rate
 
     async def connect(self):
         uri = (
@@ -51,19 +52,22 @@ class ElevenLabsTTS:
             f"?model_id={self.model_id}"
             f"&output_format=pcm_{self.sample_rate}"
             f"&inactivity_timeout=180"
+            # f"&auto_mode=true"
         )
         self.websocket = await websockets.connect(uri)
-        # f"&auto_mode=true"
+
+        voice_settings = {
+                "stability": 0.5,
+                "similarity_boost": 0.8,
+                "use_speaker_boost": False,
+                "chunk_length_schedule": [50, 120, 160, 290]}
+        if self.speaking_rate is not None:
+            voice_settings["speed"] = self.speaking_rate
 
         # Send initial config once
         await self.websocket.send(dumps({
             "text": " ",
-            "voice_settings": {
-                "stability": 0.5,
-                "similarity_boost": 0.8,
-                "use_speaker_boost": False,
-                "chunk_length_schedule": [50, 120, 160, 290]
-            },
+            "voice_settings": voice_settings,
             "auto_mode": True,
             "xi_api_key": self.elevenlabs_key,
         }))
@@ -73,13 +77,22 @@ class ElevenLabsTTS:
             await self.websocket.send(dumps({"text": ""}))  # end marker
             self.websocket = None
 
-    async def speak(self, text):
+    async def speak(self, text, speaking_rate=None):
         # Reconnect if no active connection.
         if not self.websocket or self.websocket.closed:
             await self.connect()
 
         # Send sentence
-        await self.websocket.send(dumps({"text": text, "flush": True}))
+        request = {"text": text, "flush": True}
+        if speaking_rate is not None:
+            speaking_rate = max(0.7, min(speaking_rate, 1.2))
+            if "voice_settings" in request:
+                request["voice_settings"]["speed"] = speaking_rate
+            else:
+                request["voice_settings"] = {
+                    "speed": speaking_rate
+                }
+        await self.websocket.send(dumps(request))
 
         try:
             message = await self.websocket.recv()
@@ -98,5 +111,5 @@ class ElevenLabsTTS:
             self.websocket = None
         except Exception as e:
             # Catch-all for JSON parsing or other issues
-            print(f"recv response failure: {e}")
+            print(f"Other failure in elevenlabs tts: {e}")
             self.websocket = None

@@ -3,6 +3,7 @@ from sic_framework.services.openai_gpt.gpt import GPTRequest
 from droomrobot.core import AnimationType, InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InterventionPhase, \
     InteractionChoice, InteractionChoiceCondition
+from droomrobot.introduction_factory import IntroductionFactory
 
 
 class Bloedafname4(DroomrobotScript):
@@ -24,24 +25,12 @@ class Bloedafname4(DroomrobotScript):
             print("Interaction part not recognized")
 
     def _introduction(self):
-        self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
-        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
-        self.add_move(self.droomrobot.say, 'Hallo, ik ben de droomrobot!')
-        self.add_move(self.droomrobot.say, 'Wat fijn dat ik je mag helpen vandaag.')
-        self.add_move(self.droomrobot.ask_fake, 'Hoe heet jij?', 3)
-        self.add_move(self.droomrobot.say, lambda: f'{self.user_model['child_name']}, wat leuk je te ontmoeten.')
-        self.add_move(self.droomrobot.ask_fake, 'En hoe oud ben je?', 3)
-        self.add_move(self.droomrobot.say, lambda: f'{str(self.user_model['child_age'])} jaar. '
-                                           f'Oh wat goed, dan ben je al oud genoeg om mijn speciale trucje te leren.')
-        self.add_move(self.droomrobot.say, 'Het is een truukje dat kinderen helpt om zich fijn en'
-                                           'sterk te voelen in het ziekenhuis.')
-        self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het bij jou gaat werken.',animated=True)
-        self.add_move(self.droomrobot.say, 'Het werkt zo',animated=True)
-        self.add_move(self.droomrobot.say, 'Ik kan jou meenemen op een droomreis!')
-        self.add_move(self.droomrobot.say, 'Een droomreis is een trucje waarbij je aan iets heel leuks denkt.',animated=True)
-        self.add_move(self.droomrobot.say, 'Dat helpt je om rustig en sterk te blijven.',animated=True)
-        self.add_move(self.droomrobot.say, 'Nu mag jij kiezen waar je heen wil in jouw droomreis.'
-                                           'Je kunt kiezen uit het strand, het bos, de speeltuin of de ruimte.')
+        interaction_conf = InteractionConf(amplified=self.audio_amplified)
+        self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
+        intro_moves = IntroductionFactory.age4(droomrobot=self.droomrobot, interaction_context=self.interaction_context, user_model=self.user_model)
+        self.add_moves(intro_moves)
+
+        self.add_move(self.droomrobot.say, 'Je kunt kiezen uit het strand, het bos, de speeltuin of de ruimte.')
 
         self.add_move(self.droomrobot.ask_entity,
                       'Wat is de plek waar jij je fijn voelt?',
@@ -54,7 +43,7 @@ class Bloedafname4(DroomrobotScript):
         self.add_choice(self._build_interaction_choice_droomplek())
 
         # # SAMEN OEFENEN
-        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False)
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         
         self.add_move(self.droomrobot.say, 'Oke, laten we samen gaan oefenen.')
