@@ -125,7 +125,6 @@ class Kapinductie4(DroomrobotScript):
 
         # Bos
         interaction_choice.add_move('bos', self.droomrobot.say,
-                                    'Het bos, wat een rustige plek!'
                                     'Het bos, wat een rustige plek! De bomen zijn hoog en soms hoor ik de vogeltjes fluiten.')
         interaction_choice.add_move('bos', self.droomrobot.say,
                                     'Weet je wat ik daar graag doe? Takjes verzamelen en speuren naar eekhoorntjes.')

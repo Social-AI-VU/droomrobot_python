@@ -3,7 +3,7 @@ from os.path import abspath, join
 from time import sleep
 
 from droomrobot.core import Droomrobot, AnimationType
-from droomrobot.droomrobot_tts_conf import GoogleVoiceConf, VoiceConf
+from droomrobot.droomrobot_tts import GoogleVoiceConf, VoiceConf
 
 """
 Demo: Animation with alphamini.

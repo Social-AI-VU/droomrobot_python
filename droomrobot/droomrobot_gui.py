@@ -8,7 +8,7 @@ from threading import Thread
 from os.path import abspath, join
 
 from droomrobot.droomrobot_script import InteractionContext, InteractionSession
-from droomrobot.droomrobot_tts_conf import VoiceConf, Voice, GoogleVoiceConf, ElevenLabsVoiceConf
+from droomrobot.droomrobot_tts import Voice, GoogleVoiceConf, ElevenLabsVoiceConf
 from droomrobot_control import DroomrobotControl
 
 
@@ -131,7 +131,7 @@ class DroomrobotGUI:
         ttk.Entry(self.connect_advanced_frame, textvariable=self.dialogflow_timeout, width=10).grid(row=2, column=1,
                                                                                                     sticky="w")
 
-        ttk.Label(self.connect_advanced_frame, text="Stem").grid(row=3, column=0, sticky="w")
+        ttk.Label(self.connect_advanced_frame, text="Voice").grid(row=3, column=0, sticky="w")
         ttk.Combobox(self.connect_advanced_frame, textvariable=self.voice,
                      values=[e.name for e in Voice]).grid(row=3, column=1, sticky="w")
 
@@ -393,7 +393,7 @@ class DroomrobotGUI:
         self.root.update()
 
     def connect(self):
-        if self.voice == Voice.GOOGLE:
+        if self.voice.get() == Voice.GOOGLE.name:
             voice_conf = GoogleVoiceConf(default_speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"))
         else:  # Elevenlabs
             voice_conf = ElevenLabsVoiceConf(default_speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"))

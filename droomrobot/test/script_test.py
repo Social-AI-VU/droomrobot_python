@@ -2,7 +2,7 @@ from os.path import abspath, join
 
 from droomrobot.core import AnimationType, Droomrobot
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession
-from droomrobot.droomrobot_tts_conf import GoogleVoiceConf
+from droomrobot.droomrobot_tts import GoogleVoiceConf
 
 
 class ScriptTest(DroomrobotScript):

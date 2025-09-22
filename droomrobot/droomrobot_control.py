@@ -3,7 +3,7 @@ from droomrobot.bloedafname6 import Bloedafname6
 from droomrobot.bloedafname9 import Bloedafname9
 from droomrobot.core import Droomrobot, AnimationType
 from droomrobot.droomrobot_script import InteractionContext, InteractionSession
-from droomrobot.droomrobot_tts_conf import GoogleVoiceConf
+from droomrobot.droomrobot_tts import GoogleVoiceConf
 from droomrobot.kapinductie4 import Kapinductie4
 from droomrobot.kapinductie6 import Kapinductie6
 from droomrobot.sonde4 import Sonde4
