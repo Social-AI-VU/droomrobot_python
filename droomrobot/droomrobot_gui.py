@@ -80,7 +80,7 @@ class DroomrobotGUI:
         self.google_keyfile = tk.StringVar(value=config.get("google_keyfile", "../conf/dialogflow/google_keyfile.json"))
         self.openai_keyfile = tk.StringVar(value=config.get("openai_keyfile", "../conf/openai/.openai_env"))
         self.dialogflow_timeout = tk.StringVar(value=str(config.get("dialogflow_timeout", "15.0")))
-        self.default_speaking_rate = tk.StringVar(value=str(config.get("default_speaking_rate", "0.9")))
+        self.default_speaking_rate = tk.StringVar(value=str(config.get("default_speaking_rate", "1.0")))
         self.debug_mode = tk.BooleanVar(value=config.get("debug_mode", False))
         self.audio_amplified = tk.BooleanVar(value=config.get("audio_amplification", False))
         try:
@@ -394,10 +394,11 @@ class DroomrobotGUI:
 
     def connect(self):
         if self.voice.get() == Voice.ELEVENLABS.name:
-            voice_conf = ElevenLabsVoiceConf(default_speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"))
+            speaking_rate = self.float_validation(self.default_speaking_rate.get(), "Speaking rate")
+            voice_conf = ElevenLabsVoiceConf(speaking_rate=None if speaking_rate == 1.0 else speaking_rate)
         else:  # Google
-            voice_conf = GoogleVoiceConf(default_speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"))
-
+            voice_conf = GoogleVoiceConf(
+                speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"))
 
         self.droomrobot_control = DroomrobotControl()
         self.droomrobot_control.connect(

@@ -1,9 +1,8 @@
+import asyncio
 import base64
-import queue
+import logging
 from json import dumps, loads
-from threading import Thread
 
-import pyaudio
 import websockets
 from sic_framework import AudioRequest
 
@@ -17,21 +16,21 @@ class Voice(Enum):
 
 class VoiceConf:
 
-    def __init__(self, default_speaking_rate=1.0):
-        self.default_speaking_rate = default_speaking_rate
+    def __init__(self, speaking_rate):
+        self.speaking_rate = speaking_rate
 
 
 class GoogleVoiceConf(VoiceConf):
 
-    def __init__(self, default_speaking_rate=1.0, google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE"):
-        super().__init__(default_speaking_rate)
+    def __init__(self, speaking_rate=1.0, google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE"):
+        super().__init__(speaking_rate)
         self.google_tts_voice_name = google_tts_voice_name
         self.google_tts_voice_gender = google_tts_voice_gender
 
 
 class ElevenLabsVoiceConf(VoiceConf):
-    def __init__(self, default_speaking_rate=None, voice_id='yO6w2xlECAQRFP6pX7Hw', model_id='eleven_flash_v2_5'):
-        super().__init__(default_speaking_rate)
+    def __init__(self, speaking_rate=None, voice_id='yO6w2xlECAQRFP6pX7Hw', model_id='eleven_flash_v2_5'):
+        super().__init__(speaking_rate)
         self.voice_id = voice_id
         self.model_id = model_id
 
@@ -45,6 +44,8 @@ class ElevenLabsTTS:
         self.sample_rate = sample_rate
         self.websocket = None
         self.speaking_rate = max(0.7, min(speaking_rate, 1.2)) if speaking_rate else speaking_rate
+        # Development logging
+        self.logger = logging.getLogger("droomrobot")
 
     async def connect(self):
         uri = (
@@ -52,7 +53,6 @@ class ElevenLabsTTS:
             f"?model_id={self.model_id}"
             f"&output_format=pcm_{self.sample_rate}"
             f"&inactivity_timeout=180"
-            # f"&auto_mode=true"
         )
         self.websocket = await websockets.connect(uri)
 
@@ -74,42 +74,61 @@ class ElevenLabsTTS:
 
     async def disconnect(self):
         if self.websocket:
-            await self.websocket.send(dumps({"text": ""}))  # end marker
-            self.websocket = None
+            try:
+                await self.websocket.send(dumps({"text": ""}))  # end marker
+                await self.websocket.close()
+            except Exception as e:
+                self.logger.error(f"[TTS] Error while closing websocket: {e}")
+            finally:
+                self.websocket = None
 
-    async def speak(self, text, speaking_rate=None):
+    async def ping_connection(self):
+        try:
+            await self.websocket.ping()
+            return True
+        except:
+            return False
+
+    async def speak(self, text):
         # Reconnect if no active connection.
         if not self.websocket or self.websocket.closed:
+            self.logger.warning("[TTS] Websocket not connected. Initiating reconnect.")
+            await self.connect()
+        if not await self.ping_connection():
+            self.logger.warning("[TTS] Websocket not connected. Initiating reconnect.")
             await self.connect()
 
         # Send sentence
-        request = {"text": text, "flush": True}
-        if speaking_rate is not None:
-            speaking_rate = max(0.7, min(speaking_rate, 1.2))
-            if "voice_settings" in request:
-                request["voice_settings"]["speed"] = speaking_rate
-            else:
-                request["voice_settings"] = {
-                    "speed": speaking_rate
-                }
-        await self.websocket.send(dumps(request))
+        await self.websocket.send(dumps({"text": text, "flush": True}))
 
-        try:
-            message = await self.websocket.recv()
-            data = loads(message)
+        while True:
+            try:
+                message = await asyncio.wait_for(self.websocket.recv(), timeout=5.0)
+                data = loads(message)
 
-            if data.get("audio"):
-                audio_bytes = base64.b64decode(data["audio"])
-                self.speaker.request(AudioRequest(audio_bytes, self.sample_rate))
-        except websockets.exceptions.ConnectionClosedOK:
-            # Normal closure (1000), nothing to worry about
-            print("WebSocket closed cleanly by server.")
-            self.websocket = None
-        except websockets.exceptions.ConnectionClosedError as e:
-            # Abnormal closure
-            print(f"WebSocket closed with error: {e}")
-            self.websocket = None
-        except Exception as e:
-            # Catch-all for JSON parsing or other issues
-            print(f"Other failure in elevenlabs tts: {e}")
-            self.websocket = None
+                if data.get("audio"):
+                    audio_bytes = base64.b64decode(data["audio"])
+                    self.speaker.request(AudioRequest(audio_bytes, self.sample_rate))
+                    break
+
+                if data.get("isFinal"):
+                    break
+            except asyncio.TimeoutError:
+                self.logger.error('[TTS] No audio received from Elevenlabs')
+                self.websocket = None
+                break
+            except websockets.exceptions.ConnectionClosedOK:
+                # Normal closure (1000), nothing to worry about
+                self.logger.warning("[TTS] WebSocket closed cleanly by server.")
+                self.websocket = None
+                break
+            except websockets.exceptions.ConnectionClosedError as e:
+                # Abnormal closure
+                self.logger.error(f"[TTS] WebSocket closed with error: {e}")
+                self.websocket = None
+                break
+            except Exception as e:
+                # Catch-all for JSON parsing or other issues
+                self.logger.error(f"[TTS] Other failure in elevenlabs tts: {e}")
+                self.websocket = None
+                break

@@ -147,7 +147,8 @@ class Bloedafname6(DroomrobotScript):
         # oefenen_choice.add_move('fail', self.droomrobot.say, "Oke.")
         # self.add_choice(oefenen_choice)
 
-        self.add_move(self.droomrobot.reset_interaction_conf)
+        interaction_conf = InteractionConf(amplified=self.audio_amplified)
+        self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
 
         self.add_move(self.droomrobot.say, 'Gelukkig wordt het steeds makkelijker als je het vaker oefent.')
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het zometeen gaat.')

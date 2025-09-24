@@ -149,7 +149,7 @@ class Droomrobot:
             print("\n SETTING UP TTS")
             # setup the tts service
             self.tts = Text2Speech(conf=Text2SpeechConf(keyfile_json=json.load(open(google_keyfile_path)),
-                                                        speaking_rate=self.voice_conf.default_speaking_rate))
+                                                        speaking_rate=self.voice_conf.speaking_rate))
             init_reply = self.tts.request(GetSpeechRequest(text="Ik ben aan het initializeren",
                                                            voice_name=self.voice_conf.google_tts_voice_name,
                                                            ssml_gender=self.voice_conf.google_tts_voice_gender))
@@ -205,7 +205,8 @@ class Droomrobot:
                                      elevenlabs_key=environ["ELEVENLABS_API_KEY"],
                                      voice_id=self.voice_conf.voice_id,
                                      model_id=self.voice_conf.model_id,
-                                     sample_rate=self.sample_rate)
+                                     sample_rate=self.sample_rate,
+                                     speaking_rate=self.voice_conf.speaking_rate)
             connect_to_elevenlabs_future = asyncio.run_coroutine_threadsafe(self.tts.connect(), self.background_loop)
             try:
                 connect_to_elevenlabs_future.result()
@@ -267,9 +268,6 @@ class Droomrobot:
 
     @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'sleep_time', 'animated', 'amplified'])
     def say(self, text, speaking_rate=None, sleep_time=None, animated=None, amplified=False):
-        # streamer = PyAudioStreamer(sample_rate=self.sample_rate, frame_size=4096)
-        # streamer.start()
-
         if animated:
             self.animate(AnimationType.EXPRESSION, self._random_speaking_eye_expression(), run_async=True)
             self.animate(AnimationType.ACTION, self._random_speaking_act(), run_async=True)
@@ -293,7 +291,7 @@ class Droomrobot:
             self.speaker.request(AudioRequest(waveform, reply.sample_rate))
 
         elif isinstance(self.voice_conf, ElevenLabsVoiceConf):
-            self.speak_with_elevenlabs(text, speaking_rate)
+            self.speak_with_elevenlabs(text)
 
         self.log_utterance(speaker='robot', text=text)
 
@@ -556,6 +554,12 @@ class Droomrobot:
                 await action.execute()
         except Exception as e:
             self.logger.error(f'Animation action {action_name} failed {e}', exc_info=e)
+            self.logger.info('Reconnecting to Mini')
+            connect_to_mini_sdk_future = asyncio.run_coroutine_threadsafe(self._connect_once(), self.background_loop)
+            try:
+                connect_to_mini_sdk_future.result()
+            except Exception as e:
+                self.logger.error("Failed to connect to mini device", exc_info=e)
 
     def set_mouth_lamp(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000,
                        run_async=False):
@@ -712,65 +716,16 @@ class Droomrobot:
         audio_int16 = (compressed_audio * 32767).astype(np.int16)
         return audio_int16.tobytes()
 
-    def speak_with_elevenlabs(self, text, speaking_rate=None, run_async=False):
+    def speak_with_elevenlabs(self, text, run_async=False):
         if not isinstance(self.voice_conf, ElevenLabsVoiceConf):
             raise RuntimeError("VoiceConf is not ElevenLabsVoiceConf")
 
         future = asyncio.run_coroutine_threadsafe(
-            self.tts.speak(text, speaking_rate),
+            self.tts.speak(text),
             self.background_loop
         )
         self.animation_futures.append(future)
 
         if not run_async:
             future.result()
-
-    # async def _elevenlabs_tts(self, voice_id, model_id, text, streamer: PyAudioStreamer):
-    #     uri = f"wss://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream-input?model_id={model_id}&output_format=pcm_22050&auto_mode=true"
-    #
-    #     async with websockets.connect(uri) as websocket:
-    #         # Initial config
-    #         await websocket.send(json.dumps({
-    #             "text": " ",
-    #             "voice_settings": {
-    #                 "stability": 0.5,
-    #                 "similarity_boost": 0.8,
-    #                 "use_speaker_boost": False
-    #             },
-    #             "xi_api_key": self.elevenlabs_key,
-    #         }))
-    #
-    #         # Send the actual text
-    #         await websocket.send(json.dumps({"text": text}))
-    #
-    #         # End input
-    #         await websocket.send(json.dumps({"text": ""}))
-    #
-    #         collected_audio = []
-    #         try:
-    #             while True:
-    #                 message = await websocket.recv()
-    #                 data = json.loads(message)
-    #
-    #                 if data.get("audio"):
-    #                     audio_bytes = base64.b64decode(data["audio"])
-    #                     # streamer.feed(audio_bytes)
-    #                     self.speaker.request(AudioRequest(audio_bytes, self.sample_rate))
-    #
-    #                 elif data.get("isFinal"):
-    #                     print("Stream ended.")
-    #                     break
-    #
-    #                 # if data.get("audio"):
-    #                 #     audio_bytes = base64.b64decode(data["audio"])
-    #                 #     collected_audio.append(audio_bytes)
-    #                 #
-    #                 # elif data.get("isFinal"):
-    #                 #     print("Stream ended.")
-    #                 #     final_audio = b"".join(collected_audio)
-    #                 #     self.speaker.request(AudioRequest(final_audio, self.sample_rate))
-    #                 #     break
-    #
-    #         except websockets.exceptions.ConnectionClosed:
-    #             print("Connection closed")
 
