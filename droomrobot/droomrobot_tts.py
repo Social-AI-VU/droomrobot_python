@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import logging
+import time
 from json import dumps, loads
 
 import websockets
@@ -99,6 +100,7 @@ class ElevenLabsTTS:
             await self.connect()
 
         # Send sentence
+        start = time.perf_counter()
         await self.websocket.send(dumps({"text": text, "flush": True}))
 
         while True:
@@ -108,7 +110,10 @@ class ElevenLabsTTS:
 
                 if data.get("audio"):
                     audio_bytes = base64.b64decode(data["audio"])
+                    self.logger.debug(f"[TTS] Audio received and send to speaker at: {time.perf_counter() - start}")
                     self.speaker.request(AudioRequest(audio_bytes, self.sample_rate))
+                    self.logger.debug(f"[TTS] Audio done: {time.perf_counter() - start}")
+
                     break
 
                 if data.get("isFinal"):

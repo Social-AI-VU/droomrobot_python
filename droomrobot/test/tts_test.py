@@ -27,14 +27,12 @@ class TTSTest:
         self.droomrobot.say("Versterkt")
         self.droomrobot.say("Hallo, ik ben de droomrobot.")
 
-    def speak(self, animated=False):
-        print("[TEST speak] Running")
-        self.droomrobot.say("Hallo, ik ben de droomrobot.", animated=animated)
-        print("[TEST speak] 1 finished")
-        self.droomrobot.say("Ik ben hier in het ziekenhuis om je te helpen.", animated=animated)
-        print("[TEST speak] 2 finished")
-        self.droomrobot.say("Hoe heet jij?", animated=animated)
-        self.droomrobot.say("Mike, wat een leuke naam!", animated=animated)
+    def speak(self):
+        self.droomrobot.say("Hallo, ik ben de droomrobot.")
+        self.droomrobot.ask_fake("Hoe heet jij?")
+        self.droomrobot.say("Mike, wat een leuke naam!")
+        self.droomrobot.ask_open("Wat vind jij leuk om te doen?")
+        self.droomrobot.say("Dat klikt leuk zeg.")
         self.droomrobot.disconnect()
 
 
@@ -46,4 +44,4 @@ if __name__ == '__main__':
                    openai_key_path=abspath(join("../../conf", "openai", ".openai_env")),
                    voice_conf=voice_conf,
                    computer_test_mode=False)
-    test.speak(animated=True)
+    test.speak()
