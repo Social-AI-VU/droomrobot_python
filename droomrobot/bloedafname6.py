@@ -265,7 +265,7 @@ class Bloedafname6(DroomrobotScript):
 
     def _goodbye(self):
         interaction_conf = InteractionConf(amplified=self.audio_amplified)
-        self.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.set_interaction_conf, interaction_conf)
+        self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         self.add_move(self.droomrobot.ask_opinion_llm, "Was het goed gegaan?", user_model_key='interventie_ervaring')
         ervaring_choice = InteractionChoice('interventie_ervaring', InteractionChoiceCondition.MATCHVALUE)
         ervaring_choice.add_move('positive', self.droomrobot.say,

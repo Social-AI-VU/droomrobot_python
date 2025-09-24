@@ -247,7 +247,7 @@ class Bloedafname4(DroomrobotScript):
 
     def _goodbye(self):
         interaction_conf = InteractionConf(amplified=self.audio_amplified)
-        self.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.set_interaction_conf, interaction_conf)
+        self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         self.add_move(self.droomrobot.say, lambda: f'Zo {self.user_model['child_name']}, het is weer tijd om doei te zeggen.')
         self.add_move(self.droomrobot.say,'Wat fijn dat ik jou vandaag mocht helpen.')
         self.add_move(self.droomrobot.ask_opinion_llm, "Was het goed gegaan?", user_model_key='interventie_ervaring')

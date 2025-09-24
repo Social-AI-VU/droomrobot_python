@@ -2,6 +2,7 @@
 from droomrobot.core  import AnimationType, InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InteractionChoice, \
     InteractionChoiceCondition, InterventionPhase
+from droomrobot.introduction_factory import IntroductionFactory
 
 
 class Sonde4(DroomrobotScript):
@@ -22,23 +23,10 @@ class Sonde4(DroomrobotScript):
             print("Interaction part not recognized")
 
     def _introduction(self):
-        self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand up
-        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
-        self.add_move(self.droomrobot.say, 'Hallo, ik ben de droomrobot!')
-        self.add_move(self.droomrobot.say, 'Wat fijn dat ik je mag helpen vandaag.')
-        self.add_move(self.droomrobot.ask_fake, 'Hoe heet jij?', 3)
-        self.add_move(self.droomrobot.say, lambda: f'{self.user_model['child_name']}, wat leuk je te ontmoeten.')
-        self.add_move(self.droomrobot.ask_fake, 'En hoe oud ben je?', 3)
-        self.add_move(self.droomrobot.say, lambda: f'{str(self.user_model['child_age'])} jaar. Oh wat goed, dan ben je al oud genoeg om mijn speciale trucje te leren.')
-        self.add_move(self.droomrobot.say, 'Het is een truukje dat kinderen helpt om zich fijn en sterk te voelen in het ziekenhuis.')
-        self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het bij jou gaat werken.')
-        self.add_move(self.droomrobot.say, 'We gaan samen iets leuks bedenken dat jou gaat helpen.')
-        self.add_move(self.droomrobot.say, 'Nu ga ik je wat meer vertellen over het trucje wat ik kan.')
-        self.add_move(self.droomrobot.say, 'Let maar goed op, ik ga je iets bijzonders leren.')
-        self.add_move(self.droomrobot.say, 'Ik kan jou meenemen op een droomreis!')
-        self.add_move(self.droomrobot.say, 'Een droomreis is een trucje waarbij je aan iets heel leuks denkt.')
-        self.add_move(self.droomrobot.say, 'Dat helpt je om rustig en sterk te blijven.')
-        self.add_move(self.droomrobot.say, 'Ik ga je laten zien hoe het werkt.')
+        interaction_conf = InteractionConf(amplified=self.audio_amplified)
+        self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
+        intro_moves = IntroductionFactory.age4(droomrobot=self.droomrobot, interaction_context=self.interaction_context, user_model=self.user_model)
+        self.add_moves(intro_moves)
         self.add_move(self.droomrobot.say, 'Wat goed helpt is om je voor te stellen dat je in een raceauto door een tunnel scheurt, of van een waterglijbaan gaat, of als dolfijn door het water beweegt.')
         self.add_move(self.droomrobot.say, 'Welke lijkt jij het leukste?')
 
@@ -65,7 +53,7 @@ class Sonde4(DroomrobotScript):
         zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed zit.')
         self.add_choice(zit_goed_choice)
 
-        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False)
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
 
         self.add_move(self.droomrobot.say, 'Leg je nu je handen op je buik en adem rustig in.')
@@ -101,13 +89,13 @@ class Sonde4(DroomrobotScript):
         self.phase_moves = self._intervention_wrapup(self.phase_moves_build)
 
     def _intervention_preparation(self, phase_moves: InteractionChoice) -> InteractionChoice:
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified)
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Wat fijn dat ik je mag helpen! We gaan samen weer op een mooie droomreis.', animated=False)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Omdat je net al zo goed hebt geoefend, zal het nu nog makkelijker gaan.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Ga maar lekker zitten zoals jij dat fijn vindt.', sleep_time=1)
-        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False)
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,  'Sluit je ogen maar, dan werkt de droomreis het allerbeste.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Luister goed naar mijn stem. Alle andere geluiden in het ziekenhuis worden steeds zachter..')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,  'Leg je handen op je buik en adem rustig in.')
@@ -157,7 +145,7 @@ class Sonde4(DroomrobotScript):
         return phase_moves
 
     def _intervention_procedure(self, phase_moves: InteractionChoice) -> InteractionChoice:
-        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False)
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified)
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.set_interaction_conf, interaction_conf)
 
         intervention_proc_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
@@ -220,7 +208,8 @@ class Sonde4(DroomrobotScript):
         return phase_moves
 
     def _intervention_wrapup(self, phase_moves: InteractionChoice) -> InteractionChoice:
-        phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.reset_interaction_conf)
+        interaction_conf = InteractionConf(amplified=self.audio_amplified)
+        phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.set_interaction_conf, interaction_conf)
         intervention_wrapup_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
         # Raceauto
         intervention_wrapup_choice.add_move('raceauto', self.droomrobot.say, 'Wow! Jij bent als een supersnelle coureur door de tunnel gereden!')
@@ -254,6 +243,8 @@ class Sonde4(DroomrobotScript):
         return phase_moves
 
     def _goodbye(self):
+        interaction_conf = InteractionConf(amplified=self.audio_amplified)
+        self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         self.add_move(self.droomrobot.say, 'Wat heb je jezelf goed geholpen om alles makkelijker te maken.')
         self.add_move(self.droomrobot.say, 'En weet je wat nu zo fijn is, hoe vaker je deze droomreis oefent, hoe makkelijker het wordt.')
         self.add_move(self.droomrobot.say, 'Je kunt dit ook zonder mij oefenen.')
