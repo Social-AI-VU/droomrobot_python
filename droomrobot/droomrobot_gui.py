@@ -393,10 +393,11 @@ class DroomrobotGUI:
         self.root.update()
 
     def connect(self):
-        if self.voice.get() == Voice.GOOGLE.name:
-            voice_conf = GoogleVoiceConf(default_speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"))
-        else:  # Elevenlabs
+        if self.voice.get() == Voice.ELEVENLABS.name:
             voice_conf = ElevenLabsVoiceConf(default_speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"))
+        else:  # Google
+            voice_conf = GoogleVoiceConf(default_speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"))
+
 
         self.droomrobot_control = DroomrobotControl()
         self.droomrobot_control.connect(
@@ -566,7 +567,6 @@ class DroomrobotGUI:
                 self.logger.warning("No text entered to speak.")
         else:
             self.logger.warning("Robot is not connected.")
-
 
     def load_config(self, path=abspath(join("../conf", "droomrobot", "default_settings.json"))):
         try:
