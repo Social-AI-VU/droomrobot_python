@@ -29,7 +29,7 @@ class TTSTest:
 
     def speak(self):
         self.droomrobot.say("Hallo, ik ben de droomrobot.")
-        self.droomrobot.ask_fake("Hoe heet jij?")
+        self.droomrobot.ask_fake("Hoe heet jij?", 2)
         self.droomrobot.say("Mike, wat een leuke naam!")
         self.droomrobot.ask_open("Wat vind jij leuk om te doen?")
         self.droomrobot.say("Dat klikt leuk zeg.")
