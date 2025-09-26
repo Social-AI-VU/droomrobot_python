@@ -28,6 +28,7 @@ class TTSTest:
         self.droomrobot.say("Hallo, ik ben de droomrobot.")
 
     def speak(self):
+        # self.droomrobot.set_interaction_conf(InteractionConf(always_regenerate=True))
         self.droomrobot.say("Hallo, ik ben de droomrobot.")
         self.droomrobot.ask_fake("Hoe heet jij?", 2)
         self.droomrobot.say("Mike, wat een leuke naam!")

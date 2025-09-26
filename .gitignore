@@ -37,3 +37,9 @@ conf/droomrobot/*.json
 # Ignore droomrobot config files
 conf/env/.env
 
+# Ignore cached audio files
+droomrobot/tts_cache
+droomrobot/test/tts_cache
+#droomrobot/tts_cache/*.wav
+#droomrobot/test/tts_cache/*.wav
+

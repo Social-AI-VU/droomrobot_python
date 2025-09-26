@@ -35,7 +35,7 @@ from sic_framework.services.google_tts.google_tts import (
 from sic_framework.services.openai_gpt.gpt import GPT, GPTConf, GPTRequest
 from dotenv import load_dotenv
 
-from droomrobot.droomrobot_tts import VoiceConf, GoogleVoiceConf, ElevenLabsVoiceConf, ElevenLabsTTS
+from droomrobot.droomrobot_tts import VoiceConf, GoogleVoiceConf, ElevenLabsVoiceConf, ElevenLabsTTS, TTSCacher
 
 """
 Demo: AlphaMini recognizes user intent and replies using Dialogflow/Text-to-Speech and an LLM.
@@ -81,12 +81,14 @@ class AnimationType(Enum):
 
 class InteractionConf:
 
-    def __init__(self, speaking_rate=None, sleep_time=0, animated=True, max_attempts=2, amplified=False):
+    def __init__(self, speaking_rate=None, sleep_time=0, animated=True, max_attempts=2, amplified=False,
+                 always_regenerate=False):
         self.speaking_rate = speaking_rate
         self.sleep_time = sleep_time
         self.animated = animated
         self.max_attempts = max_attempts
         self.amplified = amplified
+        self.always_regenerate=always_regenerate
 
     @staticmethod
     def apply_config_defaults(config_attr, param_names):
@@ -144,9 +146,10 @@ class Droomrobot:
             self.gpt = None
         print('Complete')
 
+        print("\n SETTING UP TTS")
         self.voice_conf = voice_conf
         if isinstance(self.voice_conf, GoogleVoiceConf):
-            print("\n SETTING UP TTS")
+
             # setup the tts service
             self.tts = Text2Speech(conf=Text2SpeechConf(keyfile_json=json.load(open(google_keyfile_path)),
                                                         speaking_rate=self.voice_conf.speaking_rate))
@@ -155,11 +158,25 @@ class Droomrobot:
                                                            ssml_gender=self.voice_conf.google_tts_voice_gender))
             self.sample_rate = init_reply.sample_rate
             print('Google TTS activated')
-            print('Complete')
         elif isinstance(self.voice_conf, ElevenLabsVoiceConf):
             self.sample_rate = 22050
+            self.tts = ElevenLabsTTS(elevenlabs_key=environ["ELEVENLABS_API_KEY"],
+                                     voice_id=self.voice_conf.voice_id,
+                                     model_id=self.voice_conf.model_id,
+                                     sample_rate=self.sample_rate,
+                                     speaking_rate=self.voice_conf.speaking_rate)
+            connect_to_elevenlabs_future = asyncio.run_coroutine_threadsafe(self.tts.connect(),
+                                                                            self.background_loop)
+            try:
+                connect_to_elevenlabs_future.result()
+                print('Elevenlabs TTS activated')
+            except Exception as e:
+                self.logger.error("Failed to connect to elevenlabs", exc_info=e)
         else:
             raise ValueError(f"Unknown voice_conf {self.voice_conf}")
+
+        self.tts_cacher = TTSCacher()
+        print("Complete")
 
         if not computer_test_mode:
             print("\n SETTING UP ALPHAMINI")
@@ -198,22 +215,6 @@ class Droomrobot:
             self.mic = desktop.mic
             self.device_name = "computer"
         print("Complete")
-
-        if isinstance(self.voice_conf, ElevenLabsVoiceConf):
-            print("\n SETTING UP TTS")
-            self.tts = ElevenLabsTTS(speaker=self.speaker,
-                                     elevenlabs_key=environ["ELEVENLABS_API_KEY"],
-                                     voice_id=self.voice_conf.voice_id,
-                                     model_id=self.voice_conf.model_id,
-                                     sample_rate=self.sample_rate,
-                                     speaking_rate=self.voice_conf.speaking_rate)
-            connect_to_elevenlabs_future = asyncio.run_coroutine_threadsafe(self.tts.connect(), self.background_loop)
-            try:
-                connect_to_elevenlabs_future.result()
-                print('Elevenlabs TTS activated')
-                print("Complete")
-            except Exception as e:
-                self.logger.error("Failed to connect to elevenlabs", exc_info=e)
 
         print("\n SETTING UP DIALOGFLOW")
         # set up the config for dialogflow
@@ -266,39 +267,55 @@ class Droomrobot:
             timestamp = strftime("%Y-%m-%d %H:%M:%S")
             self._log_queue.put(f"[{timestamp}] recognition result: {recognition_result}")
 
-    @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'sleep_time', 'animated', 'amplified'])
-    def say(self, text, speaking_rate=None, sleep_time=None, animated=None, amplified=False):
+    @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'sleep_time', 'animated', 'amplified', 'always_regenerate'])
+    def say(self, text, speaking_rate=None, sleep_time=None, animated=None, amplified=False, always_regenerate=False):
         if animated:
             self.animate(AnimationType.EXPRESSION, self._random_speaking_eye_expression(), run_async=True)
             self.animate(AnimationType.ACTION, self._random_speaking_act(), run_async=True)
 
+        # Normalize and hash text
+        tts_key = self.tts_cacher.make_tts_key(text, self.voice_conf)
+        if not always_regenerate:
+            audio_file = self.tts_cacher.load_audio_file(tts_key)
+            if audio_file:
+                self.logger.debug(f'[SAY] playing saved audio {tts_key}.')
+                self.play_audio(audio_file)
+                return
+
+        self.logger.debug(f'[SAY] generating new audio {tts_key}.')
+        # Otherwise, generate TTS
         if isinstance(self.voice_conf, GoogleVoiceConf):
-            if speaking_rate:
-                reply = self.tts.request(GetSpeechRequest(text=text,
-                                                          voice_name=self.voice_conf.google_tts_voice_name,
-                                                          ssml_gender=self.voice_conf.google_tts_voice_gender,
-                                                          speaking_rate=speaking_rate))
-            else:
-                reply = self.tts.request(GetSpeechRequest(text=text,
-                                                          voice_name=self.voice_conf.google_tts_voice_name,
-                                                          ssml_gender=self.voice_conf.google_tts_voice_gender))
-
-            if amplified:
-                waveform = self._amplify_audio(reply.waveform, reply.sample_rate)
-            else:
-                waveform = reply.waveform
-
-            self.speaker.request(AudioRequest(waveform, reply.sample_rate))
+            reply = self.tts.request(GetSpeechRequest(
+                text=text,
+                voice_name=self.voice_conf.google_tts_voice_name,
+                ssml_gender=self.voice_conf.google_tts_voice_gender,
+                speaking_rate=speaking_rate or self.voice_conf.speaking_rate
+            ))
+            audio_bytes = reply.waveform
+            sample_rate = reply.sample_rate
 
         elif isinstance(self.voice_conf, ElevenLabsVoiceConf):
-            self.speak_with_elevenlabs(text)
+            # ElevenLabs TTS returns bytes
+            audio_bytes = asyncio.run_coroutine_threadsafe(self.tts.speak(text), self.background_loop).result()
+            sample_rate = self.sample_rate
+        else:
+            raise ValueError(f"Voice conf {self.voice_conf} is not supported")
 
+        # Optional amplification
+        if audio_bytes and amplified:
+            audio_bytes = self._amplify_audio(audio_bytes)
+
+        # Play audio
+        self.speaker.request(AudioRequest(audio_bytes, sample_rate))
         self.log_utterance(speaker='robot', text=text)
+
+        # Save to cache file
+        self.tts_cacher.save_audio_file(tts_key, audio_bytes, sample_rate)
 
         if sleep_time and sleep_time > 0:
             sleep(sleep_time)
 
-    def play_audio(self, audio_file):
+    def play_audio(self, audio_file, amplified=False):
         with wave.open(audio_file, 'rb') as wf:
             # Get parameters
             sample_width = wf.getsampwidth()
@@ -309,7 +326,11 @@ class Droomrobot:
             if sample_width != 2:
                 raise ValueError("WAV file is not 16-bit audio. Sample width = {} bytes.".format(sample_width))
 
-            self.speaker.request(AudioRequest(wf.readframes(n_frames), framerate))
+            audio = wf.readframes(n_frames)
+            if amplified:
+                audio = self._amplify_audio(audio)
+
+            self.speaker.request(AudioRequest(audio, framerate))
             self.log_utterance(speaker='robot', text=f'plays {audio_file}')
 
     @InteractionConf.apply_config_defaults('interaction_conf', ['max_attempts', 'speaking_rate', 'animated'])
@@ -676,12 +697,11 @@ class Droomrobot:
         return rand.choice(speaking_expressions)
 
     @staticmethod
-    def _amplify_audio(waveform_bytes, sample_rate, compression_strength=2.0, target_level=0.9):
+    def _amplify_audio(waveform_bytes, compression_strength=2.0, target_level=0.9):
         """
         Amplify audio by normalizing and applying dynamic range compression.
 
         :param waveform_bytes: Raw PCM audio data as bytes (int16)
-        :param sample_rate: Sample rate of the audio
         :param compression_strength: Compression strength (1.0=minimal, 2.0=moderate, 5.0=heavy)
         :param target_level: Final output level (0.0-1.0, recommend 0.9 to avoid clipping)
         :return: Processed audio as bytes (int16)
@@ -711,17 +731,4 @@ class Droomrobot:
         # Convert back to int16 bytes
         audio_int16 = (compressed_audio * 32767).astype(np.int16)
         return audio_int16.tobytes()
-
-    def speak_with_elevenlabs(self, text, run_async=False):
-        if not isinstance(self.voice_conf, ElevenLabsVoiceConf):
-            raise RuntimeError("VoiceConf is not ElevenLabsVoiceConf")
-
-        future = asyncio.run_coroutine_threadsafe(
-            self.tts.speak(text),
-            self.background_loop
-        )
-        self.animation_futures.append(future)
-
-        if not run_async:
-            future.result()
 
