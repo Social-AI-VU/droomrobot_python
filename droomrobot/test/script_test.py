@@ -2,7 +2,7 @@ from os.path import abspath, join
 
 from droomrobot.core import AnimationType, Droomrobot
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession
-from droomrobot.droomrobot_tts import GoogleVoiceConf, ElevenLabsVoiceConf
+from droomrobot.droomrobot_tts import GoogleTTSConf, ElevenLabsTTSConf
 
 
 class ScriptTest(DroomrobotScript):
@@ -32,7 +32,7 @@ if __name__ == '__main__':
                             env_path=abspath(join("../../conf", "openai", ".openai_env")),
                             sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
                             dialogflow_timeout=10.0,
-                            voice_conf=ElevenLabsVoiceConf(),
+                            tts_conf=ElevenLabsTTSConf(),
                             computer_test_mode=False)
 
     script_test = ScriptTest(droomrobot)

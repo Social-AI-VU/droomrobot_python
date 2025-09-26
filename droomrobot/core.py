@@ -35,7 +35,7 @@ from sic_framework.services.google_tts.google_tts import (
 from sic_framework.services.openai_gpt.gpt import GPT, GPTConf, GPTRequest
 from dotenv import load_dotenv
 
-from droomrobot.droomrobot_tts import VoiceConf, GoogleVoiceConf, ElevenLabsVoiceConf, ElevenLabsTTS, TTSCacher
+from droomrobot.droomrobot_tts import TTSConf, GoogleTTSConf, ElevenLabsTTSConf, ElevenLabsTTS, TTSCacher
 
 """
 Demo: AlphaMini recognizes user intent and replies using Dialogflow/Text-to-Speech and an LLM.
@@ -106,7 +106,7 @@ class InteractionConf:
 class Droomrobot:
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
                  google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl", dialogflow_timeout=None,
-                 voice_conf: VoiceConf = GoogleVoiceConf(), env_path=None, computer_test_mode=False):
+                 tts_conf: TTSConf = GoogleTTSConf(), env_path=None, computer_test_mode=False):
 
         print("\n SETTING UP BASIC PROCESSING")
         # Development logging
@@ -147,24 +147,24 @@ class Droomrobot:
         print('Complete')
 
         print("\n SETTING UP TTS")
-        self.voice_conf = voice_conf
-        if isinstance(self.voice_conf, GoogleVoiceConf):
+        self.tts_conf = tts_conf
+        if isinstance(self.tts_conf, GoogleTTSConf):
 
             # setup the tts service
             self.tts = Text2Speech(conf=Text2SpeechConf(keyfile_json=json.load(open(google_keyfile_path)),
-                                                        speaking_rate=self.voice_conf.speaking_rate))
+                                                        speaking_rate=self.tts_conf.speaking_rate))
             init_reply = self.tts.request(GetSpeechRequest(text="Ik ben aan het initializeren",
-                                                           voice_name=self.voice_conf.google_tts_voice_name,
-                                                           ssml_gender=self.voice_conf.google_tts_voice_gender))
+                                                           voice_name=self.tts_conf.google_tts_voice_name,
+                                                           ssml_gender=self.tts_conf.google_tts_voice_gender))
             self.sample_rate = init_reply.sample_rate
             print('Google TTS activated')
-        elif isinstance(self.voice_conf, ElevenLabsVoiceConf):
+        elif isinstance(self.tts_conf, ElevenLabsTTSConf):
             self.sample_rate = 22050
             self.tts = ElevenLabsTTS(elevenlabs_key=environ["ELEVENLABS_API_KEY"],
-                                     voice_id=self.voice_conf.voice_id,
-                                     model_id=self.voice_conf.model_id,
+                                     voice_id=self.tts_conf.voice_id,
+                                     model_id=self.tts_conf.model_id,
                                      sample_rate=self.sample_rate,
-                                     speaking_rate=self.voice_conf.speaking_rate)
+                                     speaking_rate=self.tts_conf.speaking_rate)
             connect_to_elevenlabs_future = asyncio.run_coroutine_threadsafe(self.tts.connect(),
                                                                             self.background_loop)
             try:
@@ -173,7 +173,7 @@ class Droomrobot:
             except Exception as e:
                 self.logger.error("Failed to connect to elevenlabs", exc_info=e)
         else:
-            raise ValueError(f"Unknown voice_conf {self.voice_conf}")
+            raise ValueError(f"Unknown tts_conf {self.tts_conf}")
 
         self.tts_cacher = TTSCacher()
         print("Complete")
@@ -274,7 +274,7 @@ class Droomrobot:
             self.animate(AnimationType.ACTION, self._random_speaking_act(), run_async=True)
 
         # Normalize and hash text
-        tts_key = self.tts_cacher.make_tts_key(text, self.voice_conf)
+        tts_key = self.tts_cacher.make_tts_key(text, self.tts_conf)
         if not always_regenerate:
             audio_file = self.tts_cacher.load_audio_file(tts_key)
             if audio_file:
@@ -282,22 +282,22 @@ class Droomrobot:
                 return
 
         # Otherwise, generate TTS
-        if isinstance(self.voice_conf, GoogleVoiceConf):
+        if isinstance(self.tts_conf, GoogleTTSConf):
             reply = self.tts.request(GetSpeechRequest(
                 text=text,
-                voice_name=self.voice_conf.google_tts_voice_name,
-                ssml_gender=self.voice_conf.google_tts_voice_gender,
-                speaking_rate=speaking_rate or self.voice_conf.speaking_rate
+                voice_name=self.tts_conf.google_tts_voice_name,
+                ssml_gender=self.tts_conf.google_tts_voice_gender,
+                speaking_rate=speaking_rate or self.tts_conf.speaking_rate
             ))
             audio_bytes = reply.waveform
             sample_rate = reply.sample_rate
 
-        elif isinstance(self.voice_conf, ElevenLabsVoiceConf):
+        elif isinstance(self.tts_conf, ElevenLabsTTSConf):
             # ElevenLabs TTS returns bytes
             audio_bytes = asyncio.run_coroutine_threadsafe(self.tts.speak(text), self.background_loop).result()
             sample_rate = self.sample_rate
         else:
-            raise ValueError(f"Voice conf {self.voice_conf} is not supported")
+            raise ValueError(f"TTS conf {self.tts_conf} is not supported")
 
         # Optional amplification
         if audio_bytes and amplified:
@@ -597,7 +597,7 @@ class Droomrobot:
         await mouth_lamp_action.execute()
 
     def disconnect(self):
-        if isinstance(self.voice_conf, ElevenLabsVoiceConf):
+        if isinstance(self.tts_conf, ElevenLabsTTSConf):
             disconnect_elevenlabs_future = asyncio.run_coroutine_threadsafe(self.tts.disconnect(), self.background_loop)
             disconnect_elevenlabs_future.result()
 

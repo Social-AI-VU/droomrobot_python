@@ -1,21 +1,21 @@
 from os.path import abspath, join
 
 from droomrobot.core import Droomrobot, InteractionConf
-from droomrobot.droomrobot_tts import GoogleVoiceConf, ElevenLabsVoiceConf, VoiceConf
+from droomrobot.droomrobot_tts import GoogleTTSConf, ElevenLabsTTSConf, TTSConf
 
 
 class TTSTest:
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
                  google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
                  dialogflow_timeout=None,
-                 voice_conf: VoiceConf = GoogleVoiceConf(),
+                 tts_conf: TTSConf = GoogleTTSConf(),
                  openai_key_path=None, computer_test_mode=False):
         self.mini_id = mini_id
         self.droomrobot = Droomrobot(mini_ip=mini_ip, mini_id=mini_id, mini_password=mini_password, redis_ip=redis_ip,
                                      google_keyfile_path=google_keyfile_path,
                                      sample_rate_dialogflow_hertz=sample_rate_dialogflow_hertz,
                                      dialogflow_language=dialogflow_language, dialogflow_timeout=dialogflow_timeout,
-                                     voice_conf=voice_conf,
+                                     voice_conf=tts_conf,
                                      env_path=openai_key_path,
                                      computer_test_mode=computer_test_mode)
 
@@ -38,11 +38,11 @@ class TTSTest:
 
 
 if __name__ == '__main__':
-    # voice_conf = GoogleVoiceConf()
-    voice_conf = ElevenLabsVoiceConf()
+    # tts_conf = GoogleVoiceConf()
+    tts_conf = ElevenLabsTTSConf()
     test = TTSTest(mini_ip="192.168.178.251", mini_id="00041", mini_password="mini", redis_ip="192.168.178.84",
                    google_keyfile_path=abspath(join("../../conf", "dialogflow", "google_keyfile.json")),
                    openai_key_path=abspath(join("../../conf", "openai", ".openai_env")),
-                   voice_conf=voice_conf,
+                   tts_conf=tts_conf,
                    computer_test_mode=False)
     test.speak()

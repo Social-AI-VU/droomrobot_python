@@ -3,7 +3,7 @@ from os.path import abspath, join
 from time import sleep
 
 from droomrobot.core import Droomrobot, AnimationType
-from droomrobot.droomrobot_tts import GoogleVoiceConf, VoiceConf
+from droomrobot.droomrobot_tts import GoogleTTSConf, TTSConf
 
 """
 Demo: Animation with alphamini.
@@ -15,14 +15,14 @@ class AnimationTest:
     def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
                  google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
                  dialogflow_timeout=None,
-                 voice_conf: VoiceConf = GoogleVoiceConf(),
+                 voice_conf: TTSConf = GoogleTTSConf(),
                  openai_key_path=None, computer_test_mode=False):
         self.mini_id = mini_id
         self.droomrobot = Droomrobot(mini_ip=mini_ip, mini_id=mini_id, mini_password=mini_password, redis_ip=redis_ip,
                                      google_keyfile_path=google_keyfile_path,
                                      sample_rate_dialogflow_hertz=sample_rate_dialogflow_hertz,
                                      dialogflow_language=dialogflow_language, dialogflow_timeout=dialogflow_timeout,
-                                     voice_conf=voice_conf,
+                                     tts_conf=voice_conf,
                                      env_path=openai_key_path,
                                      computer_test_mode=computer_test_mode)
 

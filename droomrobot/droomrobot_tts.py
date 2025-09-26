@@ -13,18 +13,18 @@ from sic_framework import AudioRequest
 from enum import Enum
 
 
-class Voice(Enum):
+class TTSService(Enum):
     GOOGLE = 1
     ELEVENLABS = 2
 
 
-class VoiceConf:
+class TTSConf:
 
     def __init__(self, speaking_rate):
         self.speaking_rate = speaking_rate
 
 
-class GoogleVoiceConf(VoiceConf):
+class GoogleTTSConf(TTSConf):
 
     def __init__(self, speaking_rate=1.0, google_tts_voice_name="nl-NL-Standard-D", google_tts_voice_gender="FEMALE"):
         super().__init__(speaking_rate)
@@ -32,7 +32,7 @@ class GoogleVoiceConf(VoiceConf):
         self.google_tts_voice_gender = google_tts_voice_gender
 
 
-class ElevenLabsVoiceConf(VoiceConf):
+class ElevenLabsTTSConf(TTSConf):
     def __init__(self, speaking_rate=None, voice_id='yO6w2xlECAQRFP6pX7Hw', model_id='eleven_flash_v2_5'):
         super().__init__(speaking_rate)
         self.voice_id = voice_id
@@ -150,9 +150,9 @@ class TTSCacher:
         text = text.translate(str.maketrans("", "", string.punctuation))
         return text
 
-    def make_tts_key(self, text: str, voice_conf: VoiceConf) -> str:
+    def make_tts_key(self, text: str, voice_conf: TTSConf) -> str:
         """Generate a hash key based on text + TTS parameters"""
-        if isinstance(voice_conf, GoogleVoiceConf):
+        if isinstance(voice_conf, GoogleTTSConf):
             payload = {
                 "text": self.normalize_text(text),
                 'tts_service': "GOOGLE",
@@ -160,7 +160,7 @@ class TTSCacher:
                 "setting_1": voice_conf.google_tts_voice_name,
                 "setting_2": voice_conf.google_tts_voice_name,
             }
-        elif isinstance(voice_conf, ElevenLabsVoiceConf):
+        elif isinstance(voice_conf, ElevenLabsTTSConf):
             payload = {
                 "text": self.normalize_text(text),
                 'tts_service': "ELEVENLABS",

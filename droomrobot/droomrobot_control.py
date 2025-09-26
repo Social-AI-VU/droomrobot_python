@@ -3,7 +3,7 @@ from droomrobot.bloedafname6 import Bloedafname6
 from droomrobot.bloedafname9 import Bloedafname9
 from droomrobot.core import Droomrobot, AnimationType
 from droomrobot.droomrobot_script import InteractionContext, InteractionSession
-from droomrobot.droomrobot_tts import GoogleVoiceConf
+from droomrobot.droomrobot_tts import GoogleTTSConf
 from droomrobot.kapinductie4 import Kapinductie4
 from droomrobot.kapinductie6 import Kapinductie6
 from droomrobot.sonde4 import Sonde4
@@ -21,14 +21,14 @@ class DroomrobotControl:
     def connect(self, mini_ip, mini_id, mini_password, redis_ip,
                 google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
                 dialogflow_timeout=None,
-                voice_conf=GoogleVoiceConf(),
+                tts_conf=GoogleTTSConf(),
                 env_path=None,
                 computer_test_mode=False):
 
         self.droomrobot = Droomrobot(mini_ip=mini_ip, mini_id=mini_id, mini_password=mini_password, redis_ip=redis_ip,
                                      google_keyfile_path=google_keyfile_path, sample_rate_dialogflow_hertz=sample_rate_dialogflow_hertz,
                                      dialogflow_language=dialogflow_language, dialogflow_timeout=dialogflow_timeout,
-                                     voice_conf=voice_conf,
+                                     tts_conf=tts_conf,
                                      env_path=env_path,
                                      computer_test_mode=computer_test_mode)
 
