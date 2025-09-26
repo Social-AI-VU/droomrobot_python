@@ -34,7 +34,7 @@ class GoogleTTSConf(TTSConf):
 
 class ElevenLabsTTSConf(TTSConf):
     def __init__(self, speaking_rate=None, voice_id='yO6w2xlECAQRFP6pX7Hw', model_id='eleven_flash_v2_5'):
-        super().__init__(speaking_rate)
+        super().__init__(None if speaking_rate == 1.0 else speaking_rate)
         self.voice_id = voice_id
         self.model_id = model_id
 

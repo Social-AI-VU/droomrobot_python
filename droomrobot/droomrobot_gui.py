@@ -80,7 +80,6 @@ class DroomrobotGUI:
         self.google_keyfile = tk.StringVar(value=config.get("google_keyfile", "../conf/dialogflow/google_keyfile.json"))
         self.openai_keyfile = tk.StringVar(value=config.get("openai_keyfile", "../conf/openai/.openai_env"))
         self.dialogflow_timeout = tk.StringVar(value=str(config.get("dialogflow_timeout", "15.0")))
-        self.default_speaking_rate = tk.StringVar(value=str(config.get("default_speaking_rate", "1.0")))
         self.debug_mode = tk.BooleanVar(value=config.get("debug_mode", False))
         self.audio_amplified = tk.BooleanVar(value=config.get("audio_amplification", False))
         try:
@@ -88,6 +87,18 @@ class DroomrobotGUI:
         except KeyError:
             tts_service_enum = TTSService.GOOGLE
         self.tts_service = tk.StringVar(value=tts_service_enum.name)
+        if tts_service_enum.ELEVENLABS:
+            self.speaking_rate = tk.StringVar(value=str(config.get("elevenlabs_tts_speaking_rate", "1.0")))
+            self.setting_1 = tk.StringVar(value=str(config.get("elevenlabs_tts_voice_id", "yO6w2xlECAQRFP6pX7Hw")))
+            self.setting_2 = tk.StringVar(value=str(config.get("elevenlabs_tts_model_id", "eleven_flash_v2_5")))
+            self.setting_1_name = "elevenlabs_tts_voice_id"
+            self.setting_2_name = "eleven_flash_v2_5"
+        else:
+            self.speaking_rate = tk.StringVar(value=str(config.get("google_tts_speaking_rate", "1.0")))
+            self.setting_1 = tk.StringVar(value=str(config.get("google_tts_voice_name", "nl-NL-Standard-D")))
+            self.setting_2 = tk.StringVar(value=str(config.get("google_tts_voice_gender", "FEMALE")))
+            self.setting_1_name = "google_tts_voice_name"
+            self.setting_2_name = "google_tts_voice_gender"
 
         setup_frame = ttk.LabelFrame(self.connect_frame, text="Robot Setup")
         setup_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
@@ -135,14 +146,21 @@ class DroomrobotGUI:
         ttk.Combobox(self.connect_advanced_frame, textvariable=self.tts_service,
                      values=[e.name for e in TTSService]).grid(row=3, column=1, sticky="w")
 
-        ttk.Label(self.connect_advanced_frame, text="Speaking Rate").grid(row=4, column=0, sticky="w")
-        ttk.Entry(self.connect_advanced_frame, textvariable=self.default_speaking_rate, width=10).grid(row=4, column=1,
+        ttk.Label(self.connect_advanced_frame, text=self.setting_1_name).grid(row=4, column=0, sticky="w")
+        ttk.Entry(self.connect_advanced_frame, textvariable=self.setting_1, width=50).grid(row=4, column=1)
+
+        ttk.Label(self.connect_advanced_frame, text=self.setting_2_name).grid(row=5, column=0, sticky="w")
+        ttk.Entry(self.connect_advanced_frame, textvariable=self.setting_2, width=50).grid(row=5, column=1)
+
+        ttk.Label(self.connect_advanced_frame, text="Speaking Rate").grid(row=6, column=0, sticky="w")
+        ttk.Entry(self.connect_advanced_frame, textvariable=self.speaking_rate, width=10).grid(row=6, column=1,
                                                                                               sticky="w")
+
+        ttk.Label(self.connect_advanced_frame, text="No robot debug").grid(row=7, column=0, sticky="w")
         ttk.Checkbutton(
             self.connect_advanced_frame,
-            text="No robot debug mode",
             variable=self.debug_mode
-        ).grid(row=5, column=0, columnspan=2, sticky="w")
+        ).grid(row=7, column=1, columnspan=2, sticky="w")
 
         self.connect_btn = ttk.Button(self.connect_frame, text="Connect", command=self.handle_connect)
         self.connect_btn.grid(row=1, column=0, pady=10)
@@ -393,12 +411,16 @@ class DroomrobotGUI:
         self.root.update()
 
     def connect(self):
+        speaking_rate = self.float_validation(self.speaking_rate.get(), "Speaking rate")
         if self.tts_service.get() == TTSService.ELEVENLABS.name:
-            speaking_rate = self.float_validation(self.default_speaking_rate.get(), "Speaking rate")
-            tts_conf = ElevenLabsTTSConf(speaking_rate=None if speaking_rate == 1.0 else speaking_rate)
+            tts_conf = ElevenLabsTTSConf(speaking_rate=speaking_rate,
+                                         voice_id=self.setting_1.get(),
+                                         model_id=self.setting_2.get())
         else:  # Google
             tts_conf = GoogleTTSConf(
-                speaking_rate=self.float_validation(self.default_speaking_rate.get(), "Speaking rate"))
+                speaking_rate=speaking_rate,
+                google_tts_voice_name=self.setting_1.get(),
+                google_tts_voice_gender=self.setting_2.get())
 
         self.droomrobot_control = DroomrobotControl()
         self.droomrobot_control.connect(
