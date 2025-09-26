@@ -298,10 +298,6 @@ class Droomrobot:
         if sleep_time and sleep_time > 0:
             sleep(sleep_time)
 
-        # # Stop after playback completes
-        # streamer.feed(None)
-        # streamer.stop()
-
     def play_audio(self, audio_file):
         with wave.open(audio_file, 'rb') as wf:
             # Get parameters
