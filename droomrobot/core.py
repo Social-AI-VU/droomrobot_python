@@ -278,11 +278,9 @@ class Droomrobot:
         if not always_regenerate:
             audio_file = self.tts_cacher.load_audio_file(tts_key)
             if audio_file:
-                self.logger.debug(f'[SAY] playing saved audio {tts_key}.')
                 self.play_audio(audio_file)
                 return
 
-        self.logger.debug(f'[SAY] generating new audio {tts_key}.')
         # Otherwise, generate TTS
         if isinstance(self.voice_conf, GoogleVoiceConf):
             reply = self.tts.request(GetSpeechRequest(
