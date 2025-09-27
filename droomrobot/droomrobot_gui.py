@@ -72,31 +72,31 @@ class DroomrobotGUI:
 
         # === Setup (Connect) Screen ===
         # Load them from config file
-        config = self.load_config()
-        self.mini_ip = tk.StringVar(value=config.get("mini_ip", "192.168.178.111"))
-        self.mini_id = tk.StringVar(value=config.get("mini_id", "00167"))
-        self.mini_password = tk.StringVar(value=config.get("mini_password", "alphago"))
-        self.redis_ip = tk.StringVar(value=config.get("redis_ip", "192.168.178.84"))
-        self.google_keyfile = tk.StringVar(value=config.get("google_keyfile", "../conf/dialogflow/google_keyfile.json"))
-        self.openai_keyfile = tk.StringVar(value=config.get("openai_keyfile", "../conf/openai/.openai_env"))
-        self.dialogflow_timeout = tk.StringVar(value=str(config.get("dialogflow_timeout", "15.0")))
-        self.debug_mode = tk.BooleanVar(value=config.get("debug_mode", False))
-        self.audio_amplified = tk.BooleanVar(value=config.get("audio_amplification", False))
+        self.config = self.load_config()
+        self.mini_ip = tk.StringVar(value=self.config.get("mini_ip", "192.168.178.111"))
+        self.mini_id = tk.StringVar(value=self.config.get("mini_id", "00167"))
+        self.mini_password = tk.StringVar(value=self.config.get("mini_password", "alphago"))
+        self.redis_ip = tk.StringVar(value=self.config.get("redis_ip", "192.168.178.84"))
+        self.google_keyfile = tk.StringVar(value=self.config.get("google_keyfile", "../conf/dialogflow/google_keyfile.json"))
+        self.openai_keyfile = tk.StringVar(value=self.config.get("openai_keyfile", "../conf/openai/.openai_env"))
+        self.dialogflow_timeout = tk.StringVar(value=str(self.config.get("dialogflow_timeout", "15.0")))
+        self.debug_mode = tk.BooleanVar(value=self.config.get("debug_mode", False))
+        self.audio_amplified = tk.BooleanVar(value=self.config.get("audio_amplification", False))
         try:
-            tts_service_enum = TTSService[config.get("tts_service")]
+            tts_service_enum = TTSService[self.config.get("tts_service")]
         except KeyError:
             tts_service_enum = TTSService.GOOGLE
         self.tts_service = tk.StringVar(value=tts_service_enum.name)
         if tts_service_enum.ELEVENLABS:
-            self.speaking_rate = tk.StringVar(value=str(config.get("elevenlabs_tts_speaking_rate", "1.0")))
-            self.setting_1 = tk.StringVar(value=str(config.get("elevenlabs_tts_voice_id", "yO6w2xlECAQRFP6pX7Hw")))
-            self.setting_2 = tk.StringVar(value=str(config.get("elevenlabs_tts_model_id", "eleven_flash_v2_5")))
+            self.speaking_rate = tk.StringVar(value=str(self.config.get("elevenlabs_tts_speaking_rate", "1.0")))
+            self.setting_1 = tk.StringVar(value=str(self.config.get("elevenlabs_tts_voice_id", "yO6w2xlECAQRFP6pX7Hw")))
+            self.setting_2 = tk.StringVar(value=str(self.config.get("elevenlabs_tts_model_id", "eleven_flash_v2_5")))
             self.setting_1_name = "elevenlabs_tts_voice_id"
             self.setting_2_name = "eleven_flash_v2_5"
         else:
-            self.speaking_rate = tk.StringVar(value=str(config.get("google_tts_speaking_rate", "1.0")))
-            self.setting_1 = tk.StringVar(value=str(config.get("google_tts_voice_name", "nl-NL-Standard-D")))
-            self.setting_2 = tk.StringVar(value=str(config.get("google_tts_voice_gender", "FEMALE")))
+            self.speaking_rate = tk.StringVar(value=str(self.config.get("google_tts_speaking_rate", "1.0")))
+            self.setting_1 = tk.StringVar(value=str(self.config.get("google_tts_voice_name", "nl-NL-Standard-D")))
+            self.setting_2 = tk.StringVar(value=str(self.config.get("google_tts_voice_gender", "FEMALE")))
             self.setting_1_name = "google_tts_voice_name"
             self.setting_2_name = "google_tts_voice_gender"
 
@@ -143,13 +143,17 @@ class DroomrobotGUI:
                                                                                                     sticky="w")
 
         ttk.Label(self.connect_advanced_frame, text="TTS Service").grid(row=3, column=0, sticky="w")
-        ttk.Combobox(self.connect_advanced_frame, textvariable=self.tts_service,
-                     values=[e.name for e in TTSService]).grid(row=3, column=1, sticky="w")
+        tts_service_combobox = ttk.Combobox(self.connect_advanced_frame, textvariable=self.tts_service,
+                     values=[e.name for e in TTSService])
+        tts_service_combobox.grid(row=3, column=1, sticky="w")
+        tts_service_combobox.bind("<<ComboboxSelected>>", self.on_tts_service_selected)
 
-        ttk.Label(self.connect_advanced_frame, text=self.setting_1_name).grid(row=4, column=0, sticky="w")
+        self.setting_1_label = ttk.Label(self.connect_advanced_frame, text=self.setting_1_name)
+        self.setting_1_label.grid(row=4, column=0, sticky="w")
         ttk.Entry(self.connect_advanced_frame, textvariable=self.setting_1, width=50).grid(row=4, column=1)
 
-        ttk.Label(self.connect_advanced_frame, text=self.setting_2_name).grid(row=5, column=0, sticky="w")
+        self.setting_2_label = ttk.Label(self.connect_advanced_frame, text=self.setting_2_name)
+        self.setting_2_label.grid(row=5, column=0, sticky="w")
         ttk.Entry(self.connect_advanced_frame, textvariable=self.setting_2, width=50).grid(row=5, column=1)
 
         ttk.Label(self.connect_advanced_frame, text="Speaking Rate").grid(row=6, column=0, sticky="w")
@@ -177,13 +181,13 @@ class DroomrobotGUI:
         self.child_age = tk.IntVar()
         self.priklocatie = tk.StringVar(value="arm")
         try:
-            context_enum = InteractionContext[config.get("context")]
+            context_enum = InteractionContext[self.config.get("context")]
         except KeyError:
             context_enum = InteractionContext.SONDE
         self.context = tk.StringVar(value=context_enum.name)
 
         try:
-            session_enum = InteractionSession[config.get("session")]
+            session_enum = InteractionSession[self.config.get("session")]
         except KeyError:
             session_enum = InteractionSession.INTRODUCTION
         self.session = tk.StringVar(value=session_enum.name)
@@ -354,6 +358,27 @@ class DroomrobotGUI:
         else:
             self.priklocatie_label.grid_remove()
             self.priklocatie_entry.grid_remove()
+
+    def on_tts_service_selected(self, event=None):
+        selected_service = self.tts_service.get()
+        tts_service_enum = TTSService[selected_service]
+
+        if tts_service_enum == TTSService.ELEVENLABS:
+            self.speaking_rate.set(str(self.config.get("elevenlabs_tts_speaking_rate", "1.0")))
+            self.setting_1.set(str(self.config.get("elevenlabs_tts_voice_id", "yO6w2xlECAQRFP6pX7Hw")))
+            self.setting_2.set(str(self.config.get("elevenlabs_tts_model_id", "eleven_flash_v2_5")))
+            self.setting_1_name = "elevenlabs_tts_voice_id"
+            self.setting_2_name = "elevenlabs_tts_model_id"
+        else:
+            self.speaking_rate.set(str(self.config.get("google_tts_speaking_rate", "1.0")))
+            self.setting_1.set(str(self.config.get("google_tts_voice_name", "nl-NL-Standard-D")))
+            self.setting_2.set(str(self.config.get("google_tts_voice_gender", "FEMALE")))
+            self.setting_1_name = "google_tts_voice_name"
+            self.setting_2_name = "google_tts_voice_gender"
+
+        # Update label texts
+        self.setting_1_label.config(text=self.setting_1_name)
+        self.setting_2_label.config(text=self.setting_2_name)
 
     def collect_user_model(self):
         user_model = {
