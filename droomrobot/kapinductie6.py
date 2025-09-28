@@ -13,8 +13,8 @@ class Kapinductie6(DroomrobotScript):
         super(Kapinductie6, self).__init__(*args, **kwargs, interaction_context=InteractionContext.KAPINDUCTIE)
 
     def prepare(self, participant_id: str, session: InteractionSession, user_model_addendum: dict,
-                audio_amplified: bool = False):
-        super().prepare(participant_id, session, user_model_addendum, audio_amplified)
+                audio_amplified: bool = False, always_regenerate: bool = False):
+        super().prepare(participant_id, session, user_model_addendum, audio_amplified, always_regenerate)
 
         if session == InteractionSession.INTRODUCTION:
             self._introduction()
@@ -26,7 +26,7 @@ class Kapinductie6(DroomrobotScript):
             print("Interaction part not recognized")
 
     def _introduction(self):
-        interaction_conf = InteractionConf(amplified=self.audio_amplified)
+        interaction_conf = InteractionConf(amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         intro_moves = IntroductionFactory.age6_9(droomrobot=self.droomrobot, interaction_context=self.interaction_context, user_model=self.user_model)
         self.add_moves(intro_moves)
@@ -43,7 +43,7 @@ class Kapinductie6(DroomrobotScript):
         self.add_choice(self._build_interaction_choice_droomplek())
 
         # SAMEN OEFENEN
-        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified)
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
 
         self.add_move(self.droomrobot.say, 'Laten we alvast gaan oefenen om samen een mooie droomreis te maken, zodat het je zometeen gaat helpen bij de slaapdokter.')
@@ -293,7 +293,7 @@ class Kapinductie6(DroomrobotScript):
     def _intervention_preparation(self, phase_moves: InteractionChoice) -> InteractionChoice:
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
-        interaction_conf = InteractionConf(speaking_rate=0.75, animated=True, amplified=self.audio_amplified)
+        interaction_conf = InteractionConf(speaking_rate=0.75, animated=True, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,'Wat fijn dat ik je mag helpen! We gaan samen weer op een mooie droomreis.', animated=False)
 

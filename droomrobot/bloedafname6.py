@@ -12,8 +12,8 @@ class Bloedafname6(DroomrobotScript):
         super(Bloedafname6, self).__init__(*args, **kwargs, interaction_context=InteractionContext.BLOEDAFNAME)
 
     def prepare(self, participant_id: str, session: InteractionSession, user_model_addendum: dict,
-                audio_amplified: bool = False):
-        super().prepare(participant_id, session, user_model_addendum, audio_amplified)
+                audio_amplified: bool = False, always_regenerate: bool = False):
+        super().prepare(participant_id, session, user_model_addendum, audio_amplified, always_regenerate)
         if session == InteractionSession.INTRODUCTION:
             self._introduction()
         elif session == InteractionSession.INTERVENTION:
@@ -24,7 +24,7 @@ class Bloedafname6(DroomrobotScript):
             print("Interaction part not recognized")
 
     def _introduction(self):
-        interaction_conf = InteractionConf(amplified=self.audio_amplified)
+        interaction_conf = InteractionConf(amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         intro_moves = IntroductionFactory.age6_9(droomrobot=self.droomrobot,
                                                  interaction_context=self.interaction_context,
@@ -40,7 +40,7 @@ class Bloedafname6(DroomrobotScript):
         self.add_choice(self._build_interaction_choice_droomplek())
 
         # SAMEN OEFENEN
-        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified)
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         self.add_move(self.droomrobot.say,
                       lambda: f'Oke {self.user_model['child_name']}, laten we alvast een keer oefenen om samen een mooie droomreis te maken.')
@@ -147,7 +147,7 @@ class Bloedafname6(DroomrobotScript):
         # oefenen_choice.add_move('fail', self.droomrobot.say, "Oke.")
         # self.add_choice(oefenen_choice)
 
-        interaction_conf = InteractionConf(amplified=self.audio_amplified)
+        interaction_conf = InteractionConf(amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
 
         self.add_move(self.droomrobot.say, 'Gelukkig wordt het steeds makkelijker als je het vaker oefent.')
@@ -172,7 +172,7 @@ class Bloedafname6(DroomrobotScript):
         self.phase_moves = self._intervention_wrapup(self.phase_moves_build)
 
     def _intervention_preparation(self, phase_moves: InteractionChoice) -> InteractionChoice:
-        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified)
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.ACTION,
                              "random_short4", run_async=True)
@@ -210,7 +210,7 @@ class Bloedafname6(DroomrobotScript):
         return phase_moves
 
     def _intervention_procedure(self, phase_moves: InteractionChoice) -> InteractionChoice:
-        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified)
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.set_interaction_conf, interaction_conf)
 
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
@@ -255,7 +255,7 @@ class Bloedafname6(DroomrobotScript):
         return phase_moves
 
     def _intervention_wrapup(self, phase_moves: InteractionChoice) -> InteractionChoice:
-        interaction_conf = InteractionConf(amplified=self.audio_amplified)
+        interaction_conf = InteractionConf(amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.set_interaction_conf, interaction_conf)
         phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.say, 'Dat was het weer.')
         phase_moves.add_move(InterventionPhase.WRAPUP.name, self.droomrobot.say, 'Je hebt het heel goed gedaan.')
@@ -265,7 +265,7 @@ class Bloedafname6(DroomrobotScript):
         return phase_moves
 
     def _goodbye(self):
-        interaction_conf = InteractionConf(amplified=self.audio_amplified)
+        interaction_conf = InteractionConf(amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         self.add_move(self.droomrobot.ask_opinion_llm, "Was het goed gegaan?", user_model_key='interventie_ervaring')
         ervaring_choice = InteractionChoice('interventie_ervaring', InteractionChoiceCondition.MATCHVALUE)

@@ -56,6 +56,7 @@ class ElevenLabsTTS:
             f"?model_id={self.model_id}"
             f"&output_format=pcm_{self.sample_rate}"
             f"&inactivity_timeout=180"
+            f"&auto_mode=false"
         )
         self.websocket = await websockets.connect(uri)
 
@@ -158,7 +159,7 @@ class TTSCacher:
                 'tts_service': "GOOGLE",
                 "speaking_rate": voice_conf.speaking_rate,
                 "setting_1": voice_conf.google_tts_voice_name,
-                "setting_2": voice_conf.google_tts_voice_name,
+                "setting_2": voice_conf.google_tts_voice_gender,
             }
         elif isinstance(voice_conf, ElevenLabsTTSConf):
             payload = {

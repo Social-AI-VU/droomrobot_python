@@ -40,7 +40,8 @@ class DroomrobotControl:
               interaction_context: InteractionContext,
               session: InteractionSession,
               user_model: dict,
-              audio_amplified: bool):
+              audio_amplified: bool,
+              always_regenerate: bool):
         # Select class based on script_id and child_age
         script_class_map = {
             InteractionContext.SONDE: [Sonde4, Sonde6, Sonde9],
@@ -68,7 +69,8 @@ class DroomrobotControl:
 
         try:
             self.interaction_script.prepare(participant_id=participant_id, session=session,
-                                            user_model_addendum=user_model, audio_amplified=audio_amplified)
+                                            user_model_addendum=user_model, audio_amplified=audio_amplified,
+                                            always_regenerate=always_regenerate)
             self.droomrobot.start_logging(participant_id, {
                 'participant_id': participant_id,
                 'context': interaction_context.name,

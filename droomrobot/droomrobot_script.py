@@ -107,6 +107,7 @@ class DroomrobotScript:
         # Droomrobot
         self.droomrobot = droomrobot
         self.audio_amplified = False
+        self.always_regenerate = False
 
         # Interaction information
         self.participant_id = None
@@ -128,12 +129,14 @@ class DroomrobotScript:
         self._requested_phase = None
 
     @abc.abstractmethod
-    def prepare(self, participant_id: str, session: InteractionSession, user_model_addendum: dict, audio_amplified: bool = False):
+    def prepare(self, participant_id: str, session: InteractionSession, user_model_addendum: dict,
+                audio_amplified: bool = False, always_regenerate: bool = False):
         self.participant_id = participant_id
         self.session = session
         self.user_model = self.droomrobot.load_user_model(participant_id=self.participant_id)
         self.user_model.update(user_model_addendum)
         self.audio_amplified = audio_amplified
+        self.always_regenerate = always_regenerate
 
         if 'droomplek' in self.user_model:
             self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])

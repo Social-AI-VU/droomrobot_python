@@ -82,6 +82,7 @@ class DroomrobotGUI:
         self.dialogflow_timeout = tk.StringVar(value=str(self.config.get("dialogflow_timeout", "15.0")))
         self.debug_mode = tk.BooleanVar(value=self.config.get("debug_mode", False))
         self.audio_amplified = tk.BooleanVar(value=self.config.get("audio_amplification", False))
+        self.always_regenerate = tk.BooleanVar(value=self.config.get("always_regenerate", False))
         try:
             tts_service_enum = TTSService[self.config.get("tts_service")]
         except KeyError:
@@ -218,15 +219,18 @@ class DroomrobotGUI:
         ttk.Combobox(interaction_frame, textvariable=self.session,
                      values=[e.name for e in InteractionSession]).grid(row=4, column=1)
 
-        ttk.Label(interaction_frame, text="Versterkt").grid(row=5, column=0)
+        ttk.Label(interaction_frame, text="Amplified Audio").grid(row=5, column=0)
         ttk.Checkbutton(interaction_frame, variable=self.audio_amplified).grid(row=5, column=1, sticky="w")
+
+        ttk.Label(interaction_frame, text="Always Regenerate TTS").grid(row=6, column=0)
+        ttk.Checkbutton(interaction_frame, variable=self.always_regenerate).grid(row=6, column=1, sticky="w")
 
         self.priklocatie_label = ttk.Label(interaction_frame, text="Priklocatie")
         self.priklocatie_entry = ttk.Entry(interaction_frame, textvariable=self.priklocatie)
 
         # Place them but hidden initially
-        self.priklocatie_label.grid(row=6, column=0)
-        self.priklocatie_entry.grid(row=6, column=1)
+        self.priklocatie_label.grid(row=7, column=0)
+        self.priklocatie_entry.grid(row=7, column=1)
         self.priklocatie_label.grid_remove()
         self.priklocatie_entry.grid_remove()
 
@@ -353,8 +357,8 @@ class DroomrobotGUI:
 
     def on_interaction_context_change(self, event=None):
         if self.context.get() == "BLOEDAFNAME":
-            self.priklocatie_label.grid(row=6, column=0)
-            self.priklocatie_entry.grid(row=6, column=1)
+            self.priklocatie_label.grid(row=7, column=0)
+            self.priklocatie_entry.grid(row=7, column=1)
         else:
             self.priklocatie_label.grid_remove()
             self.priklocatie_entry.grid_remove()
@@ -480,9 +484,11 @@ class DroomrobotGUI:
         context = InteractionContext[self.context.get()]
         session = InteractionSession[self.session.get()]
         audio_amplified = self.audio_amplified.get()
+        always_regenerate = self.always_regenerate.get()
 
         def run():
-            self.droomrobot_control.start(participant_id, context, session, user_model, audio_amplified)
+            self.droomrobot_control.start(participant_id, context, session, user_model,
+                                          audio_amplified, always_regenerate)
 
         self.script_thread = Thread(target=run)
         self.script_thread.start()
