@@ -15,7 +15,7 @@ class TTSTest:
                                      google_keyfile_path=google_keyfile_path,
                                      sample_rate_dialogflow_hertz=sample_rate_dialogflow_hertz,
                                      dialogflow_language=dialogflow_language, dialogflow_timeout=dialogflow_timeout,
-                                     voice_conf=tts_conf,
+                                     tts_conf=tts_conf,
                                      env_path=openai_key_path,
                                      computer_test_mode=computer_test_mode)
 
@@ -28,12 +28,26 @@ class TTSTest:
         self.droomrobot.say("Hallo, ik ben de droomrobot.")
 
     def speak(self):
-        # self.droomrobot.set_interaction_conf(InteractionConf(always_regenerate=True))
+        self.droomrobot.set_interaction_conf(InteractionConf(always_regenerate=False))
         self.droomrobot.say("Hallo, ik ben de droomrobot.")
-        self.droomrobot.ask_fake("Hoe heet jij?", 2)
-        self.droomrobot.say("Mike, wat een leuke naam!")
-        self.droomrobot.ask_open("Wat vind jij leuk om te doen?")
-        self.droomrobot.say("Dat klikt leuk zeg.")
+        self.droomrobot.say("De nieuwsgierige robot, met glanzende metalen armen en vrolijk knipperende lichtjes, ontdekte dat hij het allerleukst vond om te spelen."
+                            " hij rolde lachend met een bal door de werkplaats en bouwde torens van blokken."
+                            "Ook genoot hij van spelletjes waarbij hij puzzels oploste alsof hij een kind was."
+                            "En dat vond hij erg leuk.")
+        # self.droomrobot.say("De nieuwsgierige robot, met glanzende metalen armen en vrolijk knipperende lichtjes, ontdekte dat hij het allerleukst vond om te spelen.")
+        # self.droomrobot.say(" hij rolde lachend met een bal door de werkplaats en bouwde torens van blokken.")
+        # self.droomrobot.say("Ook genoot hij van spelletjes waarbij hij puzzels oploste alsof hij een kind was.")
+        # self.droomrobot.say("En dat vond hij erg leuk.")
+        self.droomrobot.say("Nu weer korte zin twee.")
+        self.droomrobot.say("En drie.")
+        # self.droomrobot.ask_fake("Hoe heet jij?", 2)
+        # self.droomrobot.say("Mike, wat een leuke naam!")
+        # answer_1 = self.droomrobot.ask_open("Wat vind jij leuk om te doen?")
+        # self.droomrobot.say("Dat klikt leuk zeg.")
+        # if answer_1:
+        #     response_1 = self.droomrobot.personalize('Wat vind je leuk om te doen?', 7, answer_1)
+        #     self.droomrobot.say(response_1)
+        # self.droomrobot.say('laten we verder gaan.')
         self.droomrobot.disconnect()
 
 

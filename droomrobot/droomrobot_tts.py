@@ -64,7 +64,7 @@ class ElevenLabsTTS:
                 "stability": 0.5,
                 "similarity_boost": 0.8,
                 "use_speaker_boost": False,
-                "chunk_length_schedule": [50, 120, 160, 290]}
+                "chunk_length_schedule": [120, 160, 250, 290]}
         if self.speaking_rate is not None:
             voice_settings["speed"] = self.speaking_rate
 
@@ -93,6 +93,14 @@ class ElevenLabsTTS:
         except:
             return False
 
+    async def drain_socket(self):
+        try:
+            while True:
+                await asyncio.wait_for(self.websocket.recv(), timeout=0.2)
+                self.logger.warning("[TTS] Had to drain the websocket.")
+        except (asyncio.TimeoutError, websockets.exceptions.ConnectionClosed):
+            pass
+
     async def speak(self, text):
         # Reconnect if no active connection.
         if not self.websocket or self.websocket.closed:
@@ -102,6 +110,7 @@ class ElevenLabsTTS:
             self.logger.warning("[TTS] Websocket not connected. Initiating reconnect.")
             await self.connect()
 
+        await self.drain_socket()
         # Send sentence
         await self.websocket.send(dumps({"text": text, "flush": True}))
 
