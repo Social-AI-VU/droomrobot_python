@@ -231,6 +231,9 @@ class Bloedafname4(DroomrobotScript):
             "Adem rustig door, je bent helemaal in controle. Goed bezig!",
             "Wist je dat jouw kracht nog sterker wordt als je je lichtje groter maakt in je gedachten?",
             "Kijk ook nog eens rond op welke mooie plek je bent, wat kan je daar allemaal doen?",
+            "Wat ruik je eigenlijk op je droomplek?",
+            "Wat voor geluiden hoor je op die mooie plek?"
+            "Jouw droomplek is echt een fijne plek."
         ]
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.repeat_sentences, sentences)
 
