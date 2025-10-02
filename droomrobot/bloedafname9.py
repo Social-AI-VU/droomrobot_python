@@ -257,7 +257,7 @@ class Bloedafname9(DroomrobotScript):
         interaction_choice.add_move('strand', self.droomrobot.say,
                                     'Weet je wat ik daar graag doe? Een zandkasteel bouwen met een vlag er op.')
         interaction_choice.add_move('strand', self.droomrobot.ask_open,
-                                    f'Wat zou jij op het stand willen doen {self.user_model['child_name']}?',
+                                    lambda: f'Wat zou jij op het stand willen doen {self.user_model['child_name']}?',
                                     user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
@@ -276,7 +276,7 @@ class Bloedafname9(DroomrobotScript):
                                     'Weet je wat ik daar graag doe? Ik zoek naar dieren die zich verstoppen,'
                                     ' zoals vogels of eekhoorns.')
         interaction_choice.add_move('bos', self.droomrobot.ask_open,
-                                    f'Wat zou je in het bos willen doen {self.user_model['child_name']}?',
+                                    lambda: f'Wat zou je in het bos willen doen {self.user_model['child_name']}?',
                                     user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
@@ -343,7 +343,7 @@ class Bloedafname9(DroomrobotScript):
         interaction_choice.add_move('fail', self.droomrobot.say,
                                     'Weet je wat ik daar graag doe? Een zandkasteel bouwen met een vlag er op.')
         interaction_choice.add_move('fail', self.droomrobot.ask_open,
-                                    f'Wat zou jij op het stand willen doen {self.user_model['child_name']}?',
+                                    lambda: f'Wat zou jij op het stand willen doen {self.user_model['child_name']}?',
                                     user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
