@@ -174,6 +174,8 @@ class Droomrobot:
                                                                             self.background_loop)
             try:
                 connect_to_elevenlabs_future.result()
+                asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
+                                                 self.background_loop).result()
                 print('Elevenlabs TTS activated')
             except Exception as e:
                 self.logger.error("Failed to connect to elevenlabs", exc_info=e)
