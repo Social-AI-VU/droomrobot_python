@@ -116,7 +116,6 @@ class Droomrobot:
         # Development logging
         self.logger = self.sic_app.get_app_logger()
 
-
         # Data logging
         self._log_queue = None
         self._log_thread = None
@@ -195,7 +194,7 @@ class Droomrobot:
                 mini_password=mini_password,
                 redis_ip=redis_ip,
                 speaker_conf=MiniSpeakersConf(sample_rate=self.sample_rate),
-                bypass_install=False
+                bypass_install=True
             )
             self.speaker = self.mini.speaker
             self.mic = self.mini.mic

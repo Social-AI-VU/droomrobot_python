@@ -7,6 +7,9 @@ from tkinter.scrolledtext import ScrolledText
 from threading import Thread
 from os.path import abspath, join
 
+from sic_framework.core import sic_logging
+from sic_framework.core.sic_application import SICApplication
+
 from droomrobot.droomrobot_script import InteractionContext, InteractionSession
 from droomrobot.droomrobot_tts import TTSService, GoogleTTSConf, ElevenLabsTTSConf
 from droomrobot_control import DroomrobotControl
@@ -28,10 +31,10 @@ class TextRedirector:
 
 
 class DroomrobotGUI:
-    def __init__(self, root):
+    def __init__(self, root, sic_app):
+        self.sic_app = sic_app
         # Logging
-        self.logger = logging.getLogger("droomrobot")
-        self.logger.setLevel(logging.DEBUG)  # DEBUG, INFO, WARNING, ERROR, or CRITICAL
+        self.logger = sic_app.get_app_logger()
 
         # Avoid adding multiple handlers if re-running in an interactive environment
         if not self.logger.handlers:
@@ -453,6 +456,7 @@ class DroomrobotGUI:
 
         self.droomrobot_control = DroomrobotControl()
         self.droomrobot_control.connect(
+            sic_app=self.sic_app,
             mini_ip=self.mini_ip.get(),
             mini_id=self.mini_id.get(),
             mini_password=self.mini_password.get(),
@@ -640,6 +644,12 @@ class DroomrobotGUI:
 
 # --- Run GUI ---
 if __name__ == "__main__":
+    # Development logging
+    sic_app = SICApplication()
+    # can be DEBUG, INFO, WARNING, ERROR, CRITICAL
+    sic_app.set_log_level(sic_logging.DEBUG)
+    sic_app.set_log_file("/system_logs")
+
     root = tk.Tk()
-    app = DroomrobotGUI(root)
+    app = DroomrobotGUI(root, sic_app)
     root.mainloop()
