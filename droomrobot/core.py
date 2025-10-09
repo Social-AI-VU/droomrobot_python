@@ -18,7 +18,9 @@ import mini.mini_sdk as MiniSdk
 from mini import MouthLampColor, MouthLampMode
 from mini.apis.api_action import PlayAction
 from mini.apis.api_expression import SetMouthLamp, PlayExpression
+from sic_framework.core import sic_logging
 from sic_framework.core.message_python2 import AudioRequest
+from sic_framework.core.sic_application import SICApplication
 from sic_framework.devices.alphamini import Alphamini
 from sic_framework.devices.common_desktop.desktop_speakers import SpeakersConf
 from sic_framework.devices.common_mini.mini_speaker import MiniSpeakersConf
@@ -105,13 +107,15 @@ class InteractionConf:
 
 
 class Droomrobot:
-    def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
+    def __init__(self, sic_app: SICApplication, mini_ip, mini_id, mini_password, redis_ip,
                  google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl", dialogflow_timeout=None,
                  tts_conf: TTSConf = GoogleTTSConf(), env_path=None, computer_test_mode=False):
 
         print("\n SETTING UP BASIC PROCESSING")
+        self.sic_app = sic_app
         # Development logging
-        self.logger = logging.getLogger("droomrobot")
+        self.logger = self.sic_app.get_app_logger()
+
 
         # Data logging
         self._log_queue = None
@@ -625,7 +629,7 @@ class Droomrobot:
     def _on_dialog(self, message):
         if message.response:
             transcript = message.response.recognition_result.transcript
-            # print("Transcript:", transcript)
+            print("Transcript:", transcript)
             if message.response.recognition_result.is_final:
                 self.log_utterance(speaker='child', text=transcript)
 
