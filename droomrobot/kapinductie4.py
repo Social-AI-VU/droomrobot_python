@@ -72,7 +72,7 @@ class Kapinductie4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Je hoeft alleen maar rustig in en uit te ademen.')
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed dit je zometeen gaat helpen.')
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
-        self.add_move(self.droomrobot.say, lambda: f'Straks ga ik je helpen om weer terug te gaan naar {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} te gaan in gedachten. Je hebt super goed geoefend, dus je kan verrast zijn hoe goed het zometeen gaat!')
+        self.add_move(self.droomrobot.say, lambda: f'Straks ga ik je helpen om weer terug te gaan naar {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} in gedachten. Je hebt super goed geoefend, ik ben benieuwd hoe goed het zometeen gaat!')
         # self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
         self.add_move(self.droomrobot.say, lambda: f'Ik rij zo gewoon met je mee {self.user_model['child_name']}.')
