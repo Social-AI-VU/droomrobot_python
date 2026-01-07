@@ -80,7 +80,7 @@ class Kapinductie4(DroomrobotScript):
     def _intervention(self):
         self.phases = [
             InterventionPhase.PREPARATION.name,
-            InterventionPhase.PROCEDURE.name
+            # InterventionPhase.PROCEDURE.name
         ]
         self.phase_moves_build = InteractionChoice('Sonde4', InteractionChoiceCondition.PHASE)
         self.phase_moves_build = self._intervention_preparation(self.phase_moves_build)
