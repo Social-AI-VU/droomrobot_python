@@ -2,8 +2,6 @@ from itertools import chain
 from os.path import abspath, join
 from time import sleep
 
-from sic_framework.core.sic_application import SICApplication
-
 from droomrobot.core import Droomrobot, AnimationType
 from droomrobot.droomrobot_tts import GoogleTTSConf, TTSConf
 
@@ -20,8 +18,7 @@ class AnimationTest:
                  voice_conf: TTSConf = GoogleTTSConf(),
                  openai_key_path=None, computer_test_mode=False):
         self.mini_id = mini_id
-        sic_app = SICApplication()
-        self.droomrobot = Droomrobot(sic_app=sic_app, mini_ip=mini_ip, mini_id=mini_id, mini_password=mini_password, redis_ip=redis_ip,
+        self.droomrobot = Droomrobot(mini_ip=mini_ip, mini_id=mini_id, mini_password=mini_password, redis_ip=redis_ip,
                                      google_keyfile_path=google_keyfile_path,
                                      sample_rate_dialogflow_hertz=sample_rate_dialogflow_hertz,
                                      dialogflow_language=dialogflow_language, dialogflow_timeout=dialogflow_timeout,
@@ -98,10 +95,9 @@ class AnimationTest:
 
 
 if __name__ == '__main__':
-    droomrobot = AnimationTest(mini_ip="10.0.0.158", mini_id="00268", mini_password="alphago",
-                               redis_ip="10.0.0.112",
+    droomrobot = AnimationTest(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago",
+                               redis_ip="192.168.178.84",
                                google_keyfile_path=abspath(join("../../conf", "dialogflow", "google_keyfile.json")),
                                openai_key_path=abspath(join("../../conf", "openai", ".openai_env")),
                                computer_test_mode=False)
-    # droomrobot.expressions('codemao')
-    droomrobot.dance()
+    droomrobot.expressions('codemao')
