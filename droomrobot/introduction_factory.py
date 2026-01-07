@@ -51,7 +51,7 @@ class IntroductionFactory:
 
         script.add_move(droomrobot.say, 'Laat ik nu wat vertellen over de droomreis.')
         script.add_move(droomrobot.say, 'Je mag zo een fijne plek kiezen.')
-        script.add_move(droomrobot.say, 'En dan gaan we samen dromen dat we daar heen gaan.')
+        script.add_move(droomrobot.say, 'En dan gaan we samen fantaseren dat we daar heen gaan.')
         script.add_move(droomrobot.say, 'In onze gedachten.')
         script.add_move(droomrobot.say, 'Aan iets fijns denken helpt je om rustig en sterk te blijven.')
 

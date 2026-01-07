@@ -72,7 +72,7 @@ class Sonde4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Als je klaar bent met oefenen, mag je je ogen weer open doen.')
         self.add_move(self.droomrobot.say, lambda: f'Ik vind {self.user_model['kleur']} een hele mooie kleur, die heb je goed gekozen.')
 
-        self.add_move(self.droomrobot.say, lambda: f'Als je straks in aan de beurt bent gaan we weer samen op droomreis naar  {self.user_model['droomplek_locatie']}.')
+        self.add_move(self.droomrobot.say, lambda: f'Als je straks aan de beurt bent gaan we weer samen op droomreis naar  {self.user_model['droomplek_locatie']}.')
         self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)  ## Smile
         self.add_move(self.droomrobot.say,  f'Tot straks, {self.user_model['child_name']}.')

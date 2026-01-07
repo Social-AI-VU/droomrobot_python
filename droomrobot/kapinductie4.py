@@ -72,7 +72,7 @@ class Kapinductie4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Je hoeft alleen maar rustig in en uit te ademen.')
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed dit je zometeen gaat helpen.')
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
-        self.add_move(self.droomrobot.say, lambda: f'Straks ga ik je helpen om weer terug te gaan naar {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} in gedachten. Je hebt super goed geoefend, ik ben benieuwd hoe goed het zometeen gaat!')
+        self.add_move(self.droomrobot.say, lambda: f'Straks ga ik je helpen om weer terug naar {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} te gaan in gedachten. Je hebt super goed geoefend, ik ben benieuwd hoe goed het zometeen gaat!')
         # self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
         self.add_move(self.droomrobot.say, lambda: f'Ik rij zo gewoon met je mee {self.user_model['child_name']}.')
@@ -310,8 +310,9 @@ class Kapinductie4(DroomrobotScript):
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Die heeft precies jouw lievelingskleur.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Je mag op de schommel gaan zitten.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Voel maar hoe je zachtjes heen en weer gaat.')
-        intervention_prep_choice.add_move('strand', self.droomrobot.say,
-                                          'Voel maar hoe makkelijk de schommel doet wat jij wil, heen en weer, heen en weer.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,'Voel maar hoe makkelijk de schommel doet wat jij wil')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'heen en weer')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'heen en weer')
         intervention_prep_choice.add_move('strand', self.droomrobot.say,
                                           'De schommel gaat precies zo hoog als jij fijn vindt.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Jij bent de baas.')
@@ -341,8 +342,9 @@ class Kapinductie4(DroomrobotScript):
         intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Het is precies jouw lievelingskleur.')
         intervention_prep_choice.add_move('bos', self.droomrobot.say,
                                           'Je mag op de schommel gaan zitten. Voel maar hoe je zachtjes heen en weer gaat.')
-        intervention_prep_choice.add_move('bos', self.droomrobot.say,
-                                          'Voel maar hoe makkelijk de schommel doet wat jij wil, heen en weer, heen en weer.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,'Voel maar hoe makkelijk de schommel doet wat jij wil.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'heen en weer')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'heen en weer')
         intervention_prep_choice.add_move('bos', self.droomrobot.say,
                                           'De schommel gaat precies zo hoog als dat jij fijn vindt.')
         intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Jij bent de baas.')
