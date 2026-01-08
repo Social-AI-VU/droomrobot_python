@@ -218,7 +218,7 @@ class Kapinductie9(DroomrobotScript):
         interaction_choice.add_move('strand', self.droomrobot.say, 'Misschien wel groen of paars of regenboog kleuren.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'En merk maar hoe fijn jij je op deze plek voelt.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Luister maar lekker naar de golven van de zee.')
-        interaction_choice.add_move('strand', self.droomrobot.play_audio, 'resources/audio/ocean_waves.wav')
+        interaction_choice.add_move('strand', self.droomrobot.play_audio, 'resources/audio/beach_waves.wav')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Misschien is het er heerlijk warm of lekker koel. Voel de zonnestralen maar op je gezicht.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'En op deze plek kan je alles doen waar je zin in hebt.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Misschien ga je een zandkaasteel bouwen, of spring je over de golven heen.')
