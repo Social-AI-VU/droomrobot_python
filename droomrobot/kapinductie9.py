@@ -91,7 +91,7 @@ class Kapinductie9(DroomrobotScript):
             InterventionPhase.PREPARATION.name,
             InterventionPhase.PROCEDURE.name
         ]
-        self.phase_moves_build = InteractionChoice('Sonde4', InteractionChoiceCondition.PHASE)
+        self.phase_moves_build = InteractionChoice('Kapinductie9', InteractionChoiceCondition.PHASE)
         self.phase_moves_build = self._intervention_preparation(self.phase_moves_build)
         self.phase_moves = self._intervention_procedure(self.phase_moves_build)
 
