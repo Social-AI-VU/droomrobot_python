@@ -112,7 +112,7 @@ class Kapinductie4(DroomrobotScript):
         interaction_choice.add_move('strand', self.droomrobot.say,
                                     'Weet je wat ik daar graag doe? Grote zandkastelen bouwen en schelpjes zoeken.')
         interaction_choice.add_move('strand', self.droomrobot.ask_open,
-                                    f'Wat zou jij op het stand willen doen {self.user_model['child_name']}?',
+                                    f'Wat zou jij op het strand willen doen {self.user_model['child_name']}?',
                                     user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
