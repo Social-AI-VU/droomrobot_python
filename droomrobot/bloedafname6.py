@@ -187,10 +187,10 @@ class Bloedafname6(DroomrobotScript):
                              'Ga maar rustig ademen, zoals je dat gewend bent.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Adem rustig in.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.play_audio,
-                             'resources/audio/breath_in.wav')
+                             'resources/audio/breath_in_amplified.wav')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'en rustig uit.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.play_audio,
-                             'resources/audio/breath_out.wav')
+                             'resources/audio/breath_out_amplified.wav')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              lambda: f'Stel je maar voor dat je bij {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} bent.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
@@ -214,10 +214,10 @@ class Bloedafname6(DroomrobotScript):
                              'Nu gaan we je lichtje weer activeren zoals je dat geleerd hebt.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Adem in via je neus.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,
-                             'resources/audio/breath_in.wav')
+                             'resources/audio/breath_in_amplified.wav')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'en blaas rustig uit via je mond.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,
-                             'resources/audio/breath_out.wav')
+                             'resources/audio/breath_out_amplified.wav')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
                              lambda: f'En kijk maar hoe je krachtige {self.user_model['kleur_adjective']} lichtje weer op je {self.user_model['priklocatie']} verschijnt, in precies de goede kleur die je nodig hebt.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
@@ -236,10 +236,10 @@ class Bloedafname6(DroomrobotScript):
                              lambda: f'Als je iets voelt op je {self.user_model['priklocatie']}, dan is dat een teken dat je lichtje volledig werkt.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Adem diep in.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,
-                             'resources/audio/breath_in.wav')
+                             'resources/audio/breath_in_amplified.wav')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'en blaas uit.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,
-                             'resources/audio/breath_out.wav')
+                             'resources/audio/breath_out_amplified.wav')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
                              'Merk maar hoe goed jij jezelf kan helpen, je bent echt een superheld.')
         sentences = [
