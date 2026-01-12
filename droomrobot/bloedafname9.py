@@ -306,6 +306,8 @@ class Bloedafname9(DroomrobotScript):
         interaction_choice.add_choice('vakantie', motivation_choice)
 
         # Other
+        interaction_choice.add_move('other', self.droomrobot.animate, AnimationType.EXPRESSION, "codemao13",
+                                    run_async=True)
         interaction_choice.add_move('other', lambda: self.droomrobot.say(self.droomrobot.gpt.request(
             GPTRequest(f'Je bent een sociale robot die praat met een kind van {str(self.user_model['child_age'])} jaar oud.'
                        f'Het kind ligt in het ziekenhuis.'
