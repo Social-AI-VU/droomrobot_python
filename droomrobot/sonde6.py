@@ -30,7 +30,7 @@ class Sonde6(DroomrobotScript):
                                                  user_model=self.user_model)
         self.add_moves(intro_moves)
         self.add_move(self.droomrobot.say, 'Wat goed helpt is om je voor te stellen dat je in een raceauto door een tunnel scheurt, of van een waterglijbaan gaat, of als dolfijn door het water beweegt.')
-        self.add_move(self.droomrobot.say, 'Welke lijkt jij het leukste?')
+        self.add_move(self.droomrobot.say, 'Welke lijkt jou het leukste?')
 
         self.add_move(self.droomrobot.ask_entity, 'De waterglijbaan, de race-auto of dolfijn?',
                       {'droomplek': 1},
@@ -168,7 +168,7 @@ class Sonde6(DroomrobotScript):
         intervention_proc_choice.add_move('raceauto', self.droomrobot.say, 'En de verpleegkundige zal je vertellen wanneer je bij het einde van de tunnel bent.')
 
         # Waterglijbaan
-        intervention_proc_choice.add_move('waterglijbaan', self.droomrobot.say, 'Je plaatst je handen naast, je ademt diep in, en klaar voor de start!')
+        intervention_proc_choice.add_move('waterglijbaan', self.droomrobot.say, 'Je plaatst je handen naast je, je ademt diep in, en klaar voor de start!')
         intervention_proc_choice.add_move('waterglijbaan', self.droomrobot.say, 'Daar ga je! Je duwt jezelf zachtjes af, en voelt hoe je begint te glijden.')
         intervention_proc_choice.add_move('waterglijbaan', self.droomrobot.say, 'Eerst heel langzaam.')
         intervention_proc_choice.add_move('waterglijbaan', self.droomrobot.say, 'En dan iets sneller.')

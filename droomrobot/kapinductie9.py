@@ -107,7 +107,7 @@ class Kapinductie9(DroomrobotScript):
         interaction_choice.add_move('strand', self.droomrobot.say,
                                     'Weet je wat ik daar graag doe? Een zandkasteel bouwen met een vlag er op.')
         interaction_choice.add_move('strand', self.droomrobot.ask_open,
-                                    f'Wat zou jij op het stand willen doen {self.user_model['child_name']}?',
+                                    f'Wat zou jij op het strand willen doen {self.user_model['child_name']}?',
                                     user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
@@ -141,7 +141,7 @@ class Kapinductie9(DroomrobotScript):
         interaction_choice.add_move('vakantie', self.droomrobot.say,
                                     'Oh ik hou van vakantie. Mijn laatste vakantie was in Frankrijk op een camping met veel waterglijbanen.')
         interaction_choice.add_move('vakantie', self.droomrobot.say,
-                                    'WHet was er heerlijk warm in de zon.')
+                                    'Het was er heerlijk warm in de zon.')
         interaction_choice.add_move('vakantie', self.droomrobot.ask_open,
                                     lambda: f'Wat gingen jullie op vakantie doen {self.user_model['child_name']}??',
                                     user_model_key='droomplek_motivatie')
@@ -185,14 +185,14 @@ class Kapinductie9(DroomrobotScript):
 
         # Fail
         interaction_choice.add_move('fail', self.droomrobot.say, 'Oh sorry ik begreep je even niet.')
-        interaction_choice.add_move('fail', self.droomrobot.say, 'Weetje wat. Ik vind het stand echt super leuk.')
+        interaction_choice.add_move('fail', self.droomrobot.say, 'Weet je wat. Ik vind het strand echt super leuk.')
         interaction_choice.add_move('fail', self.droomrobot.say, 'Laten we naar het strand gaan als droomplek.')
         interaction_choice.add_move('fail', self.droomrobot.say,
                                     'Ah, het strand! Ik kan de golven bijna horen en het zand onder mijn voeten voelen.')
         interaction_choice.add_move('fail', self.droomrobot.say,
                                     'Weet je wat ik daar graag doe? Een zandkasteel bouwen met een vlag er op.')
         interaction_choice.add_move('fail', self.droomrobot.ask_open,
-                                    f'Wat zou jij op het stand willen doen {self.user_model['child_name']}?',
+                                    f'Wat zou jij op het strand willen doen {self.user_model['child_name']}?',
                                     user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
@@ -326,7 +326,7 @@ class Kapinductie9(DroomrobotScript):
                                           'De schommel gaat precies zo hoog als dat jij het fijn vindt.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Jij hebt namelijk alle controle.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say,
-                                          'Het kan ook een lekker kriebellend gevoel in je buik geven.')
+                                          'Het kan ook een lekker kriebelend gevoel in je buik geven.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say,
                                           'En terwijl je zo lekker aan het schommelen bent, voel je de zachte warme wind op je gezicht.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say,

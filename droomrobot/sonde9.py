@@ -30,7 +30,7 @@ class Sonde9(DroomrobotScript):
                                                  user_model=self.user_model)
         self.add_moves(intro_moves)
         self.add_move(self.droomrobot.say, 'Wat goed helpt is om je voor te stellen dat je in een raceauto door een tunnel scheurt, of van een waterglijbaan gaat, of als dolfijn door het water beweegt.')
-        self.add_move(self.droomrobot.say, 'Welke lijkt jij het leukste?')
+        self.add_move(self.droomrobot.say, 'Welke lijkt jou het leukste?')
 
         self.add_move(self.droomrobot.ask_entity, 'De waterglijbaan, de race-auto of dolfijn?',
                       {'droomplek': 1},
@@ -46,7 +46,7 @@ class Sonde9(DroomrobotScript):
         self.add_move(self.droomrobot.say,
             'Laten we alvast gaan oefenen om samen een ontspannen reis te maken, zodat het je zometeen gaat helpen bij het inbrengen van de sonde.')
         self.add_move(self.droomrobot.say,
-            'De sonde is een dun zacht buiksje dat heel makkelijk door je neus naar binnen kan om jou te helpen je beter te voelen.')
+            'De sonde is een dun zacht buisje dat heel makkelijk door je neus naar binnen kan om jou te helpen je beter te voelen.')
 
         interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
@@ -203,7 +203,7 @@ class Sonde9(DroomrobotScript):
         intervention_proc_choice.add_move('raceauto', self.droomrobot.say, 'En de verpleegkundige zal je vertellen wanneer je bij het einde van de tunnel bent.')
 
         # Waterglijbaan
-        intervention_proc_choice.add_move('waterglijbaan', self.droomrobot.say, 'Je plaatst je handen naast, je ademt diep in, en klaar voor de start!')
+        intervention_proc_choice.add_move('waterglijbaan', self.droomrobot.say, 'Je plaatst je handen naast je, je ademt diep in, en klaar voor de start!')
         intervention_proc_choice.add_move('waterglijbaan', self.droomrobot.say, 'Daar ga je! Je duwt jezelf zachtjes af, en voelt hoe je begint te glijden.')
         intervention_proc_choice.add_move('waterglijbaan', self.droomrobot.say, 'Eerst heel langzaam.')
         intervention_proc_choice.add_move('waterglijbaan', self.droomrobot.say, 'En dan iets sneller.')
