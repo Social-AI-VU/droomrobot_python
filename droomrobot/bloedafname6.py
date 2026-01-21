@@ -151,7 +151,7 @@ class Bloedafname6(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het zometeen gaat.')
         self.add_move(self.droomrobot.say, 'Je zult zien dat dit je gaat helpen.')
         self.add_move(self.droomrobot.say,
-                      'Als je zometeen aan de beurt bent, ga ik je helpen om het lichtje weer samen aan te zetten, zodat je weer die superheld bent.')
+                      'Als je zometeen aan de beurt bent, . ga ik je helpen om het lichtje weer samen aan te zetten, zodat je weer die superheld bent.')
 
         self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
@@ -180,9 +180,9 @@ class Bloedafname6(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              'Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter, en makkelijker gaat.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Je mag weer goed gaan zitten en als je wilt je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.', sleep_time=1)
+                             'Je mag weer goed gaan zitten, . en als je wilt je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.', sleep_time=1)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Luister maar weer goed naar mijn stem, en merk maar dat andere geluiden in het ziekenhuis veel stiller worden.')
+                             'Luister maar weer goed naar mijn stem, . en merk maar dat andere geluiden in het ziekenhuis veel stiller worden.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              'Ga maar rustig ademen, zoals je dat gewend bent.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Adem rustig in.')
