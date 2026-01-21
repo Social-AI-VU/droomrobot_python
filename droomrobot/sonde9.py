@@ -481,7 +481,7 @@ class Sonde9(DroomrobotScript):
 
         zit_goed_choice = InteractionChoice('zit_goed', InteractionChoiceCondition.MATCHVALUE)
         zit_goed_choice.add_move('yes', self.droomrobot.say, 'En nu je lekker bent gaan liggen.')
-        # should still be another sentence for fail/other
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Het ligt vaak het lekkerste als je je lichaam zwaar maakt, ga maar eens kijken hoe goed dat ligt')
         zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed ligt.')
         position_choice.add_choice('liggend', zit_goed_choice)
 
@@ -491,10 +491,9 @@ class Sonde9(DroomrobotScript):
                       'En terwijl je nu zo ligt, leg je rustig je handen op je buik, en adem je kalm in en uit.')
 
         # NVT
-        position_choice.add_move('other', self.droomrobot.say, 'Als je er klaar voor bent')
-        position_choice.add_move('other', self.droomrobot.say, 'mag je je ogen dicht doen.')
+        position_choice.add_move('other', self.droomrobot.say, 'Terwijl je hier zo in de kamer bent mag je je ogen dicht doen als je wilt')
         position_choice.add_move('other', self.droomrobot.say, 'dat maakt het makkelijker om je rustig te voelen.')
         position_choice.add_move('other', self.droomrobot.say,
-                                 'En leg je rustig je handen op je buik, en adem je kalm in en uit.')
+                                 '’En terwijl je hier zo fijn in de ruimte bent, leg je rustig je handen op je buik, en adem je kalm in en uit.')
 
         return position_choice

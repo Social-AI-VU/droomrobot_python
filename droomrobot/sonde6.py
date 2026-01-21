@@ -48,10 +48,7 @@ class Sonde6(DroomrobotScript):
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
 
         self.add_choice(self._build_interaction_choice_comfortable_position())
-        self.add_move(self.droomrobot.say,  'mag je je ogen dicht doen.')
-        self.add_move(self.droomrobot.say,  'dat maakt het makkelijker om je rustig te voelen.')
 
-        self.add_move(self.droomrobot.say, 'En terwijl je nu zo lekker zit, mag je je handen op je buik doen en rustig gaan ademhalen.')
         self.add_move(self.droomrobot.say, 'Adem rustig in.')
         self.add_move(self.droomrobot.play_audio, 'resources/audio/breath_in.wav')
         self.add_move(self.droomrobot.say, 'en rustig uit.')
@@ -403,6 +400,9 @@ class Sonde6(DroomrobotScript):
                                  sleep_time=1)
         zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed zit.')
         position_choice.add_choice('zittend', zit_goed_choice)
+        position_choice.add_move('zittend', self.droomrobot.say,  'mag je je ogen dicht doen.')
+        position_choice.add_move('zittend', self.droomrobot.say,  'dat maakt het makkelijker om je rustig te voelen.')
+        position_choice.add_move('zittend', self.droomrobot.say, 'En terwijl je nu zo lekker zit, mag je je handen op je buik doen en rustig gaan ademhalen.')
 
         # Liggend
         position_choice.add_move('liggend', self.droomrobot.say, 'Ga even lekker liggen zoals jij dat fijn vindt.', sleep_time=1)
@@ -410,11 +410,16 @@ class Sonde6(DroomrobotScript):
 
         zit_goed_choice = InteractionChoice('zit_goed', InteractionChoiceCondition.MATCHVALUE)
         zit_goed_choice.add_move('yes', self.droomrobot.say, 'En nu je lekker bent gaan liggen.')
-        # should still be another sentence for fail/other
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Het ligt vaak het lekkerste als je je lichaam zwaar maakt, ga maar eens kijken hoe goed dat ligt')
         zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed ligt.')
         position_choice.add_choice('liggend', zit_goed_choice)
+        position_choice.add_move('liggend', self.droomrobot.say,  'mag je je ogen dicht doen.')
+        position_choice.add_move('liggend', self.droomrobot.say,  'dat maakt het makkelijker om je rustig te voelen.')
+        position_choice.add_move('liggend', self.droomrobot.say, 'En terwijl je nu zo lekker ligt, mag je je handen op je buik doen en rustig gaan ademhalen.')
 
         # NVT
-        position_choice.add_move('other', self.droomrobot.say, 'Als je er klaar voor bent')
+        position_choice.add_move('other', self.droomrobot.say, 'Terwijl je hier zo in de kamer bent mag je je ogen dicht doen als je wilt')
+        position_choice.add_move('other', self.droomrobot.say, 'dat maakt het makkelijker om je rustig te voelen.')
+        position_choice.add_move('other', self.droomrobot.say, 'En terwijl je hier zo fijn in de ruimte bent, mag je je handen op je buik doen en rustig gaan ademhalen.')
 
         return position_choice

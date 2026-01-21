@@ -432,7 +432,7 @@ class Kapinductie9(DroomrobotScript):
 
         zit_goed_choice = InteractionChoice('zit_goed', InteractionChoiceCondition.MATCHVALUE)
         zit_goed_choice.add_move('yes', self.droomrobot.say, 'En nu je lekker bent gaan liggen.')
-        # should still be another sentence for fail/other
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Het ligt vaak het lekkerste als je je lichaam zwaar maakt, ga maar eens kijken hoe goed dat ligt')
         zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed ligt.')
         position_choice.add_choice('liggend', zit_goed_choice)
         position_choice.add_move('liggend', self.droomrobot.say, 'mag je je ogen dicht doen.')
@@ -442,11 +442,10 @@ class Kapinductie9(DroomrobotScript):
                                  sleep_time=1)
 
         # NVT
-        position_choice.add_move('other', self.droomrobot.say, 'Als je er klaar voor bent')
-        position_choice.add_move('other', self.droomrobot.say, 'mag je je ogen dicht doen.')
+        position_choice.add_move('other', self.droomrobot.say, 'Terwijl je hier zo in de kamer bent mag je je ogen dicht doen als je wilt')
         position_choice.add_move('other', self.droomrobot.say, 'dan werkt het truukje het beste.')
         position_choice.add_move('other', self.droomrobot.say,
-                                 'En mag je je handen op je buik doen en rustig gaan ademhalen',
+                                 'En terwijl je hier zo fijn in de ruimte bent, mag je je handen op je buik doen en rustig gaan ademhalen',
                                  sleep_time=1)
 
         return position_choice
