@@ -87,7 +87,7 @@ class DroomrobotGUI:
         self.audio_amplified = tk.BooleanVar(value=self.config.get("audio_amplification", False))
         self.always_regenerate = tk.BooleanVar(value=self.config.get("always_regenerate", False))
         try:
-            tts_service_enum = TTSService[self.config.get("tts_service")]
+            tts_service_enum = TTSService[self.config.get("tts_service", "ELEVENLABS")]
         except KeyError:
             tts_service_enum = TTSService.GOOGLE
         self.tts_service = tk.StringVar(value=tts_service_enum.name)
