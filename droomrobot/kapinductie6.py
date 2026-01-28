@@ -60,10 +60,10 @@ class Kapinductie6(DroomrobotScript):
         self.add_move(self.droomrobot.reset_interaction_conf)
 
         self.add_move(self.droomrobot.say, 'Nu je genoeg geoefend hebt mag je je ogen weer lekker opendoen.')
-        self.add_move(self.droomrobot.say, 'En wat zo fijn is, is dat je iedere keer als je deze droomreis nodig hebt, je weer terug kan gaan in gedachten naar deze fijne plek.')
+        self.add_move(self.droomrobot.say, 'En wat zo fijn is, is dat je iedere keer als je deze droomreis nodig hebt, . je weer terug kan gaan in gedachten naar deze fijne plek.')
         self.add_move(self.droomrobot.say, 'Je hoeft alleen maar een paar keer diep in en uit te ademen. Ik ben benieuwd hoe goed dit je zometeen gaat helpen.')
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
-        self.add_move(self.droomrobot.say, lambda: f'Wanneer je zometeen aan de beurt bent ga ik je helpen om weer naar {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} te gaan in gedachten. Je hebt super goed geoefend, dus je kan verrast zijn hoe goed het zometeen gaat!')
+        self.add_move(self.droomrobot.say, lambda: f'Wanneer je zometeen aan de beurt bent, . ga ik je helpen om weer naar {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} te gaan in gedachten. Je hebt super goed geoefend, dus je kan verrast zijn hoe goed het zometeen gaat!')
         # self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
         self.add_move(self.droomrobot.say, lambda: f'Ik rij gewoon met je mee zo, {self.user_model['child_name']}.')
@@ -186,14 +186,14 @@ class Kapinductie6(DroomrobotScript):
 
         # Fail
         interaction_choice.add_move('fail', self.droomrobot.say, 'Oh sorry ik begreep je even niet.')
-        interaction_choice.add_move('fail', self.droomrobot.say, 'Weetje wat. Ik vind het stand echt super leuk.')
+        interaction_choice.add_move('fail', self.droomrobot.say, 'Weet je wat. Ik vind het strand echt super leuk.')
         interaction_choice.add_move('fail', self.droomrobot.say, 'Laten we naar het strand gaan als droomplek.')
         interaction_choice.add_move('fail', self.droomrobot.say,
                                     'Ah, het strand! Ik kan de golven bijna horen en het zand onder mijn voeten voelen.')
         interaction_choice.add_move('fail', self.droomrobot.say,
                                     'Weet je wat ik daar graag doe? Een zandkasteel bouwen met een vlag er op.')
         interaction_choice.add_move('fail', self.droomrobot.ask_open,
-                                    f'Wat zou jij op het stand willen doen {self.user_model['child_name']}?',
+                                    f'Wat zou jij op het strand willen doen {self.user_model['child_name']}?',
                                     user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
@@ -212,7 +212,7 @@ class Kapinductie6(DroomrobotScript):
     def _build_interaction_choice_oefenen(self) -> InteractionChoice:
         interaction_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
 
-        interaction_choice.add_move('strand', self.droomrobot.say, 'En terwijl je zo rustig aan het ademhalen bent mag je gaan voorstellen dat je op het strand bent.')
+        interaction_choice.add_move('strand', self.droomrobot.say, 'En terwijl je zo rustig aan het ademhalen bent, . mag je gaan voorstellen dat je op het strand bent.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Kijk maar eens in je gedachten om je heen wat je allemaal op die mooie plek ziet.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Misschien ben je er alleen, of is er iemand bij je.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Kijk maar welke mooie kleuren je allemaal ziet.')
@@ -237,7 +237,7 @@ class Kapinductie6(DroomrobotScript):
 
 
         # Bos
-        interaction_choice.add_move('bos', self.droomrobot.say, 'En terwijl je zo rustig aan het ademhalen bent, mag je gaan voorstellen dat je in een prachtig bos bent.')
+        interaction_choice.add_move('bos', self.droomrobot.say, 'En terwijl je zo rustig aan het ademhalen bent, . mag je gaan voorstellen dat je in een prachtig bos bent.')
         interaction_choice.add_move('bos', self.droomrobot.say, 'Kijk maar eens in je gedachten om je heen wat je allemaal op die mooie plek ziet.')
         interaction_choice.add_move('bos', self.droomrobot.say, 'Misschien zie je grote bomen, of kleine bloemen die zachtjes in de wind bewegen.')
         interaction_choice.add_move('bos', self.droomrobot.say, 'En merk maar hoe fijn jij je op deze plek voelt.')
@@ -258,10 +258,10 @@ class Kapinductie6(DroomrobotScript):
         interaction_choice.add_choice('bos', motivation_choice)
 
         # Ruimte
-        interaction_choice.add_move('ruimte', self.droomrobot.say, 'En terwijl je zo rustig aan het ademhalen bent, mag je gaan voorstellen dat je in de ruimte bent, hoog boven de aarde.')
+        interaction_choice.add_move('ruimte', self.droomrobot.say, 'En terwijl je zo rustig aan het ademhalen bent, . mag je gaan voorstellen dat je in de ruimte bent, hoog boven de aarde.')
         interaction_choice.add_move('ruimte', self.droomrobot.say, 'Misschien ben je er alleen, of is er iemand bij je.')
         interaction_choice.add_move('ruimte', self.droomrobot.say, 'Kijk maar eens in gedachten om je heen, wat zie je daar allemaal?')
-        interaction_choice.add_move('ruimte', self.droomrobot.say, 'Misschien zie je de aarde heel klein worden, helemaal onder je, alsof je heel hoog in de lucht vliegt.')
+        interaction_choice.add_move('ruimte', self.droomrobot.say, 'Misschien zie je de aarde heel klein worden, helemaal onder je, . alsof je heel hoog in de lucht vliegt.')
         interaction_choice.add_move('ruimte', self.droomrobot.say, 'Misschien zie je sterren die heel fel schijnen, in verschillende kleuren.')
         interaction_choice.add_move('ruimte', self.droomrobot.say, 'Je voelt je heel rustig en veilig in de ruimte, want er is zoveel te ontdekken.')
         interaction_choice.add_move('ruimte', self.droomrobot.say, 'De ruimte is eindeloos, vol met geheimen en wonderen.')
@@ -316,7 +316,7 @@ class Kapinductie6(DroomrobotScript):
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Voel maar hoe makkelijk de schommel met je mee beweegt, heen en weer, heen en weer.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'De schommel gaat precies zo hoog als dat jij het fijn vindt.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Jij hebt namelijk alle controle.')
-        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Het kan ook een lekker kriebellend gevoel in je buik geven.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Het kan ook een lekker kriebelend gevoel in je buik geven.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'En terwijl je zo lekker aan het schommelen bent, voel je de zachte warme wind op je gezicht.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Merk maar hoe lekker rustig je lichaam wordt en hoe veilig en fijn jij je voelt op het strand.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Je hoort de golven van de zee, terwijl je lekker blijft schommelen.')
@@ -352,7 +352,7 @@ class Kapinductie6(DroomrobotScript):
         intervention_prep_choice.add_move('ruimte', self.droomrobot.say, 'Je mag naar het ruimteschip toe zweven en er lekker in gaan zitten.')
         intervention_prep_choice.add_move('ruimte', self.droomrobot.say, 'In het ruimteschip krijg je een ruimtekapje op.')
         intervention_prep_choice.add_move('ruimte', self.droomrobot.say, 'Het voelt heerlijk zacht tegen je gezicht en het zal je beschermen.')
-        intervention_prep_choice.add_move('ruimte', self.droomrobot.say, 'Het houdt je helemaal veilig, zodat je nergens anders aan hoeft te denken dan aan je avontuur in de ruimte.')
+        intervention_prep_choice.add_move('ruimte', self.droomrobot.say, 'Het houdt je helemaal veilig, . zodat je nergens anders aan hoeft te denken dan aan je avontuur in de ruimte.')
         intervention_prep_choice.add_move('ruimte', self.droomrobot.say, 'En terwijl je in het ruimteschip zit, voel je hoe het ruimteschip met je meebeweegt, zacht en langzaam.')
         intervention_prep_choice.add_move('ruimte', self.droomrobot.say, 'Je hebt alle controle over waar je naartoe wilt, je kunt naar de sterren vliegen of verder weg gaan, het maakt niet uit.')
         intervention_prep_choice.add_move('ruimte', self.droomrobot.say, 'Voel de rust om je heen, terwijl je door de ruimte zweeft.')

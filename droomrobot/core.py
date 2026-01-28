@@ -322,8 +322,8 @@ class Droomrobot:
             # Save to cache file
             self.tts_cacher.save_audio_file(tts_key, audio_bytes, sample_rate)
 
-            if sleep_time and sleep_time > 0:
-                sleep(sleep_time)
+        if sleep_time and sleep_time > 0:
+            sleep(sleep_time)
 
     def play_audio(self, audio_file, amplified=False, log=True):
         with wave.open(audio_file, 'rb') as wf:
