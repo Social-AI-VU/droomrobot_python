@@ -87,7 +87,7 @@ class DroomrobotGUI:
         self.audio_amplified = tk.BooleanVar(value=self.config.get("audio_amplification", False))
         self.always_regenerate = tk.BooleanVar(value=self.config.get("always_regenerate", False))
         try:
-            tts_service_enum = TTSService[self.config.get("tts_service")]
+            tts_service_enum = TTSService[self.config.get("tts_service", "ELEVENLABS")]
         except KeyError:
             tts_service_enum = TTSService.GOOGLE
         self.tts_service = tk.StringVar(value=tts_service_enum.name)
@@ -183,6 +183,7 @@ class DroomrobotGUI:
         self.participant_id = tk.StringVar()
         self.child_name = tk.StringVar()
         self.child_age = tk.IntVar()
+        self.position = tk.StringVar(value="ZITTEND")
         self.priklocatie = tk.StringVar(value="arm")
         try:
             context_enum = InteractionContext[self.config.get("context")]
@@ -217,23 +218,26 @@ class DroomrobotGUI:
         context_combo.grid(row=3, column=1)
         context_combo.bind("<<ComboboxSelected>>", self.on_interaction_context_change)
 
+        ttk.Label(interaction_frame, text="Positie").grid(row=4, column=0)
+        ttk.Combobox(interaction_frame, textvariable=self.position,
+                     values=["ZITTEND", "LIGGEND", "NVT"]).grid(row=4, column=1)
 
-        ttk.Label(interaction_frame, text="Onderdeel").grid(row=4, column=0)
+        ttk.Label(interaction_frame, text="Onderdeel").grid(row=5, column=0)
         ttk.Combobox(interaction_frame, textvariable=self.session,
-                     values=[e.name for e in InteractionSession]).grid(row=4, column=1)
+                     values=[e.name for e in InteractionSession]).grid(row=5, column=1)
 
-        ttk.Label(interaction_frame, text="Amplified Audio").grid(row=5, column=0)
-        ttk.Checkbutton(interaction_frame, variable=self.audio_amplified).grid(row=5, column=1, sticky="w")
+        ttk.Label(interaction_frame, text="Amplified Audio").grid(row=6, column=0)
+        ttk.Checkbutton(interaction_frame, variable=self.audio_amplified).grid(row=6, column=1, sticky="w")
 
-        ttk.Label(interaction_frame, text="Always Regenerate TTS").grid(row=6, column=0)
-        ttk.Checkbutton(interaction_frame, variable=self.always_regenerate).grid(row=6, column=1, sticky="w")
+        ttk.Label(interaction_frame, text="Always Regenerate TTS").grid(row=7, column=0)
+        ttk.Checkbutton(interaction_frame, variable=self.always_regenerate).grid(row=7, column=1, sticky="w")
 
         self.priklocatie_label = ttk.Label(interaction_frame, text="Priklocatie")
         self.priklocatie_entry = ttk.Entry(interaction_frame, textvariable=self.priklocatie)
 
         # Place them but hidden initially
-        self.priklocatie_label.grid(row=7, column=0)
-        self.priklocatie_entry.grid(row=7, column=1)
+        self.priklocatie_label.grid(row=8, column=0)
+        self.priklocatie_entry.grid(row=8, column=1)
         self.priklocatie_label.grid_remove()
         self.priklocatie_entry.grid_remove()
 
@@ -360,8 +364,8 @@ class DroomrobotGUI:
 
     def on_interaction_context_change(self, event=None):
         if self.context.get() == "BLOEDAFNAME":
-            self.priklocatie_label.grid(row=7, column=0)
-            self.priklocatie_entry.grid(row=7, column=1)
+            self.priklocatie_label.grid(row=8, column=0)
+            self.priklocatie_entry.grid(row=8, column=1)
         else:
             self.priklocatie_label.grid_remove()
             self.priklocatie_entry.grid_remove()
@@ -391,6 +395,7 @@ class DroomrobotGUI:
         user_model = {
             "child_name": self.child_name.get(),
             "child_age": self.child_age.get(),
+            "positie": self.position.get().lower()
         }
         if self.context.get() == "BLOEDAFNAME":
             user_model["priklocatie"] = self.priklocatie.get()

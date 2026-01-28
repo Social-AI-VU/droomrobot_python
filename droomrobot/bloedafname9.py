@@ -43,15 +43,8 @@ class Bloedafname9(DroomrobotScript):
         # SAMEN OEFENEN
         interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
-        self.add_move(self.droomrobot.ask_yesno, "Zit je zo goed?", user_model_key='zit_goed')
-        zit_goed_choice = InteractionChoice('zit_goed', InteractionChoiceCondition.MATCHVALUE)
-        zit_goed_choice.add_move('yes', self.droomrobot.say, 'En nu je lekker bent gaan zitten.')
-        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Het zit vaak het lekkerste als je stevig gaat zitten.')
-        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Ga maar eens kijken hoe goed dat zit.', sleep_time=1)
-        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed zit.')
-        self.add_choice(zit_goed_choice)
-        self.add_move(self.droomrobot.say, 'mag je als je wilt je ogen dicht doen.')
-        self.add_move(self.droomrobot.say, 'dan werkt het trucje het beste.')
+
+        self.add_choice(self._build_interaction_choice_comfortable_position())
 
         self.add_move(self.droomrobot.say,
                       lambda: f'Stel je voor, dat je op jouw droomplek {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} bent')
@@ -361,3 +354,39 @@ class Bloedafname9(DroomrobotScript):
                                     user_model_key='droomplek_lidwoord')
 
         return interaction_choice
+
+    def _build_interaction_choice_comfortable_position(self) -> InteractionChoice:
+        position_choice = InteractionChoice('positie', InteractionChoiceCondition.MATCHVALUE)
+
+        # Zittend
+        position_choice.add_move('zittend', self.droomrobot.say, 'Ga even lekker zitten zoals jij dat fijn vindt.', sleep_time=1)
+        position_choice.add_move('zittend', self.droomrobot.ask_yesno, "Zit je zo goed?", user_model_key='zit_goed')
+
+        zit_goed_choice = InteractionChoice('zit_goed', InteractionChoiceCondition.MATCHVALUE)
+        zit_goed_choice.add_move('yes', self.droomrobot.say, 'En nu je lekker bent gaan zitten.')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say,
+                                 'Het zit vaak het lekkerste als je stevig gaat zitten.')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Ga maar eens kijken hoe goed dat zit.',
+                                 sleep_time=1)
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed zit.')
+        position_choice.add_choice('zittend', zit_goed_choice)
+        position_choice.add_move('zittend', self.droomrobot.say, 'mag je als je wilt je ogen dicht doen.')
+        position_choice.add_move('zittend', self.droomrobot.say, 'dan werkt het trucje het beste.')
+
+        # Liggend
+        position_choice.add_move('liggend', self.droomrobot.say, 'Ga even lekker liggen zoals jij dat fijn vindt.', sleep_time=1)
+        position_choice.add_move('liggend', self.droomrobot.ask_yesno, "Lig je zo goed?", user_model_key='zit_goed')
+
+        zit_goed_choice = InteractionChoice('zit_goed', InteractionChoiceCondition.MATCHVALUE)
+        zit_goed_choice.add_move('yes', self.droomrobot.say, 'En nu je lekker bent gaan liggen.')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Het ligt vaak het lekkerste als je je lichaam zwaar maakt, ga maar eens kijken hoe goed dat ligt')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed ligt.')
+        position_choice.add_choice('liggend', zit_goed_choice)
+        position_choice.add_move('liggend', self.droomrobot.say, 'mag je als je wilt je ogen dicht doen.')
+        position_choice.add_move('liggend', self.droomrobot.say, 'dan werkt het trucje het beste.')
+
+        # NVT
+        position_choice.add_move('other', self.droomrobot.say, 'Terwijl je hier zo in de kamer bent mag je je ogen dicht doen als je wilt')
+        position_choice.add_move('other', self.droomrobot.say, 'dan werkt het trucje het beste.')
+
+        return position_choice
