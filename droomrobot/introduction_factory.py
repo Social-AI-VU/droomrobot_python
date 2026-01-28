@@ -26,7 +26,7 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Soms moet ik even nadenken, en dan duurt het even voordat ik weer wat zeg.')
         script.add_move(droomrobot.say, 'En omdat ik nog maar aan het leren ben, gaat het soms ook mis.')
         script.add_move(droomrobot.say, 'Maar dat hoort er bij. Ik stel de vraag dan gewoon nog een keer.')
-        script.add_move(droomrobot.say, 'Je papa, of mama, of wie ook met je mee is, mag ook helpen.')
+        script.add_move(droomrobot.say, 'Degene die met je mee is mag ook helpen.')
 
         script.add_move(droomrobot.say, 'Laten we even oefenen!')
 
@@ -78,7 +78,7 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Soms moet ik even nadenken, en dan duurt het even voordat ik weer wat zeg.')
         script.add_move(droomrobot.say, 'En omdat ik nog maar aan het leren ben, gaat het soms ook mis.')
         script.add_move(droomrobot.say, 'Maar dat hoort er bij. Ik stel de vraag dan gewoon nog een keer.')
-        script.add_move(droomrobot.say, 'Je ouders, of wie ook met je mee is, mag ook helpen.')
+        script.add_move(droomrobot.say, 'Degene die met je mee is mag ook helpen.')
 
         script.add_move(droomrobot.say, 'Laten we even oefenen!')
 

@@ -66,13 +66,13 @@ class Sonde4(DroomrobotScript):
 
         self.add_move(self.droomrobot.reset_interaction_conf)
 
-        self.add_move(self.droomrobot.say, 'En weet je wat fijn is? Als je dit rustige gevoel later weer nodig hebt, kun je er altijd naar terug.')
-        self.add_move(self.droomrobot.say, 'Je hoeft alleen maar rustig diep in en uit te ademen, en daar ben je weer.')
+        self.add_move(self.droomrobot.say, 'En weet je wat fijn is? Nu kun je zelf wegdromen, wanneer je maar wilt')
+        # self.add_move(self.droomrobot.say, 'Je hoeft alleen maar rustig diep in en uit te ademen, en daar ben je weer.')
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed het je zometeen gaat helpen.')
         self.add_move(self.droomrobot.say, 'Als je klaar bent met oefenen, mag je je ogen weer open doen.')
         self.add_move(self.droomrobot.say, lambda: f'Ik vind {self.user_model['kleur']} een hele mooie kleur, die heb je goed gekozen.')
 
-        self.add_move(self.droomrobot.say, lambda: f'Als je straks aan de beurt bent ga ik je vragen om in fantasie terug te gaan naar {self.user_model['droomplek_locatie']}.')
+        self.add_move(self.droomrobot.say, lambda: f'Als je straks aan de beurt bent gaan we weer samen op droomreis naar  {self.user_model['droomplek_locatie']}.')
         self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)  ## Smile
         self.add_move(self.droomrobot.say,  f'Tot straks, {self.user_model['child_name']}.')
