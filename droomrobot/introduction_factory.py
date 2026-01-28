@@ -36,8 +36,10 @@ class IntroductionFactory:
                         'animals',
                         'animals',
                         user_model_key='dier')
+        # script.add_move(droomrobot.animate, AnimationType.EXPRESSION, "codemao13", run_async=True)
         animal_choice = InteractionChoice('dier', InteractionChoiceCondition.HASVALUE)
         animal_choice.add_move('success', droomrobot.say, lambda: f'Een {user_model['dier']}')
+        animal_choice.add_move('success', droomrobot.animate, AnimationType.EXPRESSION, "codemao13", run_async=True)
         animal_choice.add_move('success', lambda: droomrobot.say(
             droomrobot.generate_funny_response(user_model['child_age'],
                                                'Je hebt een kennismakingsgesprek en je hebt net gevraagd '
@@ -90,6 +92,7 @@ class IntroductionFactory:
                         user_model_key='dier')
         animal_choice = InteractionChoice('dier', InteractionChoiceCondition.HASVALUE)
         animal_choice.add_move('success', droomrobot.say, lambda: f'Een {user_model['dier']}')
+        animal_choice.add_move('success', droomrobot.animate, AnimationType.EXPRESSION, "codemao13", run_async=True)
         animal_choice.add_move('success', lambda: droomrobot.say(
             droomrobot.generate_funny_response(user_model['child_age'],
                                                'Je hebt een kennismakingsgesprek en je hebt net gevraagd '

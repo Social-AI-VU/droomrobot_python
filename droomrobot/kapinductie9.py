@@ -107,7 +107,7 @@ class Kapinductie9(DroomrobotScript):
         interaction_choice.add_move('strand', self.droomrobot.say,
                                     'Weet je wat ik daar graag doe? Een zandkasteel bouwen met een vlag er op.')
         interaction_choice.add_move('strand', self.droomrobot.ask_open,
-                                    f'Wat zou jij op het stand willen doen {self.user_model['child_name']}?',
+                                    f'Wat zou jij op het strand willen doen {self.user_model['child_name']}?',
                                     user_model_key='droomplek_motivatie')
 
         motivation_choice = InteractionChoice('droomplek_motivatie', InteractionChoiceCondition.HASVALUE)
@@ -156,6 +156,8 @@ class Kapinductie9(DroomrobotScript):
         interaction_choice.add_choice('vakantie', motivation_choice)
 
         # Other
+        interaction_choice.add_move('other', self.droomrobot.animate, AnimationType.EXPRESSION, "codemao13",
+                                    run_async=True)
         interaction_choice.add_move('other', lambda: self.droomrobot.say(self.droomrobot.gpt.request(
             GPTRequest(f'Je bent een sociale robot die praat met een kind van {str(self.user_model['child_age'])} jaar oud.'
                        f'Het kind ligt in het ziekenhuis.'
@@ -218,7 +220,7 @@ class Kapinductie9(DroomrobotScript):
         interaction_choice.add_move('strand', self.droomrobot.say, 'Misschien wel groen of paars of regenboog kleuren.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'En merk maar hoe fijn jij je op deze plek voelt.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Luister maar lekker naar de golven van de zee.')
-        interaction_choice.add_move('strand', self.droomrobot.play_audio, 'resources/audio/ocean_waves.wav')
+        interaction_choice.add_move('strand', self.droomrobot.play_audio, 'resources/audio/beach_waves.wav')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Misschien is het er heerlijk warm of lekker koel. Voel de zonnestralen maar op je gezicht.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'En op deze plek kan je alles doen waar je zin in hebt.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Misschien ga je een zandkaasteel bouwen, of spring je over de golven heen.')

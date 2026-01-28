@@ -3,6 +3,7 @@ import json
 import logging
 import queue
 import re
+import threading
 import wave
 from enum import Enum
 from os import environ, fsync
@@ -376,11 +377,15 @@ class Droomrobot:
         attempts = 0
 
         while attempts < max_attempts:
+            # different option for showing "thinking"
+            # threading.Timer(5, lambda: self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)).start()
+
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
             self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, context))
+            self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)
             self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
             print("The detected intent:", reply.intent)
 
@@ -404,12 +409,16 @@ class Droomrobot:
         attempts = 0
 
         while attempts < max_attempts:
+            # different option for showing "thinking"
+            # threading.Timer(7, lambda: self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)).start()
+
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
 
             self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
+            self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)
             self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             print("The detected intent:", reply.intent)
@@ -432,12 +441,16 @@ class Droomrobot:
         attempts = 0
 
         while attempts < max_attempts:
+            # different option for showing "thinking"
+            # threading.Timer(5, lambda: self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)).start()
+
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
 
             self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
+            self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)
             self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             strict_instruction = ''
