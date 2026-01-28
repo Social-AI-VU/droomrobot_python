@@ -43,19 +43,8 @@ class Kapinductie4(DroomrobotScript):
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
 
         self.add_move(self.droomrobot.say, 'Oke, laten we samen gaan oefenen met het maken van de droomreis.')
-        self.add_move(self.droomrobot.say, 'Ga even lekker zitten zoals jij dat fijn vindt.', sleep_time=1)
 
-        self.add_move(self.droomrobot.ask_yesno, "Zit je zo goed?", user_model_key='zit_goed')
-        zit_goed_choice = InteractionChoice('zit_goed', InteractionChoiceCondition.MATCHVALUE)
-        zit_goed_choice.add_move('yes', self.droomrobot.say, 'En nu je lekker bent gaan zitten.')
-        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say,
-                                 'Het zit vaak het lekkerste als je stevig gaat zitten.')
-        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Ga maar eens kijken hoe goed dat zit.',
-                                 sleep_time=1)
-        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed zit.')
-        self.add_choice(zit_goed_choice)
-        self.add_move(self.droomrobot.say, 'mag je je ogen dicht doen.')
-        self.add_move(self.droomrobot.say, 'dan werkt het truukje het beste.')
+        self.add_choice(self._build_interaction_choice_comfortable_position())
         self.add_move(self.droomrobot.say, 'leg nu je handen op je buik.', sleep_time=1)
 
         self.add_move(self.droomrobot.say, 'Adem rustig in.', )
@@ -72,7 +61,7 @@ class Kapinductie4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Je hoeft alleen maar rustig in en uit te ademen.')
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed dit je zometeen gaat helpen.')
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
-        self.add_move(self.droomrobot.say, lambda: f'Straks ga ik je helpen om weer terug te gaan naar {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} te gaan in gedachten. Je hebt super goed geoefend, dus je kan verrast zijn hoe goed het zometeen gaat!')
+        self.add_move(self.droomrobot.say, lambda: f'Straks ga ik je helpen om weer terug naar {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} te gaan in gedachten. Je hebt super goed geoefend, ik ben benieuwd hoe goed het zometeen gaat!')
         # self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
         self.add_move(self.droomrobot.say, lambda: f'Ik rij zo gewoon met je mee {self.user_model['child_name']}.')
@@ -80,9 +69,9 @@ class Kapinductie4(DroomrobotScript):
     def _intervention(self):
         self.phases = [
             InterventionPhase.PREPARATION.name,
-            InterventionPhase.PROCEDURE.name
+            # InterventionPhase.PROCEDURE.name
         ]
-        self.phase_moves_build = InteractionChoice('Sonde4', InteractionChoiceCondition.PHASE)
+        self.phase_moves_build = InteractionChoice('Kapinductie4', InteractionChoiceCondition.PHASE)
         self.phase_moves_build = self._intervention_preparation(self.phase_moves_build)
         self.phase_moves = self._intervention_procedure(self.phase_moves_build)
 
@@ -223,7 +212,7 @@ class Kapinductie4(DroomrobotScript):
         interaction_choice.add_move('strand', self.droomrobot.say, 'Misschien wel groen of paars of andere kleuren.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'En merk maar hoe fijn jij je op deze plek voelt.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Luister maar lekker naar de golven van de zee.')
-        interaction_choice.add_move('strand', self.droomrobot.play_audio, 'resources/audio/ocean_waves.wav')
+        interaction_choice.add_move('strand', self.droomrobot.play_audio, 'resources/audio/beach_waves.wav')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Misschien voel je de warme zon op je gezicht, of is het een beetje koel.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Hier kun je alles doen wat je leuk vindt.')
         interaction_choice.add_move('strand', self.droomrobot.say, 'Misschien bouw je een groot zandkasteel, of spring je over de golven.')
@@ -310,8 +299,9 @@ class Kapinductie4(DroomrobotScript):
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Die heeft precies jouw lievelingskleur.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Je mag op de schommel gaan zitten.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Voel maar hoe je zachtjes heen en weer gaat.')
-        intervention_prep_choice.add_move('strand', self.droomrobot.say,
-                                          'Voel maar hoe makkelijk de schommel doet wat jij wilt, heen en weer, heen en weer.')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say,'Voel maar hoe makkelijk de schommel doet wat jij wil')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'heen en weer')
+        intervention_prep_choice.add_move('strand', self.droomrobot.say, 'heen en weer')
         intervention_prep_choice.add_move('strand', self.droomrobot.say,
                                           'De schommel gaat precies zo hoog als jij fijn vindt.')
         intervention_prep_choice.add_move('strand', self.droomrobot.say, 'Jij bent de baas.')
@@ -341,8 +331,9 @@ class Kapinductie4(DroomrobotScript):
         intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Het is precies jouw lievelingskleur.')
         intervention_prep_choice.add_move('bos', self.droomrobot.say,
                                           'Je mag op de schommel gaan zitten. Voel maar hoe je zachtjes heen en weer gaat.')
-        intervention_prep_choice.add_move('bos', self.droomrobot.say,
-                                          'Voel maar hoe makkelijk de schommel doet wat jij wil, heen en weer, heen en weer.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say,'Voel maar hoe makkelijk de schommel doet wat jij wil.')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'heen en weer')
+        intervention_prep_choice.add_move('bos', self.droomrobot.say, 'heen en weer')
         intervention_prep_choice.add_move('bos', self.droomrobot.say,
                                           'De schommel gaat precies zo hoog als dat jij fijn vindt.')
         intervention_prep_choice.add_move('bos', self.droomrobot.say, 'Jij bent de baas.')
@@ -401,3 +392,40 @@ class Kapinductie4(DroomrobotScript):
 
     def _intervention_procedure(self, phase_moves: InteractionChoice) -> InteractionChoice:
         return phase_moves
+
+    def _build_interaction_choice_comfortable_position(self) -> InteractionChoice:
+        position_choice = InteractionChoice('positie', InteractionChoiceCondition.MATCHVALUE)
+
+        # Zittend
+        position_choice.add_move('zittend', self.droomrobot.say, 'Ga even lekker zitten zoals jij dat fijn vindt.', sleep_time=1)
+        position_choice.add_move('zittend', self.droomrobot.ask_yesno, "Zit je zo goed?", user_model_key='zit_goed')
+
+        zit_goed_choice = InteractionChoice('zit_goed', InteractionChoiceCondition.MATCHVALUE)
+        zit_goed_choice.add_move('yes', self.droomrobot.say, 'En nu je lekker bent gaan zitten.')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say,
+                                 'Het zit vaak het lekkerste als je stevig gaat zitten.')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Ga maar eens kijken hoe goed dat zit.',
+                                 sleep_time=1)
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed zit.')
+        position_choice.add_choice('zittend', zit_goed_choice)
+        position_choice.add_move('zittend', self.droomrobot.say, 'mag je je ogen dicht doen.')
+        position_choice.add_move('zittend', self.droomrobot.say, 'dan werkt het truukje het beste.')
+
+        # Liggend
+        position_choice.add_move('liggend', self.droomrobot.say, 'Ga even lekker liggen zoals jij dat fijn vindt.', sleep_time=1)
+        position_choice.add_move('liggend', self.droomrobot.ask_yesno, "Lig je zo goed?", user_model_key='zit_goed')
+
+        zit_goed_choice = InteractionChoice('zit_goed', InteractionChoiceCondition.MATCHVALUE)
+        zit_goed_choice.add_move('yes', self.droomrobot.say, 'En nu je lekker bent gaan liggen.')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Het ligt vaak het lekkerste als je je lichaam zwaar maakt, ga maar eens kijken hoe goed dat ligt')
+        zit_goed_choice.add_move(['other', 'fail'], self.droomrobot.say, 'Als je goed ligt.')
+        position_choice.add_choice('liggend', zit_goed_choice)
+        position_choice.add_move('liggend', self.droomrobot.say, 'mag je je ogen dicht doen.')
+        position_choice.add_move('liggend', self.droomrobot.say, 'dan werkt het truukje het beste.')
+
+        # NVT
+        position_choice.add_move('other', self.droomrobot.say, 'Terwijl je hier zo in de kamer bent mag je je ogen dicht doen als je wilt')
+        position_choice.add_move('other', self.droomrobot.say, 'dan werkt het truukje het beste.')
+
+
+        return position_choice

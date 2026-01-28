@@ -26,7 +26,7 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Soms moet ik even nadenken, en dan duurt het even voordat ik weer wat zeg.')
         script.add_move(droomrobot.say, 'En omdat ik nog maar aan het leren ben, gaat het soms ook mis.')
         script.add_move(droomrobot.say, 'Maar dat hoort er bij. Ik stel de vraag dan gewoon nog een keer.')
-        script.add_move(droomrobot.say, 'Je papa, of mama, of wie ook met je mee is, mag ook helpen.')
+        script.add_move(droomrobot.say, 'Degene die met je mee is mag ook helpen.')
 
         script.add_move(droomrobot.say, 'Laten we even oefenen!')
 
@@ -36,8 +36,10 @@ class IntroductionFactory:
                         'animals',
                         'animals',
                         user_model_key='dier')
+        # script.add_move(droomrobot.animate, AnimationType.EXPRESSION, "codemao13", run_async=True)
         animal_choice = InteractionChoice('dier', InteractionChoiceCondition.HASVALUE)
         animal_choice.add_move('success', droomrobot.say, lambda: f'Een {user_model['dier']}')
+        animal_choice.add_move('success', droomrobot.animate, AnimationType.EXPRESSION, "codemao13", run_async=True)
         animal_choice.add_move('success', lambda: droomrobot.say(
             droomrobot.generate_funny_response(user_model['child_age'],
                                                'Je hebt een kennismakingsgesprek en je hebt net gevraagd '
@@ -78,7 +80,7 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Soms moet ik even nadenken, en dan duurt het even voordat ik weer wat zeg.')
         script.add_move(droomrobot.say, 'En omdat ik nog maar aan het leren ben, gaat het soms ook mis.')
         script.add_move(droomrobot.say, 'Maar dat hoort er bij. Ik stel de vraag dan gewoon nog een keer.')
-        script.add_move(droomrobot.say, 'Je ouders, of wie ook met je mee is, mag ook helpen.')
+        script.add_move(droomrobot.say, 'Degene die met je mee is mag ook helpen.')
 
         script.add_move(droomrobot.say, 'Laten we even oefenen!')
 
@@ -90,6 +92,7 @@ class IntroductionFactory:
                         user_model_key='dier')
         animal_choice = InteractionChoice('dier', InteractionChoiceCondition.HASVALUE)
         animal_choice.add_move('success', droomrobot.say, lambda: f'Een {user_model['dier']}')
+        animal_choice.add_move('success', droomrobot.animate, AnimationType.EXPRESSION, "codemao13", run_async=True)
         animal_choice.add_move('success', lambda: droomrobot.say(
             droomrobot.generate_funny_response(user_model['child_age'],
                                                'Je hebt een kennismakingsgesprek en je hebt net gevraagd '
