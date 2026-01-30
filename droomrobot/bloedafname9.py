@@ -1,4 +1,4 @@
-from sic_framework.services.openai_gpt.gpt import GPTRequest
+from sic_framework.services.llm import GPTRequest
 
 from droomrobot.core import AnimationType, InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InterventionPhase, \

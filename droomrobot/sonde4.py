@@ -1,5 +1,4 @@
-
-from droomrobot.core  import AnimationType, InteractionConf
+from droomrobot.core import AnimationType, InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InteractionChoice, \
     InteractionChoiceCondition, InterventionPhase
 from droomrobot.introduction_factory import IntroductionFactory

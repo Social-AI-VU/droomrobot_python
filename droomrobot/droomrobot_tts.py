@@ -8,7 +8,6 @@ import wave
 from json import dumps, loads, load, dump
 
 import websockets
-from sic_framework import AudioRequest
 
 from enum import Enum
 
