@@ -235,7 +235,7 @@ class Droomrobot:
         print("Complete and ready for interaction!")
 
     def start_logging(self, log_id, init_data: dict):
-        folder = Path("logs")
+        folder = Path(__file__).parent.resolve() / 'logs'
         folder.mkdir(parents=True, exist_ok=True)
         log_path = folder / f"{log_id}.log"
         self._log_queue = queue.Queue()

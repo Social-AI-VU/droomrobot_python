@@ -6,6 +6,7 @@ import hashlib
 import string
 import wave
 from json import dumps, loads, load, dump
+from pathlib import Path
 
 import websockets
 
@@ -146,8 +147,9 @@ class ElevenLabsTTS:
 class TTSCacher:
 
     def __init__(self, tts_cache_dir='tts_cache', tts_cache_map_file_name='tts_cache_map.json', subfolder_depth=2):
-        self.tts_cache_dir = tts_cache_dir
-        self.tts_cache_map_file = os.path.join(tts_cache_dir, tts_cache_map_file_name)
+        root = Path(__file__).parent.resolve()
+        self.tts_cache_dir = root / tts_cache_dir
+        self.tts_cache_map_file = self.tts_cache_dir / tts_cache_map_file_name
         self.subfolder_depth = subfolder_depth
 
         self.tts_cache = self._load_cache()
@@ -185,7 +187,7 @@ class TTSCacher:
         return hashlib.md5(canonical.encode("utf-8")).hexdigest()
 
     def save_audio_file(self, tts_key: str, audio_bytes: bytes, sample_rate: int, sample_width: int = 2, channels: int = 1):
-        subfolder = os.path.join(self.tts_cache_dir, tts_key[:self.subfolder_depth])
+        subfolder = self.tts_cache_dir / tts_key[:self.subfolder_depth]
         os.makedirs(subfolder, exist_ok=True)
         filename = os.path.join(subfolder, f"{tts_key}.wav")
 
