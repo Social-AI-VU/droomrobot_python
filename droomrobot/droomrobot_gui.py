@@ -604,14 +604,22 @@ class DroomrobotGUI:
 
     def wait_for_phase_data(self, retries_left=15):  # 15 retries × 200ms = 3 seconds
         script = self.droomrobot_control.interaction_script
-        if script and script.phases:
-            self.show_phase_buttons()
-        elif retries_left > 0:
-            self.root.after(200, lambda: self.wait_for_phase_data(retries_left - 1))
+        if script is None:
+            # Script not yet created, try again
+            self.root.after(200, self.wait_for_phase_data)
+            return
+
+        if getattr(script, 'phases', None):
+            if len(script.phases) > 0:
+                # Script has phases now → show buttons
+                self.show_phase_buttons()
+            else:
+                self.phase_frame.grid_remove()
+                self.phase_buttons = {}
         else:
-            # No phases detected after retries, hide any old phase UI
-            self.phase_frame.grid_remove()
-            self.phase_buttons = {}
+            # Keep checking until phases are populated
+            self.root.after(200, self.wait_for_phase_data)
+
 
     def dance(self):
         if self.droomrobot_control:

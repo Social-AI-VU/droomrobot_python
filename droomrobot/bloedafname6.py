@@ -171,7 +171,7 @@ class Bloedafname6(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              'Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter, en makkelijker gaat.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
-                             'Je mag weer goed gaan zitten, . en als je wilt je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.', sleep_time=1)
+                             'Je mag weer goed gaan zitten en als je wilt kun je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.', sleep_time=1)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              'Luister maar weer goed naar mijn stem, . en merk maar dat andere geluiden in het ziekenhuis veel stiller worden.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
