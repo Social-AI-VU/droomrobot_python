@@ -659,7 +659,7 @@ class Droomrobot:
 
     @staticmethod
     def _get_user_model_file_path(participant_id: str):
-        folder = Path("user_models")
+        folder = Path(__file__).parent.resolve() / 'user_models'
         folder.mkdir(parents=True, exist_ok=True)
         return folder / f"user_model_{participant_id}.json"
 
