@@ -1,9 +1,7 @@
 import asyncio
 import json
-import logging
 import queue
 import re
-import threading
 import wave
 from enum import Enum
 from os import environ, fsync
@@ -19,7 +17,6 @@ import mini.mini_sdk as MiniSdk
 from mini import MouthLampColor, MouthLampMode
 from mini.apis.api_action import PlayAction
 from mini.apis.api_expression import SetMouthLamp, PlayExpression
-from sic_framework.core import sic_logging
 from sic_framework.core.message_python2 import AudioRequest
 from sic_framework.core.sic_application import SICApplication
 from sic_framework.devices.alphamini import Alphamini
@@ -36,8 +33,8 @@ from sic_framework.services.google_tts.google_tts import (
     Text2Speech,
     Text2SpeechConf,
 )
-from sic_framework.services.openai_gpt.gpt import GPT, GPTConf, GPTRequest
 from dotenv import load_dotenv
+from sic_framework.services.llm import GPTConf, GPT, GPTRequest
 
 from droomrobot.droomrobot_tts import TTSConf, GoogleTTSConf, ElevenLabsTTSConf, ElevenLabsTTS, TTSCacher
 
@@ -238,7 +235,7 @@ class Droomrobot:
         print("Complete and ready for interaction!")
 
     def start_logging(self, log_id, init_data: dict):
-        folder = Path("logs")
+        folder = Path(__file__).parent.resolve() / 'logs'
         folder.mkdir(parents=True, exist_ok=True)
         log_path = folder / f"{log_id}.log"
         self._log_queue = queue.Queue()
@@ -662,7 +659,7 @@ class Droomrobot:
 
     @staticmethod
     def _get_user_model_file_path(participant_id: str):
-        folder = Path("user_models")
+        folder = Path(__file__).parent.resolve() / 'user_models'
         folder.mkdir(parents=True, exist_ok=True)
         return folder / f"user_model_{participant_id}.json"
 

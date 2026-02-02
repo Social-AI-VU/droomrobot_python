@@ -2,6 +2,7 @@ import logging
 import sys
 import tkinter as tk
 from json import load, JSONDecodeError
+from pathlib import Path
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 from threading import Thread
@@ -12,7 +13,7 @@ from sic_framework.core.sic_application import SICApplication
 
 from droomrobot.droomrobot_script import InteractionContext, InteractionSession
 from droomrobot.droomrobot_tts import TTSService, GoogleTTSConf, ElevenLabsTTSConf
-from droomrobot_control import DroomrobotControl
+from droomrobot.droomrobot_control import DroomrobotControl
 
 
 class TextRedirector:
@@ -80,8 +81,8 @@ class DroomrobotGUI:
         self.mini_id = tk.StringVar(value=self.config.get("mini_id", "00167"))
         self.mini_password = tk.StringVar(value=self.config.get("mini_password", "alphago"))
         self.redis_ip = tk.StringVar(value=self.config.get("redis_ip", "192.168.178.84"))
-        self.google_keyfile = tk.StringVar(value=self.config.get("google_keyfile", "../conf/dialogflow/google_keyfile.json"))
-        self.openai_keyfile = tk.StringVar(value=self.config.get("openai_keyfile", "../conf/openai/.openai_env"))
+        self.google_keyfile = tk.StringVar(value=self.config.get("google_keyfile", "google_keyfile.json"))
+        self.openai_keyfile = tk.StringVar(value=self.config.get("openai_keyfile", ".openai_env"))
         self.dialogflow_timeout = tk.StringVar(value=str(self.config.get("dialogflow_timeout", "15.0")))
         self.debug_mode = tk.BooleanVar(value=self.config.get("debug_mode", False))
         self.audio_amplified = tk.BooleanVar(value=self.config.get("audio_amplification", False))
@@ -459,6 +460,9 @@ class DroomrobotGUI:
                 google_tts_voice_name=self.setting_1.get(),
                 google_tts_voice_gender=self.setting_2.get())
 
+        root = Path(__file__).parent.parent.resolve()
+        google_keyfile_path = root / 'conf' / 'dialogflow' / self.google_keyfile.get()
+        openai_keyfile_path = root / 'conf' / 'openai' / self.openai_keyfile.get()
         self.droomrobot_control = DroomrobotControl()
         self.droomrobot_control.connect(
             sic_app=self.sic_app,
@@ -466,9 +470,9 @@ class DroomrobotGUI:
             mini_id=self.mini_id.get(),
             mini_password=self.mini_password.get(),
             redis_ip=self.redis_ip.get(),
-            google_keyfile_path=abspath(self.google_keyfile.get()),
+            google_keyfile_path=google_keyfile_path,
             dialogflow_timeout=self.float_validation(self.dialogflow_timeout.get(), "Dialogflow timeout"),
-            env_path=abspath(self.openai_keyfile.get()),
+            env_path=openai_keyfile_path,
             tts_conf=tts_conf,
             computer_test_mode=self.debug_mode.get()
         )
@@ -600,14 +604,22 @@ class DroomrobotGUI:
 
     def wait_for_phase_data(self, retries_left=15):  # 15 retries × 200ms = 3 seconds
         script = self.droomrobot_control.interaction_script
-        if script and script.phases:
-            self.show_phase_buttons()
-        elif retries_left > 0:
-            self.root.after(200, lambda: self.wait_for_phase_data(retries_left - 1))
+        if script is None:
+            # Script not yet created, try again
+            self.root.after(200, self.wait_for_phase_data)
+            return
+
+        if getattr(script, 'phases', None):
+            if len(script.phases) > 0:
+                # Script has phases now → show buttons
+                self.show_phase_buttons()
+            else:
+                self.phase_frame.grid_remove()
+                self.phase_buttons = {}
         else:
-            # No phases detected after retries, hide any old phase UI
-            self.phase_frame.grid_remove()
-            self.phase_buttons = {}
+            # Keep checking until phases are populated
+            self.root.after(200, self.wait_for_phase_data)
+
 
     def dance(self):
         if self.droomrobot_control:
@@ -631,9 +643,11 @@ class DroomrobotGUI:
         else:
             self.logger.warning("Robot is not connected.")
 
-    def load_config(self, path=abspath(join("../conf", "droomrobot", "default_settings.json"))):
+    def load_config(self):
         try:
-            with open(path, "r") as f:
+            root = Path(__file__).parent.parent.resolve()
+            default_settings_path = root / 'conf' / 'droomrobot' / 'default_settings.json'
+            with open(default_settings_path, "r") as f:
                 return load(f)
         except (FileNotFoundError, JSONDecodeError) as e:
             self.logger.error(f"Error loading config: {e}", exc_info=e)
@@ -652,7 +666,7 @@ if __name__ == "__main__":
     # Development logging
     sic_app = SICApplication()
     # can be DEBUG, INFO, WARNING, ERROR, CRITICAL
-    sic_app.set_log_level(sic_logging.DEBUG)
+    sic_app.set_log_level(sic_logging.INFO)
     sic_app.set_log_file("/system_logs")
 
     root = tk.Tk()
