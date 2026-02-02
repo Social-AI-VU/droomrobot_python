@@ -171,8 +171,11 @@ class Bloedafname4(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, lambda: f'Wat fijn dat ik je weer mag helpen, we gaan weer samen een droomreis naar {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} maken.', animated=False)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter en makkelijker gaat.')
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,'Je mag weer goed gaan zitten, . en als je wilt je ogen dicht doen, zodat deze droomreis nog beter voor jou werkt.', sleep_time=1)
-
+        position_choice = InteractionChoice('positie', InteractionChoiceCondition.MATCHVALUE)
+        position_choice.add_move('zittend', self.droomrobot.say,'Je mag weer goed gaan zitten, . en als je wilt je ogen dicht doen, zodat deze droomreis nog beter voor jou werkt.', sleep_time=1)
+        position_choice.add_move('liggend', self.droomrobot.say,'Je mag weer goed gaan liggen, . en als je wilt je ogen dicht doen, zodat deze droomreis nog beter voor jou werkt.', sleep_time=1)
+        position_choice.add_move('other', self.droomrobot.say,'Je mag weer lekker voelen dat je in deze kamer bent, . en als je wilt je ogen dicht doen, zodat deze droomreis nog beter voor jou werkt', sleep_time=1)
+        phase_moves.add_choice(InterventionPhase.PREPARATION.name, position_choice)
         interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Luister maar weer goed naar mijn stem, . en merk maar dat andere geluiden in het ziekenhuis veel stiller worden.', )

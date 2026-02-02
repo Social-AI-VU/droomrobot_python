@@ -84,7 +84,7 @@ class Bloedafname6(DroomrobotScript):
         self.add_move(self.droomrobot.play_audio, 'resources/audio/breath_out.wav')
         self.add_move(self.droomrobot.say, lambda: f'Goed zo dat gaat al heel goed {self.user_model['child_name']}.')
         self.add_move(self.droomrobot.say,
-                      lambda: f'En terwijl je zo goed aan het ademen bent, stel je voor dat er een klein, warm lichtje op je {self.user_model['priklocatie']} verschijnt.')
+                      lambda: f'En terwijl je zo goed aan het ademen bent, . stel je voor dat er een klein, warm lichtje op je {self.user_model['priklocatie']} verschijnt.')
         self.add_move(self.droomrobot.say, 'Dat lichtje is magisch en laadt jouw kracht op.')
         self.add_move(self.droomrobot.say, 'Stel je eens voor hoe dat lichtje eruit ziet.')
         self.add_move(self.droomrobot.say, 'Is het geel, blauw of misschien jouw lievelingskleur?')
@@ -100,7 +100,7 @@ class Bloedafname6(DroomrobotScript):
         self.add_move(self.droomrobot.say, lambda: f'Merk maar eens hoe dat {self.user_model['kleur_adjective']} lichtje je een heel fijn, krachtig gevoel geeft.')
         # self.add_move(self.droomrobot.say, 'En hoe jij nu een superheld bent met jouw superkracht en alles aankan.')
         self.add_move(self.droomrobot.say,
-                      'En iedere keer als je het nodig hebt, kun je zoals je nu geleerd hebt, een paar keer diep in en uit ademen.')
+                      'En iedere keer als je het nodig hebt, . kun je zoals je nu geleerd hebt, een paar keer diep in en uit ademen.')
         self.add_move(self.droomrobot.say,
                       'Hartstikke goed, ik ben benieuwd hoe goed het lichtje je zometeen gaat helpen.')
         self.add_move(self.droomrobot.say,
@@ -170,8 +170,16 @@ class Bloedafname6(DroomrobotScript):
                              'Wat fijn dat ik je weer mag helpen, we gaan weer samen een droomreis maken.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              'Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter, en makkelijker gaat.')
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
+        position_choice = InteractionChoice('positie', InteractionChoiceCondition.MATCHVALUE)
+        position_choice.add_move('zittend', self.droomrobot.say,
                              'Je mag weer goed gaan zitten, . en als je wilt je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.', sleep_time=1)
+        position_choice.add_move('liggend', self.droomrobot.say,
+                                 'Je mag weer goed gaan liggen, . en als je wilt je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.',
+                                 sleep_time=1)
+        position_choice.add_move('other', self.droomrobot.say,
+                                 'Je mag weer lekker voelen dat je in deze kamer bent, . en als je wilt je ogen dicht doen, zodat deze droomreis nog beter voor jou werkt',
+                                 sleep_time=1)
+        phase_moves.add_choice(InterventionPhase.PREPARATION.name, position_choice)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              'Luister maar weer goed naar mijn stem, . en merk maar dat andere geluiden in het ziekenhuis veel stiller worden.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
@@ -210,7 +218,7 @@ class Bloedafname6(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio,
                              'resources/audio/breath_out_amplified.wav')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
-                             lambda: f'En kijk maar hoe je krachtige {self.user_model['kleur_adjective']} lichtje weer op je {self.user_model['priklocatie']} verschijnt, in precies de goede kleur die je nodig hebt.')
+                             lambda: f'En kijk maar hoe je krachtige {self.user_model['kleur_adjective']} lichtje weer op je {self.user_model['priklocatie']} verschijnt, . in precies de goede kleur die je nodig hebt.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,
                              'Zie het lichtje steeds sterker en krachtiger worden.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say,

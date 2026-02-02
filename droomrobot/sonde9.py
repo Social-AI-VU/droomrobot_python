@@ -99,9 +99,16 @@ class Sonde9(DroomrobotScript):
                              animated=False)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              'Omdat je net al zo goed hebt geoefend zul je zien dat het nu nog beter en makkelijker gaat.')
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
+        position_choice = InteractionChoice('positie', InteractionChoiceCondition.MATCHVALUE)
+        position_choice.add_move('zittend', self.droomrobot.say,
                              'Je mag weer goed gaan zitten en je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.',
                              sleep_time=1)
+        position_choice.add_move('liggend', self.droomrobot.say,
+                                 'Je mag weer goed gaan liggen en je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.',
+                                 sleep_time=1)
+        position_choice.add_move('other', self.droomrobot.say, 'Je mag weer lekker voelen dat je in deze kamer bent, . en je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.',
+                                 sleep_time=1)
+        phase_moves.add_choice(InterventionPhase.PREPARATION.name, position_choice)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
                              'Luister maar weer goed naar mijn stem en merk maar dat andere geluiden in het ziekenhuis veel stiller worden.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,

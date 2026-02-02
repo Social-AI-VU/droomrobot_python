@@ -86,7 +86,13 @@ class Sonde4(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Wat fijn dat ik je mag helpen! We gaan samen weer op een mooie droomreis.', animated=False)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Omdat je net al zo goed hebt geoefend, zal het nu nog makkelijker gaan.')
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Ga maar lekker zitten zoals jij dat fijn vindt.', sleep_time=1)
+        position_choice = InteractionChoice('positie', InteractionChoiceCondition.MATCHVALUE)
+        position_choice.add_move('zittend', self.droomrobot.say, 'Ga maar lekker zitten zoals jij dat fijn vindt.', sleep_time=1)
+        position_choice.add_move('liggend', self.droomrobot.say, 'Ga maar lekker liggen zoals jij dat fijn vindt.',
+                                 sleep_time=1)
+        position_choice.add_move('other', self.droomrobot.say, 'Voel je maar weer fijn in deze kamer',
+                                 sleep_time=1)
+        phase_moves.add_choice(InterventionPhase.PREPARATION.name, position_choice)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,  'Sluit je ogen maar, dan werkt de droomreis het allerbeste.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Luister goed naar mijn stem. Alle andere geluiden in het ziekenhuis worden steeds zachter..')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,  'Leg je handen op je buik en adem rustig in.')

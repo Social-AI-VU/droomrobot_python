@@ -73,7 +73,7 @@ class Bloedafname9(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'en blaas langzaam uit door je mond.')
         self.add_move(self.droomrobot.play_audio, 'resources/audio/breath_out.wav')
         self.add_move(self.droomrobot.say, lambda: f'Goed zo dat gaat al heel goed {self.user_model['child_name']}.')
-        self.add_move(self.droomrobot.say, lambda: f'En terwijl je zo goed aan het ademen bent, stel je voor dat er een klein, warm lichtje op je {self.user_model['priklocatie']} verschijnt.')
+        self.add_move(self.droomrobot.say, lambda: f'En terwijl je zo goed aan het ademen bent, . stel je voor dat er een klein, warm lichtje op je {self.user_model['priklocatie']} verschijnt.')
         self.add_move(self.droomrobot.say, 'Dat lichtje laadt jouw kracht op.')
         self.add_move(self.droomrobot.say, 'Stel je eens voor hoe dat lichtje eruit ziet.')
         # self.add_move(self.droomrobot.say, 'Is het geel, blauw of misschien jouw lievelingskleur?')
@@ -150,7 +150,15 @@ class Bloedafname9(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, lambda: f'Wat fijn dat ik je weer mag helpen {self.user_model['child_name']}, we gaan weer samen een reis door je fantasie maken.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Omdat je net al zo goed hebt geoefend, zul je zien dat het nu nog beter en makkelijker gaat.')
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Je mag weer goed gaan zitten, . en als je wilt je ogen dicht doen zodat het trucje nog beter werkt.', sleep_time=1.0)
+        position_choice = InteractionChoice('positie', InteractionChoiceCondition.MATCHVALUE)
+        position_choice.add_move('zittend', self.droomrobot.say, 'Je mag weer goed gaan zitten, . en als je wilt je ogen dicht doen zodat het trucje nog beter werkt.', sleep_time=1.0)
+        position_choice.add_move('liggend', self.droomrobot.say,
+                                 'Je mag weer goed gaan liggen, . en als je wilt je ogen dicht doen zodat het trucje nog beter werkt.',
+                                 sleep_time=1.0)
+        position_choice.add_move('other', self.droomrobot.say,
+                                 'Je mag weer lekker voelen dat je in deze kamer bent, . en als je wilt je ogen dicht doen, zodat deze droomreis nog beter voor jou werkt',
+                                 sleep_time=1.0)
+        phase_moves.add_choice(InterventionPhase.PREPARATION.name, position_choice)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Luister maar weer goed naar mijn stem, . en merk maar dat andere geluiden in het ziekenhuis veel stiller worden.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Ga maar rustig ademen zoals je dat gewend bent.')
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Adem rustig in.')
@@ -172,7 +180,7 @@ class Bloedafname9(DroomrobotScript):
         interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.set_interaction_conf, interaction_conf)
 
-        phase_moves.add_move(InterventionPhase.PROCEDURE.name,self.droomrobot.say, 'Als je wil, mag je weer een ritje maken in jouw speciale luchtballon, of je kan iets anders leuks doen op je fijne plek.')
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name,self.droomrobot.say, 'Als je wil, mag je weer een ritje maken in jouw speciale luchtballon, . of je kan iets anders leuks doen op je fijne plek.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name,self.droomrobot.say, 'Merk maar hoe fijn jij je voelt, op jouw fijne veilige plek.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name,self.droomrobot.say, 'Nu gaan we je kracht weer activeren, zoals je dat geleerd hebt.')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name,self.droomrobot.say, 'Adem in via je neus.')
