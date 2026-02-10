@@ -192,7 +192,7 @@ class Droomrobot:
                 mini_password=mini_password,
                 redis_ip=redis_ip,
                 speaker_conf=MiniSpeakersConf(sample_rate=self.sample_rate),
-                bypass_install=False
+                bypass_install=True
             )
             self.speaker = self.mini.speaker
             self.mic = self.mini.mic
@@ -323,7 +323,8 @@ class Droomrobot:
             sleep(sleep_time)
 
     def play_audio(self, audio_file, amplified=False, log=True):
-        with wave.open(audio_file, 'rb') as wf:
+        audio_file_full_path = Path(__file__).parent.resolve() / audio_file
+        with wave.open(str(audio_file_full_path), 'rb') as wf:
             # Get parameters
             sample_width = wf.getsampwidth()
             framerate = wf.getframerate()
