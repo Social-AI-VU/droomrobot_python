@@ -29,7 +29,7 @@ class Sonde9(DroomrobotScript):
                                                  interaction_context=self.interaction_context,
                                                  user_model=self.user_model)
         self.add_moves(intro_moves)
-        self.add_move(self.droomrobot.say, 'Wat goed helpt is om je voor te stellen, . dat je in een raceauto door een tunnel scheurt, of van een waterglijbaan gaat, of als dolfijn door het water beweegt.')
+        self.add_move(self.droomrobot.say, 'Wat goed helpt is om je voor te stellen, dat je in een raceauto door een tunnel scheurt, of van een waterglijbaan gaat, of als dolfijn door het water beweegt.')
         self.add_move(self.droomrobot.say, 'Welke lijkt jou het leukste?')
 
         self.add_move(self.droomrobot.ask_entity, 'De waterglijbaan, de race-auto of dolfijn?',
@@ -44,7 +44,7 @@ class Sonde9(DroomrobotScript):
 
         # SAMEN OEFENEN
         self.add_move(self.droomrobot.say,
-            'Laten we alvast gaan oefenen om samen een ontspannen reis te maken, . zodat het je zometeen gaat helpen bij het inbrengen van de sonde.')
+            'Laten we alvast gaan oefenen om samen een ontspannen reis te maken, zodat het je zometeen gaat helpen bij het inbrengen van de sonde.')
         self.add_move(self.droomrobot.say,
             'De sonde is een dun zacht buisje dat heel makkelijk door je neus naar binnen kan om jou te helpen je beter te voelen.')
 
@@ -106,7 +106,7 @@ class Sonde9(DroomrobotScript):
         position_choice.add_move('liggend', self.droomrobot.say,
                                  'Je mag weer goed gaan liggen en je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.',
                                  sleep_time=1)
-        position_choice.add_move('other', self.droomrobot.say, 'Je mag weer lekker voelen dat je in deze kamer bent, . en je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.',
+        position_choice.add_move('other', self.droomrobot.say, 'Je mag weer lekker voelen dat je in deze kamer bent, en je ogen dicht doen zodat deze droomreis nog beter voor jou werkt.',
                                  sleep_time=1)
         phase_moves.add_choice(InterventionPhase.PREPARATION.name, position_choice)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
@@ -221,7 +221,7 @@ class Sonde9(DroomrobotScript):
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Je voelt misschien een zacht gevoel bij je neus of keel.')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Dat is gewoon een klein zeewierplantje dat je even aanraakt en dat jou extra kracht geeft. Heel normaal!')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Jij blijft rustig zwemmen door de grot, met een bochtje en weer verder.')
-        intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Soms voel je een klein golfje langs je neus, . net als een dolfijn die door een stroomversnelling zwemt!')
+        intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Soms voel je een klein golfje langs je neus, net als een dolfijn die door een stroomversnelling zwemt!')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'En je weet dat als je rustig blijft bewegen dat je er gemakkelijk doorheen gaat.')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'De verpleegkundige vertelt je wanneer je bij de schat bent.')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Je zwemt soepel verder.')
@@ -329,7 +329,7 @@ class Sonde9(DroomrobotScript):
                                     'het waterpretpark')
 
         interaction_choice.add_move('waterglijbaan', self.droomrobot.say,
-                                    'Wat mij altijd goed helpt, . is om in gedachten te denken dat de sonde door een waterglijbaan gaat, lekker snel en makkelijk.')
+                                    'Wat mij altijd goed helpt, is om in gedachten te denken dat de sonde door een waterglijbaan gaat, lekker snel en makkelijk.')
 
         # Dolfijn
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Dat vind ik dol fijn.')
@@ -349,7 +349,7 @@ class Sonde9(DroomrobotScript):
         interaction_choice.add_move('dolfijn', self.set_user_model_variable, 'droomplek_locatie', 'de zee')
 
         interaction_choice.add_move('dolfi', self.droomrobot.say,
-                                    'Wat mij altijd goed helpt is om in gedachten te denken, . dat de sonde een dolfijn is die heel makkelijk en snel door het water beweegt, op zoek naar een schat.')
+                                    'Wat mij altijd goed helpt is om in gedachten te denken, dat de sonde een dolfijn is die heel makkelijk en snel door het water beweegt, op zoek naar een schat.')
 
         # Fail
         interaction_choice.add_move('fail', self.droomrobot.say, 'Sorry dat verstond ik even niet.')
@@ -367,7 +367,7 @@ class Sonde9(DroomrobotScript):
         motivation_choice.add_move('fail', self.droomrobot.say, "Oke, super.")
         interaction_choice.add_choice('fail', motivation_choice)
         interaction_choice.add_move('fail', self.droomrobot.say,
-                                    'Wat mij helpt, is denken dat de sonde net als een waterglijbaan is: . hij glijdt zo naar beneden, makkelijk en snel!')
+                                    'Wat mij helpt, is denken dat de sonde net als een waterglijbaan is, hij glijdt zo naar beneden, makkelijk en snel!')
         interaction_choice.add_move('fail', self.set_user_model_variable, 'droomplek_locatie', 'het waterpretpark')
         interaction_choice.add_move('fail', self.set_user_model_variable, 'droomplek', 'waterglijbaan')
         interaction_choice.add_move('fail', self.droomrobot.get_article, lambda: self.user_model['droomplek'],
@@ -452,7 +452,7 @@ class Sonde9(DroomrobotScript):
         interaction_choice.add_move('dolfijn', self.droomrobot.say,
                                     lambda: f'Wauw, een {self.user_model['kleur_adjective']} dolfijn! Die zijn extra krachtig.')
         interaction_choice.add_move('dolfijn', self.droomrobot.say,
-                                    'Je zult wellicht zien, . dat als je om je heen kijkt, dat je dan de zonnestralen door het water ziet schijnen.',
+                                    'Je zult wellicht zien, dat als je om je heen kijkt, dat je dan de zonnestralen door het water ziet schijnen.',
                                     sleep_time=1)
         interaction_choice.add_move('dolfijn', self.droomrobot.say, 'Er zwemmen vrolijke vissen om je heen.')
         interaction_choice.add_move('dolfijn', self.droomrobot.say,

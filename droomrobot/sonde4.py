@@ -26,7 +26,7 @@ class Sonde4(DroomrobotScript):
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         intro_moves = IntroductionFactory.age4(droomrobot=self.droomrobot, interaction_context=self.interaction_context, user_model=self.user_model)
         self.add_moves(intro_moves)
-        self.add_move(self.droomrobot.say, 'Wat goed helpt, is om je voor te stellen, . dat je in een raceauto door een tunnel scheurt, of van een waterglijbaan gaat, of als dolfijn door het water beweegt.')
+        self.add_move(self.droomrobot.say, 'Wat goed helpt, is om je voor te stellen, dat je in een raceauto door een tunnel scheurt, of van een waterglijbaan gaat, of als dolfijn door het water beweegt.')
         self.add_move(self.droomrobot.say, 'Welke lijkt jou het leukste?')
 
         self.add_move(self.droomrobot.ask_entity, 'De waterglijbaan, de race-auto of dolfijn?',
@@ -183,7 +183,7 @@ class Sonde4(DroomrobotScript):
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Misschien voel je een zacht kriebeltje bij je neus of keel.')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Dat is gewoon een klein zeewierplantje dat je extra kracht geeft. Heel normaal!')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Jij blijft lekker zwemmen. Een bochtje hier, een bochtje daar.')
-        intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Misschien voel je een klein golfje langs je neus, . net als een dolfijn, die door een stroomversnelling zwemt!')
+        intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Misschien voel je een klein golfje langs je neus, net als een dolfijn, die door een stroomversnelling zwemt!')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Maar jij weet: als je rustig blijft bewegen, zwem je er moeiteloos doorheen!')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'De verpleegkundige vertelt je wanneer je bij de schat bent.')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Je zwemt soepel verder.')
@@ -290,7 +290,7 @@ class Sonde4(DroomrobotScript):
         interaction_choice.add_move('waterglijbaan', self.set_user_model_variable, 'droomplek_locatie', 'het waterpretpark')
 
         interaction_choice.add_move('waterglijbaan', self.droomrobot.say,
-                                    'Wat mij helpt, is denken dat de sonde net als een waterglijbaan is, . hij glijdt zo naar beneden, makkelijk en snel!')
+                                    'Wat mij helpt, is denken dat de sonde net als een waterglijbaan is, hij glijdt zo naar beneden, makkelijk en snel!')
 
 
         # Dolfijn
@@ -328,7 +328,7 @@ class Sonde4(DroomrobotScript):
         motivation_choice.add_move('fail', self.droomrobot.say, "Oke, super.")
         interaction_choice.add_choice('waterglijbaan', motivation_choice)
         interaction_choice.add_move('waterglijbaan', self.droomrobot.say,
-                                    'Wat mij helpt, is denken dat de sonde net als een waterglijbaan is: hij glijdt zo naar beneden, makkelijk en snel!')
+                                    'Wat mij helpt, is denken dat de sonde net als een waterglijbaan is, hij glijdt zo naar beneden, makkelijk en snel!')
         interaction_choice.add_move('fail', self.set_user_model_variable, 'droomplek_locatie', 'het waterpretpark')
         interaction_choice.add_move('fail', self.set_user_model_variable, 'droomplek', 'waterglijbaan')
         interaction_choice.add_move('fail', self.droomrobot.get_article, lambda: self.user_model['droomplek'],
