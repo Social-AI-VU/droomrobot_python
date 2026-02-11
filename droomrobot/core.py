@@ -761,6 +761,10 @@ class Droomrobot:
               while avoiding tiny fragments at the end.
             """
         text = text.strip()
+
+        if len(text) <= max_len:
+            return [text]
+
         chunks = []
 
         # Step 1: split at sentence boundaries, including no-space cases
@@ -775,12 +779,16 @@ class Droomrobot:
                 # Try to find a good split point
                 chunk = sentence[:max_len]
 
-                # Prefer splitting at last comma or space in chunk
-                break_pos = max(chunk.rfind(','), chunk.rfind(' '))
+                # Prefer splitting at last comma
+                break_pos = chunk.rfind(',')
 
-                if break_pos == -1 or break_pos < max_len // 3:
-                    # fallback: just split at max_len
-                    break_pos = max_len
+                if break_pos == -1:
+                    # otherwise split at last space
+                    break_pos = chunk.rfind(' ')
+
+                    if break_pos == -1 or break_pos < max_len // 3:
+                        # fallback: just split at max_len
+                        break_pos = max_len
 
                 # Avoid leaving tiny tail
                 if len(sentence) - break_pos < min_tail:
