@@ -212,7 +212,7 @@ class Bloedafname4(DroomrobotScript):
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Dat betekent dat jouw kracht helemaal opgeladen is.', )
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'je kunt het lichtje nog sterker maken door met je tenen te wiebelen.', )
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Het geeft een zachte, veilige gloed om je te helpen.', )
-        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, lambda: f'Als je iets voelt op je {self.user_model['priklocatie']}, dan werkt de lichtje helemaal.', )
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, lambda: f'Als je iets voelt op je {self.user_model['priklocatie']}, dan werkt het lichtje helemaal.', )
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'Adem diep in.', )
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.play_audio, 'resources/audio/breath_in_amplified.wav')
         phase_moves.add_move(InterventionPhase.PROCEDURE.name, self.droomrobot.say, 'en blaas uit.', )
