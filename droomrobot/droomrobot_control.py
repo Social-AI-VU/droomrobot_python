@@ -18,14 +18,14 @@ class DroomrobotControl:
         self.droomrobot = None
         self.interaction_script = None
 
-    def connect(self, mini_ip, mini_id, mini_password, redis_ip,
+    def connect(self, sic_app, mini_ip, mini_id, mini_password, redis_ip,
                 google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",
                 dialogflow_timeout=None,
                 tts_conf=GoogleTTSConf(),
                 env_path=None,
                 computer_test_mode=False):
 
-        self.droomrobot = Droomrobot(mini_ip=mini_ip, mini_id=mini_id, mini_password=mini_password, redis_ip=redis_ip,
+        self.droomrobot = Droomrobot(sic_app=sic_app, mini_ip=mini_ip, mini_id=mini_id, mini_password=mini_password, redis_ip=redis_ip,
                                      google_keyfile_path=google_keyfile_path, sample_rate_dialogflow_hertz=sample_rate_dialogflow_hertz,
                                      dialogflow_language=dialogflow_language, dialogflow_timeout=dialogflow_timeout,
                                      tts_conf=tts_conf,

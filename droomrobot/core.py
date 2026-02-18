@@ -1,6 +1,5 @@
 import asyncio
 import json
-import logging
 import queue
 import re
 import wave
@@ -19,6 +18,7 @@ from mini import MouthLampColor, MouthLampMode
 from mini.apis.api_action import PlayAction
 from mini.apis.api_expression import SetMouthLamp, PlayExpression
 from sic_framework.core.message_python2 import AudioRequest
+from sic_framework.core.sic_application import SICApplication
 from sic_framework.devices.alphamini import Alphamini
 from sic_framework.devices.common_desktop.desktop_speakers import SpeakersConf
 from sic_framework.devices.common_mini.mini_speaker import MiniSpeakersConf
@@ -33,8 +33,8 @@ from sic_framework.services.google_tts.google_tts import (
     Text2Speech,
     Text2SpeechConf,
 )
-from sic_framework.services.openai_gpt.gpt import GPT, GPTConf, GPTRequest
 from dotenv import load_dotenv
+from sic_framework.services.llm import GPTConf, GPT, GPTRequest
 
 from droomrobot.droomrobot_tts import TTSConf, GoogleTTSConf, ElevenLabsTTSConf, ElevenLabsTTS, TTSCacher
 
@@ -105,13 +105,14 @@ class InteractionConf:
 
 
 class Droomrobot:
-    def __init__(self, mini_ip, mini_id, mini_password, redis_ip,
+    def __init__(self, sic_app: SICApplication, mini_ip, mini_id, mini_password, redis_ip,
                  google_keyfile_path, sample_rate_dialogflow_hertz=44100, dialogflow_language="nl", dialogflow_timeout=None,
                  tts_conf: TTSConf = GoogleTTSConf(), env_path=None, computer_test_mode=False):
 
         print("\n SETTING UP BASIC PROCESSING")
+        self.sic_app = sic_app
         # Development logging
-        self.logger = logging.getLogger("droomrobot")
+        self.logger = self.sic_app.get_app_logger()
 
         # Data logging
         self._log_queue = None
@@ -170,6 +171,8 @@ class Droomrobot:
                                                                             self.background_loop)
             try:
                 connect_to_elevenlabs_future.result()
+                asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
+                                                 self.background_loop).result()
                 print('Elevenlabs TTS activated')
             except Exception as e:
                 self.logger.error("Failed to connect to elevenlabs", exc_info=e)
@@ -232,7 +235,7 @@ class Droomrobot:
         print("Complete and ready for interaction!")
 
     def start_logging(self, log_id, init_data: dict):
-        folder = Path("logs")
+        folder = Path(__file__).parent.resolve() / 'logs'
         folder.mkdir(parents=True, exist_ok=True)
         log_path = folder / f"{log_id}.log"
         self._log_queue = queue.Queue()
@@ -316,11 +319,12 @@ class Droomrobot:
             # Save to cache file
             self.tts_cacher.save_audio_file(tts_key, audio_bytes, sample_rate)
 
-            if sleep_time and sleep_time > 0:
-                sleep(sleep_time)
+        if sleep_time and sleep_time > 0:
+            sleep(sleep_time)
 
     def play_audio(self, audio_file, amplified=False, log=True):
-        with wave.open(audio_file, 'rb') as wf:
+        audio_file_full_path = Path(__file__).parent.resolve() / audio_file
+        with wave.open(str(audio_file_full_path), 'rb') as wf:
             # Get parameters
             sample_width = wf.getsampwidth()
             framerate = wf.getframerate()
@@ -371,11 +375,15 @@ class Droomrobot:
         attempts = 0
 
         while attempts < max_attempts:
+            # different option for showing "thinking"
+            # threading.Timer(5, lambda: self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)).start()
+
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
             self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, context))
+            self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)
             self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
             print("The detected intent:", reply.intent)
 
@@ -399,12 +407,16 @@ class Droomrobot:
         attempts = 0
 
         while attempts < max_attempts:
+            # different option for showing "thinking"
+            # threading.Timer(7, lambda: self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)).start()
+
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
 
             self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
+            self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)
             self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             print("The detected intent:", reply.intent)
@@ -427,12 +439,16 @@ class Droomrobot:
         attempts = 0
 
         while attempts < max_attempts:
+            # different option for showing "thinking"
+            # threading.Timer(5, lambda: self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)).start()
+
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
 
             self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
+            self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)
             self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             strict_instruction = ''
@@ -625,7 +641,7 @@ class Droomrobot:
     def _on_dialog(self, message):
         if message.response:
             transcript = message.response.recognition_result.transcript
-            # print("Transcript:", transcript)
+            print("Transcript:", transcript)
             if message.response.recognition_result.is_final:
                 self.log_utterance(speaker='child', text=transcript)
 
@@ -644,7 +660,7 @@ class Droomrobot:
 
     @staticmethod
     def _get_user_model_file_path(participant_id: str):
-        folder = Path("user_models")
+        folder = Path(__file__).parent.resolve() / 'user_models'
         folder.mkdir(parents=True, exist_ok=True)
         return folder / f"user_model_{participant_id}.json"
 

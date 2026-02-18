@@ -19,15 +19,16 @@ class ScriptTest(DroomrobotScript):
         self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
         self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
         self.add_move(self.droomrobot.say, 'Hallo, ik ben de droomrobot!')
-        self.add_move(self.droomrobot.ask_fake, "Hoe heet jij?", 2)
-        self.add_move(self.droomrobot.say, "Mike, wat een leuke naam!")
-        self.add_move(self.droomrobot.ask_open, "Wat vind jij leuk om te doen?")
-        self.add_move(self.droomrobot.say, "Dat klikt leuk zeg.")
+        self.add_move(self.droomrobot.ask_open, "Kun je wat zeggen?")
+        # self.add_move(self.droomrobot.ask_fake, "Hoe heet jij?", 2)
+        # self.add_move(self.droomrobot.say, "Mike, wat een leuke naam!")
+        # self.add_move(self.droomrobot.ask_open, "Wat vind jij leuk om te doen?")
+        # self.add_move(self.droomrobot.say, "Dat klikt leuk zeg.")
 
 
 if __name__ == '__main__':
-    droomrobot = Droomrobot(mini_ip="192.168.178.251", mini_id="00041", mini_password="mini",
-                            redis_ip="192.168.178.84",
+    droomrobot = Droomrobot(mini_ip="10.0.0.213", mini_id="00039", mini_password="mini",
+                            redis_ip="10.0.0.206",
                             google_keyfile_path=abspath(join("../../conf", "dialogflow", "google_keyfile.json")),
                             env_path=abspath(join("../../conf", "openai", ".openai_env")),
                             sample_rate_dialogflow_hertz=44100, dialogflow_language="nl",

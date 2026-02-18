@@ -33,6 +33,7 @@ user_models/
 
 # Ignore droomrobot config files
 conf/droomrobot/*.json
+!default_settings_template.json
 
 # Ignore droomrobot config files
 conf/env/.env
@@ -40,6 +41,4 @@ conf/env/.env
 # Ignore cached audio files
 droomrobot/tts_cache
 droomrobot/test/tts_cache
-#droomrobot/tts_cache/*.wav
-#droomrobot/test/tts_cache/*.wav
 

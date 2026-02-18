@@ -1,4 +1,7 @@
 from os.path import abspath, join
+from pathlib import Path
+
+from sic_framework.core.sic_application import SICApplication
 
 from droomrobot.core import Droomrobot, AnimationType
 from droomrobot.droomrobot_control import DroomrobotControl
@@ -23,13 +26,15 @@ def video_interaction(droomrobot: Droomrobot):
 
 
 if __name__ == '__main__':
+    root = Path(__file__).parent.parent.resolve()
+
     droomrobot_control = DroomrobotControl()
 
-    droomrobot_control.connect(mini_ip="192.168.1.232", mini_id="00041", mini_password="mini",
-                               redis_ip="192.168.1.180",
-                               google_keyfile_path=abspath(
-                                   join("../conf", "dialogflow", "google_keyfile.json")),
-                               env_path=abspath(join("../conf", "openai", ".openai_env")),
-                               default_speaking_rate=0.8, computer_test_mode=False)
+    droomrobot_control.connect(sic_app=SICApplication(),
+                               mini_ip="192.168.2.19`", mini_id="00041", mini_password="mini",
+                               redis_ip="192.168.2.7",
+                               google_keyfile_path=root / 'conf' / 'dialogflow' / "google_keyfile.json",
+                               env_path=root / 'conf' / 'openai' / ".openai_env",
+                               computer_test_mode=True)
 
     video_interaction(droomrobot_control.droomrobot)
