@@ -173,6 +173,8 @@ class Droomrobot:
                 connect_to_elevenlabs_future.result()
                 asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
                                                  self.background_loop).result()
+                elevenlabs_thread = Thread(target=self._connect_elevenlabs, daemon=True)
+                elevenlabs_thread.start()
                 print('Elevenlabs TTS activated')
             except Exception as e:
                 self.logger.error("Failed to connect to elevenlabs", exc_info=e)
@@ -685,6 +687,18 @@ class Droomrobot:
     def reset_interaction_conf(self):
         self.interaction_conf = InteractionConf()
 
+    def _connect_elevenlabs(self):
+        while True:
+            try:
+                asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
+                                                 self.background_loop).result()
+                self.logger.info('Elevenlabs still connected')
+            except Exception as e:
+                self.logger.error("Failed to connect to elevenlabs", exc_info=e)
+
+            sleep(150)
+
+
     @staticmethod
     def _random_speaking_act():
         speaking_acts = [
@@ -762,6 +776,10 @@ class Droomrobot:
               while avoiding tiny fragments at the end.
             """
         text = text.strip()
+
+        if len(text) <= max_len:
+            return [text]
+
         chunks = []
 
         # Step 1: split at sentence boundaries, including no-space cases
@@ -776,12 +794,16 @@ class Droomrobot:
                 # Try to find a good split point
                 chunk = sentence[:max_len]
 
-                # Prefer splitting at last comma or space in chunk
-                break_pos = max(chunk.rfind(','), chunk.rfind(' '))
+                # Prefer splitting at last comma
+                break_pos = chunk.rfind(',')
 
-                if break_pos == -1 or break_pos < max_len // 3:
-                    # fallback: just split at max_len
-                    break_pos = max_len
+                if break_pos == -1:
+                    # otherwise split at last space
+                    break_pos = chunk.rfind(' ')
+
+                    if break_pos == -1 or break_pos < max_len // 3:
+                        # fallback: just split at max_len
+                        break_pos = max_len
 
                 # Avoid leaving tiny tail
                 if len(sentence) - break_pos < min_tail:
