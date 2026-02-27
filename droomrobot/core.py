@@ -103,6 +103,25 @@ class InteractionConf:
             return wrapper
         return decorator
 
+class WiFiDevice:
+    """
+    WifiDevice class that the MiniSdk.connect() method expects. Taken from mini/mini_sdk.py. Only the ip address is relevant
+    """
+    def __init__(self, name: str = "", address: str = "localhost", port: int = -1, s_type: str = "", server: str = ""):
+        super().__init__()
+        self.address = address
+        self.port = port
+        self.type = s_type
+        self.server = server
+
+        if name.endswith(s_type):
+            self.name = name[: -(len(s_type) + 1)]
+        else:
+            self.name = name
+
+    def __repr__(self):
+        return str(self.__class__) + " name:" + self.name + " address:" + self.address + " port:" + str(
+            self.port) + " type:" + self.type + " server:" + self.server
 
 class Droomrobot:
     def __init__(self, sic_app: SICApplication, mini_ip, mini_id, mini_password, redis_ip,
@@ -128,6 +147,9 @@ class Droomrobot:
         self.background_loop = asyncio.new_event_loop()
         self.background_thread = Thread(target=self._start_loop, daemon=True)
         self.background_thread.start()
+
+        # Mini IP address
+        self.mini_ip = mini_ip
 
         print('complete')
 
@@ -651,7 +673,10 @@ class Droomrobot:
 
     async def _connect_once(self):
         if not self.mini_api:
-            self.mini_api = await MiniSdk.get_device_by_name(self.mini_id, 10)
+            # old method that used mutlicast to discover the device
+            # self.mini_api = await MiniSdk.get_device_by_name(self.mini_id, 10)
+            # new method that uses the ip address directly
+            self.mini_api = WiFiDevice(name=self.mini_id, address=self.mini_ip)
             await MiniSdk.connect(self.mini_api)
 
     @staticmethod
