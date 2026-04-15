@@ -77,10 +77,10 @@ class DroomrobotGUI:
         # === Setup (Connect) Screen ===
         # Load them from config file
         self.config = self.load_config()
-        self.mini_ip = tk.StringVar(value=self.config.get("mini_ip", "192.168.178.111"))
-        self.mini_id = tk.StringVar(value=self.config.get("mini_id", "00167"))
-        self.mini_password = tk.StringVar(value=self.config.get("mini_password", "alphago"))
-        self.redis_ip = tk.StringVar(value=self.config.get("redis_ip", "192.168.178.84"))
+        self.mini_ip = tk.StringVar(value=self.config.get("mini_ip", "10.0.0.155"))
+        self.mini_id = tk.StringVar(value=self.config.get("mini_id", "00258"))
+        self.mini_password = tk.StringVar(value=self.config.get("mini_password", "mini"))
+        self.redis_ip = tk.StringVar(value=self.config.get("redis_ip", "10.0.0.206"))
         self.google_keyfile = tk.StringVar(value=self.config.get("google_keyfile", "google_keyfile.json"))
         self.openai_keyfile = tk.StringVar(value=self.config.get("openai_keyfile", ".openai_env"))
         self.dialogflow_timeout = tk.StringVar(value=str(self.config.get("dialogflow_timeout", "15.0")))
