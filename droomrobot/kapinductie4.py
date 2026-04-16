@@ -1,4 +1,6 @@
-from droomrobot.core import AnimationType, InteractionConf
+from sic_framework.devices.alphamini import SDKAnimationType
+
+from droomrobot.core import InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InteractionChoice, \
     InteractionChoiceCondition, InterventionPhase
 from droomrobot.introduction_factory import IntroductionFactory
@@ -60,10 +62,10 @@ class Kapinductie4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Weet je wat zo fijn is? Je kunt altijd teruggaan naar deze mooie plekken in je hoofd.')
         self.add_move(self.droomrobot.say, 'Je hoeft alleen maar rustig in en uit te ademen.')
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed dit je zometeen gaat helpen.')
-        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
+        self.add_move(self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
         self.add_move(self.droomrobot.say, lambda: f'Straks ga ik je helpen om weer terug naar {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} te gaan in gedachten. Je hebt super goed geoefend, ik ben benieuwd hoe goed het zometeen gaat!')
-        # self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
-        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
+        # self.add_move(self.droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
+        self.add_move(self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
         self.add_move(self.droomrobot.say, lambda: f'Ik rij zo gewoon met je mee {self.user_model['child_name']}.')
 
     def _intervention(self):
@@ -271,8 +273,8 @@ class Kapinductie4(DroomrobotScript):
         return interaction_choice
 
     def _intervention_preparation(self, phase_moves: InteractionChoice) -> InteractionChoice:
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
         interaction_conf = InteractionConf(speaking_rate=0.75, animated=True, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Wat fijn dat ik je mag helpen! We gaan samen weer op een mooie droomreis.', animated=False)
