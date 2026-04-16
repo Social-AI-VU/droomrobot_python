@@ -2,7 +2,7 @@ from os.path import abspath, join
 
 from sic_framework.core.sic_application import SICApplication
 
-from droomrobot.core import AnimationType, Droomrobot, InteractionConf
+from droomrobot.core import Droomrobot, InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession
 from droomrobot.droomrobot_tts import GoogleTTSConf, ElevenLabsTTSConf
 
@@ -22,8 +22,8 @@ class ScriptTest(DroomrobotScript):
                                            amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
 
-        self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
-        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
+        self.add_move(self.droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
+        self.add_move(self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
         self.add_move(self.droomrobot.say, 'Stel je je maar weer voor dat je in het waterpretpark bent.')
         self.add_move(self.droomrobot.say, lambda: f'Je gaat weer de trap op van jouw {self.user_model['kleur']} glijbaan, die je net al zo goed geoefend hebt.')
         self.add_move(self.droomrobot.say, 'Bij iedere stap voel je weer dat je lichaam zich goed voelt en je er kracht van krijgt.')

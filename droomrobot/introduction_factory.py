@@ -1,4 +1,4 @@
-from droomrobot.core import Droomrobot, AnimationType
+from droomrobot.core import Droomrobot, SDKAnimationType
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionChoice, \
     InteractionChoiceCondition
 
@@ -9,8 +9,8 @@ class IntroductionFactory:
     def age4(droomrobot: Droomrobot, interaction_context: InteractionContext, user_model):
         script = DroomrobotScript(droomrobot, interaction_context)
 
-        script.add_move(droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
-        script.add_move(droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
+        script.add_move(droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
+        script.add_move(droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
         script.add_move(droomrobot.say, 'Hoi hoi, ik ben de droomrobot.')
         script.add_move(droomrobot.say, 'Ik ben hier om te leren hoe ik kinderen kan helpen.')
         script.add_move(droomrobot.say, 'Wat fijn dat jij mij daar bij wilt helpen.')
@@ -36,10 +36,10 @@ class IntroductionFactory:
                         'animals',
                         'animals',
                         user_model_key='dier')
-        # script.add_move(droomrobot.animate, AnimationType.EXPRESSION, "codemao13", run_async=True)
+        # script.add_move(droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
         animal_choice = InteractionChoice('dier', InteractionChoiceCondition.HASVALUE)
         animal_choice.add_move('success', droomrobot.say, lambda: f'Een {user_model['dier']}')
-        animal_choice.add_move('success', droomrobot.animate, AnimationType.EXPRESSION, "codemao13", run_async=True)
+        animal_choice.add_move('success', droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
         animal_choice.add_move('success', lambda: droomrobot.say(
             droomrobot.generate_funny_response(user_model['child_age'],
                                                'Je hebt een kennismakingsgesprek en je hebt net gevraagd '
@@ -63,8 +63,8 @@ class IntroductionFactory:
     def age6_9(droomrobot: Droomrobot, interaction_context: InteractionContext, user_model):
         script = DroomrobotScript(droomrobot, interaction_context)
 
-        script.add_move(droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
-        script.add_move(droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
+        script.add_move(droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
+        script.add_move(droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
         script.add_move(droomrobot.say, 'Hoi hoi, ik ben de droomrobot.')
         script.add_move(droomrobot.say, 'Ik ben hier om te leren hoe ik kinderen kan helpen.')
         script.add_move(droomrobot.say, 'Wat fijn dat jij mij daar bij wilt helpen.')
@@ -92,7 +92,7 @@ class IntroductionFactory:
                         user_model_key='dier')
         animal_choice = InteractionChoice('dier', InteractionChoiceCondition.HASVALUE)
         animal_choice.add_move('success', droomrobot.say, lambda: f'Een {user_model['dier']}')
-        animal_choice.add_move('success', droomrobot.animate, AnimationType.EXPRESSION, "codemao13", run_async=True)
+        animal_choice.add_move('success', droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
         animal_choice.add_move('success', lambda: droomrobot.say(
             droomrobot.generate_funny_response(user_model['child_age'],
                                                'Je hebt een kennismakingsgesprek en je hebt net gevraagd '
