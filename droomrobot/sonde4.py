@@ -1,4 +1,6 @@
-from droomrobot.core import AnimationType, InteractionConf
+from sic_framework.devices.alphamini import SDKAnimationType
+
+from droomrobot.core import InteractionConf
 from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, InteractionSession, InteractionChoice, \
     InteractionChoiceCondition, InterventionPhase
 from droomrobot.introduction_factory import IntroductionFactory
@@ -26,7 +28,7 @@ class Sonde4(DroomrobotScript):
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         intro_moves = IntroductionFactory.age4(droomrobot=self.droomrobot, interaction_context=self.interaction_context, user_model=self.user_model)
         self.add_moves(intro_moves)
-        self.add_move(self.droomrobot.say, 'Wat goed helpt, is om je voor te stellen, . dat je in een raceauto door een tunnel scheurt, of van een waterglijbaan gaat, of als dolfijn door het water beweegt.')
+        self.add_move(self.droomrobot.say, 'Wat goed helpt, is om je voor te stellen, dat je in een raceauto door een tunnel scheurt, of van een waterglijbaan gaat, of als dolfijn door het water beweegt.')
         self.add_move(self.droomrobot.say, 'Welke lijkt jou het leukste?')
 
         self.add_move(self.droomrobot.ask_entity, 'De waterglijbaan, de race-auto of dolfijn?',
@@ -63,8 +65,8 @@ class Sonde4(DroomrobotScript):
         self.add_move(self.droomrobot.say, lambda: f'Ik vind {self.user_model['kleur']} een hele mooie kleur, die heb je goed gekozen.')
 
         self.add_move(self.droomrobot.say, lambda: f'Als je straks aan de beurt bent gaan we weer samen op droomreis naar  {self.user_model['droomplek_locatie']}.')
-        self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
-        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)  ## Smile
+        self.add_move(self.droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.add_move(self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)  ## Smile
         self.add_move(self.droomrobot.say,  f'Tot straks, {self.user_model['child_name']}.')
 
     def _intervention(self):
@@ -81,8 +83,8 @@ class Sonde4(DroomrobotScript):
     def _intervention_preparation(self, phase_moves: InteractionChoice) -> InteractionChoice:
         interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True)
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True)
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Wat fijn dat ik je mag helpen! We gaan samen weer op een mooie droomreis.', animated=False)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say, 'Omdat je net al zo goed hebt geoefend, zal het nu nog makkelijker gaan.')
         position_choice = InteractionChoice('positie', InteractionChoiceCondition.MATCHVALUE)
@@ -183,7 +185,7 @@ class Sonde4(DroomrobotScript):
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Misschien voel je een zacht kriebeltje bij je neus of keel.')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Dat is gewoon een klein zeewierplantje dat je extra kracht geeft. Heel normaal!')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Jij blijft lekker zwemmen. Een bochtje hier, een bochtje daar.')
-        intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Misschien voel je een klein golfje langs je neus, . net als een dolfijn, die door een stroomversnelling zwemt!')
+        intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Misschien voel je een klein golfje langs je neus, net als een dolfijn, die door een stroomversnelling zwemt!')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Maar jij weet: als je rustig blijft bewegen, zwem je er moeiteloos doorheen!')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'De verpleegkundige vertelt je wanneer je bij de schat bent.')
         intervention_proc_choice.add_move('dolfijn', self.droomrobot.say, 'Je zwemt soepel verder.')
@@ -246,8 +248,8 @@ class Sonde4(DroomrobotScript):
         self.add_move(self.droomrobot.say, 'Je kunt dit ook zonder mij oefenen.')
         self.add_move(self.droomrobot.say, 'Je hoeft alleen maar je ogen dicht te doen en terug te denken aan jouw plek in gedachten.')
         self.add_move(self.droomrobot.say, 'Ik ben benieuwd hoe goed je het de volgende keer gaat doen. Je doet het op jouw eigen manier, en dat is precies goed.')
-        self.add_move(self.droomrobot.animate, AnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
-        self.add_move(self.droomrobot.animate, AnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
+        self.add_move(self.droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True) ## Wave right hand
+        self.add_move(self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True) ## Smile
         self.add_move(self.droomrobot.say, f'Doei, {self.user_model['child_name']}.', animated=False)
 
     def _build_interaction_choice_droomplek(self) -> InteractionChoice:
@@ -290,7 +292,7 @@ class Sonde4(DroomrobotScript):
         interaction_choice.add_move('waterglijbaan', self.set_user_model_variable, 'droomplek_locatie', 'het waterpretpark')
 
         interaction_choice.add_move('waterglijbaan', self.droomrobot.say,
-                                    'Wat mij helpt, is denken dat de sonde net als een waterglijbaan is, . hij glijdt zo naar beneden, makkelijk en snel!')
+                                    'Wat mij helpt, is denken dat de sonde net als een waterglijbaan is, hij glijdt zo naar beneden, makkelijk en snel!')
 
 
         # Dolfijn

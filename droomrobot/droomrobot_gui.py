@@ -6,7 +6,6 @@ from pathlib import Path
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 from threading import Thread
-from os.path import abspath, join
 
 from sic_framework.core import sic_logging
 from sic_framework.core.sic_application import SICApplication
@@ -82,7 +81,7 @@ class DroomrobotGUI:
         self.mini_password = tk.StringVar(value=self.config.get("mini_password", "alphago"))
         self.redis_ip = tk.StringVar(value=self.config.get("redis_ip", "192.168.178.84"))
         self.google_keyfile = tk.StringVar(value=self.config.get("google_keyfile", "google_keyfile.json"))
-        self.openai_keyfile = tk.StringVar(value=self.config.get("openai_keyfile", ".openai_env"))
+        self.openai_keyfile = tk.StringVar(value=self.config.get("openai_keyfile", ".env"))
         self.dialogflow_timeout = tk.StringVar(value=str(self.config.get("dialogflow_timeout", "15.0")))
         self.debug_mode = tk.BooleanVar(value=self.config.get("debug_mode", False))
         self.audio_amplified = tk.BooleanVar(value=self.config.get("audio_amplification", False))
@@ -461,8 +460,8 @@ class DroomrobotGUI:
                 google_tts_voice_gender=self.setting_2.get())
 
         root = Path(__file__).parent.parent.resolve()
-        google_keyfile_path = root / 'conf' / 'dialogflow' / self.google_keyfile.get()
-        openai_keyfile_path = root / 'conf' / 'openai' / self.openai_keyfile.get()
+        google_keyfile_path = root / 'conf' / 'google' / self.google_keyfile.get()
+        openai_keyfile_path = root / 'conf' / self.openai_keyfile.get()
         self.droomrobot_control = DroomrobotControl()
         self.droomrobot_control.connect(
             sic_app=self.sic_app,
@@ -667,7 +666,7 @@ if __name__ == "__main__":
     sic_app = SICApplication()
     # can be DEBUG, INFO, WARNING, ERROR, CRITICAL
     sic_app.set_log_level(sic_logging.INFO)
-    sic_app.set_log_file("/system_logs")
+    sic_app.set_log_file_path("/system_logs")
 
     root = tk.Tk()
     app = DroomrobotGUI(root, sic_app)

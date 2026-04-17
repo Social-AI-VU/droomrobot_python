@@ -3,7 +3,6 @@ import json
 import queue
 import re
 import wave
-from enum import Enum
 from os import environ, fsync
 from os.path import exists
 from pathlib import Path
@@ -12,14 +11,11 @@ from threading import Thread
 from time import sleep, strftime
 
 import numpy as np
-import mini.mini_sdk as MiniSdk
 
 from mini import MouthLampColor, MouthLampMode
-from mini.apis.api_action import PlayAction
-from mini.apis.api_expression import SetMouthLamp, PlayExpression
 from sic_framework.core.message_python2 import AudioRequest
 from sic_framework.core.sic_application import SICApplication
-from sic_framework.devices.alphamini import Alphamini
+from sic_framework.devices.alphamini import Alphamini, SDKAnimationType
 from sic_framework.devices.common_desktop.desktop_speakers import SpeakersConf
 from sic_framework.devices.common_mini.mini_speaker import MiniSpeakersConf
 from sic_framework.devices.desktop import Desktop
@@ -59,8 +55,7 @@ dialogflow agent. That gives all the necessary intents and entities that are par
 
 Thirdly, you need an openAI key:
 5. Generate your personal openai api key here: https://platform.openai.com/api-keys
-6. Either add your openai key to your systems variables or
-create a .openai_env file in the conf/openai folder and add your key there like this:
+6. Either add your openai key to your systems variables or add it to the conf/.env file
 OPENAI_API_KEY="your key"
 
 Forth, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to be running:
@@ -73,12 +68,6 @@ Forth, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to b
 12. add in the main: the ip address, id, and password of the alphamini and the ip-address of the redis server (= ip address of you laptop)
 13. Run this script
 """
-
-
-class AnimationType(Enum):
-    ACTION = 1
-    EXPRESSION = 2
-
 
 class InteractionConf:
 
@@ -156,7 +145,7 @@ class Droomrobot:
         print("\n SETTING UP OPENAI")
         # Generate your personal openai api key here: https://platform.openai.com/api-keys
         # Either add your openai key to your systems variables (and comment the next line out) or
-        # create a .openai_env file in the conf/openai folder and add your key there like this:
+        # add it to the conf/.env file like this:
         # OPENAI_API_KEY="your key"
         if env_path:
             load_dotenv(env_path)
@@ -195,6 +184,8 @@ class Droomrobot:
                 connect_to_elevenlabs_future.result()
                 asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
                                                  self.background_loop).result()
+                elevenlabs_thread = Thread(target=self._connect_elevenlabs, daemon=True)
+                elevenlabs_thread.start()
                 print('Elevenlabs TTS activated')
             except Exception as e:
                 self.logger.error("Failed to connect to elevenlabs", exc_info=e)
@@ -214,26 +205,15 @@ class Droomrobot:
                 mini_password=mini_password,
                 redis_ip=redis_ip,
                 speaker_conf=MiniSpeakersConf(sample_rate=self.sample_rate),
-                bypass_install=True
+                bypass_install=False
             )
             self.speaker = self.mini.speaker
             self.mic = self.mini.mic
             self.mic = self.mini.mic
             self.mic = self.mini.mic
             self.device_name = "alphamini"
-
-            print("Connecting to miniSDK")
-            # Create asyncio event loop to keep connection open to miniSDK.
-            self.animation_futures = []
-            self.mini_api = None
-            connect_to_mini_sdk_future = asyncio.run_coroutine_threadsafe(self._connect_once(), self.background_loop)
-            try:
-                connect_to_mini_sdk_future.result()
-                self.animate(AnimationType.ACTION, "009")  # Wake up
-                self.animate(AnimationType.EXPRESSION, "codemao20")  # Blink
-            except Exception as e:
-                self.logger.error("Failed to connect to mini device", exc_info=e)
-
+            self.mini.animate(SDKAnimationType.ACTION, "009")  # Wake up
+            self.mini.animate(SDKAnimationType.EXPRESSION, "codemao20")  # Blink
         else:
             print("\n SETTING UP COMPUTER")
             desktop = Desktop(speakers_conf=SpeakersConf(sample_rate=self.sample_rate))
@@ -300,8 +280,8 @@ class Droomrobot:
         for chunk in text_chunks:
 
             if animated:
-                self.animate(AnimationType.EXPRESSION, self._random_speaking_eye_expression(), run_async=True)
-                self.animate(AnimationType.ACTION, self._random_speaking_act(), run_async=True)
+                self.mini.animate(SDKAnimationType.EXPRESSION, self._random_speaking_eye_expression(), run_async=True)
+                self.mini.animate(SDKAnimationType.ACTION, self._random_speaking_act(), run_async=True)
 
             # Normalize and hash text
             tts_key = self.tts_cacher.make_tts_key(chunk, self.tts_conf)
@@ -371,10 +351,10 @@ class Droomrobot:
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
 
-            self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+            self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, {'answer_yesno': 1}))
-            self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
+            self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
             print("The detected intent:", reply.intent)
 
             # return answer
@@ -398,15 +378,15 @@ class Droomrobot:
 
         while attempts < max_attempts:
             # different option for showing "thinking"
-            # threading.Timer(5, lambda: self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)).start()
+            # threading.Timer(5, lambda: self.mini.animate(SDKAnimationType.EXPRESSION, "codemao13", run_async=True)).start()
 
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
-            self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+            self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, context))
-            self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)
-            self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
+            self.mini.animate(SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
+            self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
             print("The detected intent:", reply.intent)
 
             # Return entity
@@ -430,16 +410,16 @@ class Droomrobot:
 
         while attempts < max_attempts:
             # different option for showing "thinking"
-            # threading.Timer(7, lambda: self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)).start()
+            # threading.Timer(7, lambda: self.mini.animate(SDKAnimationType.EXPRESSION, "codemao13", run_async=True)).start()
 
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
 
-            self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+            self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
-            self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)
-            self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
+            self.mini.animate(SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
+            self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             print("The detected intent:", reply.intent)
 
@@ -452,9 +432,9 @@ class Droomrobot:
     @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'animated'])
     def ask_fake(self, question, duration, speaking_rate=None, animated=None):
         self.say(question, speaking_rate=speaking_rate, animated=animated)
-        self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+        self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
         sleep(duration)
-        self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
+        self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
     @InteractionConf.apply_config_defaults('interaction_conf', ['max_attempts', 'speaking_rate', 'animated'])
     def ask_entity_llm(self, question, strict=False, max_attempts=None, speaking_rate=None, animated=None):
@@ -462,16 +442,16 @@ class Droomrobot:
 
         while attempts < max_attempts:
             # different option for showing "thinking"
-            # threading.Timer(5, lambda: self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)).start()
+            # threading.Timer(5, lambda: self.mini.animate(SDKAnimationType.EXPRESSION, "codemao13", run_async=True)).start()
 
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
 
-            self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+            self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
-            self.animate(AnimationType.EXPRESSION, "codemao13", run_async=True)
-            self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
+            self.mini.animate(SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
+            self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             strict_instruction = ''
             if strict:
@@ -513,10 +493,10 @@ class Droomrobot:
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
 
-            self.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+            self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
-            self.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
+            self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             # Return entity
             if reply.response.query_result.query_text:
@@ -586,73 +566,10 @@ class Droomrobot:
                        f'De woordenschat en het taalniveau moeten op B2 niveau zijn.'))
         return gpt_response.response
 
-    def animate(self, animation_type: AnimationType, animation_id: str, run_async=False):
-        if self.computer_test_mode:
-            print(f'Animation played: {animation_type} [{animation_id}]')
-        else:
-            try:
-                future = asyncio.run_coroutine_threadsafe(
-                    self._animation_action(animation_id, animation_type),
-                    self.background_loop
-                )
-            except Exception as e:
-                self.logger.error(f'Animation {animation_id} failed: {e}', exc_info=e)
-                return
-
-            self.animation_futures.append(future)
-
-            if not run_async:
-                future.result()
-
-    async def _animation_action(self, action_name, animation_type):
-        try:
-            if animation_type == AnimationType.ACTION:
-                action: PlayAction = PlayAction(action_name=action_name)
-                await action.execute()
-            elif animation_type == AnimationType.EXPRESSION:
-                action: PlayExpression = PlayExpression(express_name=action_name)
-                await action.execute()
-        except Exception as e:
-            self.logger.error(f'Animation action {action_name} failed {e}', exc_info=e)
-            self.logger.info('Reconnecting to Mini')
-            connect_to_mini_sdk_future = asyncio.run_coroutine_threadsafe(self._connect_once(), self.background_loop)
-            try:
-                connect_to_mini_sdk_future.result()
-            except Exception as e:
-                self.logger.error("Failed to connect to mini device", exc_info=e)
-
-    def set_mouth_lamp(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000,
-                       run_async=False):
-        if 'computer' in self.device_name:
-            print(f"Set mouth lamp: {color} {mode} {duration} {breath_duration}")
-        else:
-            future = asyncio.run_coroutine_threadsafe(self._mouth_lamp_expression(color, mode, duration, breath_duration),
-                                                      self.background_loop)
-            self.animation_futures.append(future)
-
-            if not run_async:
-                future.result()
-
-    async def _mouth_lamp_expression(self, color: MouthLampColor, mode: MouthLampMode, duration=-1, breath_duration=1000):
-        if mode == MouthLampMode.BREATH:
-            mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.BREATH,
-                                                           breath_duration=breath_duration)
-        else:
-            mouth_lamp_action: SetMouthLamp = SetMouthLamp(color=color, mode=MouthLampMode.NORMAL, duration=duration)
-        await mouth_lamp_action.execute()
-
     def disconnect(self):
         if isinstance(self.tts_conf, ElevenLabsTTSConf):
             disconnect_elevenlabs_future = asyncio.run_coroutine_threadsafe(self.tts.disconnect(), self.background_loop)
             disconnect_elevenlabs_future.result()
-
-        if self.device_name == 'alphamini':
-            for fut in self.animation_futures:
-                fut.cancel()
-
-            # Disconnect from miniSDK
-            disconnect_alphamini_future = asyncio.run_coroutine_threadsafe(self._disconnect_alphamini_api(), self.background_loop)
-            disconnect_alphamini_future.result()
 
         # Schedule loop shutdown
         if self.background_loop.is_running():
@@ -670,18 +587,6 @@ class Droomrobot:
     def _start_loop(self):
         asyncio.set_event_loop(self.background_loop)
         self.background_loop.run_forever()
-
-    async def _connect_once(self):
-        if not self.mini_api:
-            # old method that used mutlicast to discover the device
-            # self.mini_api = await MiniSdk.get_device_by_name(self.mini_id, 10)
-            # new method that uses the ip address directly
-            self.mini_api = WiFiDevice(name=self.mini_id, address=self.mini_ip)
-            await MiniSdk.connect(self.mini_api)
-
-    @staticmethod
-    async def _disconnect_alphamini_api():
-        await MiniSdk.release()
 
     @staticmethod
     def _get_user_model_file_path(participant_id: str):
@@ -709,6 +614,18 @@ class Droomrobot:
 
     def reset_interaction_conf(self):
         self.interaction_conf = InteractionConf()
+
+    def _connect_elevenlabs(self):
+        while True:
+            try:
+                asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
+                                                 self.background_loop).result()
+                self.logger.info('Elevenlabs still connected')
+            except Exception as e:
+                self.logger.error("Failed to connect to elevenlabs", exc_info=e)
+
+            sleep(150)
+
 
     @staticmethod
     def _random_speaking_act():
@@ -787,6 +704,10 @@ class Droomrobot:
               while avoiding tiny fragments at the end.
             """
         text = text.strip()
+
+        if len(text) <= max_len:
+            return [text]
+
         chunks = []
 
         # Step 1: split at sentence boundaries, including no-space cases
@@ -801,12 +722,16 @@ class Droomrobot:
                 # Try to find a good split point
                 chunk = sentence[:max_len]
 
-                # Prefer splitting at last comma or space in chunk
-                break_pos = max(chunk.rfind(','), chunk.rfind(' '))
+                # Prefer splitting at last comma
+                break_pos = chunk.rfind(',')
 
-                if break_pos == -1 or break_pos < max_len // 3:
-                    # fallback: just split at max_len
-                    break_pos = max_len
+                if break_pos == -1:
+                    # otherwise split at last space
+                    break_pos = chunk.rfind(' ')
+
+                    if break_pos == -1 or break_pos < max_len // 3:
+                        # fallback: just split at max_len
+                        break_pos = max_len
 
                 # Avoid leaving tiny tail
                 if len(sentence) - break_pos < min_tail:
