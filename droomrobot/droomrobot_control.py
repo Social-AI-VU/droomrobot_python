@@ -1,7 +1,7 @@
 from droomrobot.bloedafname4 import Bloedafname4
 from droomrobot.bloedafname6 import Bloedafname6
 from droomrobot.bloedafname9 import Bloedafname9
-from droomrobot.core import Droomrobot, AnimationType
+from droomrobot.core import Droomrobot, SDKAnimationType
 from droomrobot.droomrobot_script import InteractionContext, InteractionSession
 from droomrobot.droomrobot_tts import GoogleTTSConf
 from droomrobot.kapinductie4 import Kapinductie4
@@ -101,7 +101,7 @@ class DroomrobotControl:
     def dance(self):
         if self.droomrobot:
             self.droomrobot.say("Laten we dansen.")
-            self.droomrobot.animate(AnimationType.ACTION, "dance_0007en", run_async=True)
+            self.droomrobot.mini.animate(SDKAnimationType.ACTION, "dance_0007en", run_async=True)
             self.droomrobot.play_audio('resources/audio/happy_dance.wav')
 
     def say(self, text: str):
@@ -115,7 +115,7 @@ class DroomrobotControl:
 #                                redis_ip="192.168.178.84",
 #                                google_keyfile_path=abspath(
 #                                    join("../conf", "dialogflow", "google_keyfile.json")),
-#                                openai_key_path=abspath(join("../conf", "openai", ".openai_env")),
+#                                openai_key_path=abspath(join("../conf", ".env")),
 #                                default_speaking_rate=0.8, computer_test_mode=False)
 #
 #     droomrobot_control.start(participant_id='996',

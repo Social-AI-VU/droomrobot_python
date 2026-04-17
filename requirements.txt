@@ -1,0 +1,3 @@
+social-interaction-cloud[dialogflow,google-tts,openai-gpt,alphamini]~=2.2.1
+python-dotenv~=1.2.2
+webdavclient3~=3.14.7

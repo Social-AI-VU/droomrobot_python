@@ -2,7 +2,7 @@ from itertools import chain
 from os.path import abspath, join
 from time import sleep
 
-from droomrobot.core import Droomrobot, AnimationType
+from droomrobot.core import Droomrobot, SDKAnimationType
 from droomrobot.droomrobot_tts import GoogleTTSConf, TTSConf
 
 """
@@ -50,7 +50,7 @@ class AnimationTest:
         for animation in speaking_acts:
             try:
                 self.droomrobot.say(f"Volgende is {animation}")
-                self.droomrobot.animate(AnimationType.ACTION, animation)
+                self.droomrobot.mini.animate(SDKAnimationType.ACTION, animation)
                 sleep(1)
             except Exception as e:
                 print(e)
@@ -59,7 +59,7 @@ class AnimationTest:
 
     def dance(self):
         self.droomrobot.say("Laten we dansen.")
-        self.droomrobot.animate(AnimationType.ACTION, "dance_0007en", run_async=True)
+        self.droomrobot.mini.animate(SDKAnimationType.ACTION, "dance_0007en", run_async=True)
         self.droomrobot.play_audio('../resources/audio/happy_dance.wav')
         self.droomrobot.say('Klaar')
 
@@ -86,7 +86,7 @@ class AnimationTest:
             for expression in expression_list:
 
                 self.droomrobot.say(f"Volgende is {expression}", animated=False)
-                self.droomrobot.animate(AnimationType.EXPRESSION, expression)
+                self.droomrobot.mini.animate(SDKAnimationType.EXPRESSION, expression)
                 sleep(1)
         except Exception as e:
             print(e)
@@ -98,6 +98,6 @@ if __name__ == '__main__':
     droomrobot = AnimationTest(mini_ip="192.168.178.111", mini_id="00167", mini_password="alphago",
                                redis_ip="192.168.178.84",
                                google_keyfile_path=abspath(join("../../conf", "dialogflow", "google_keyfile.json")),
-                               openai_key_path=abspath(join("../../conf", "openai", ".openai_env")),
+                               openai_key_path=abspath(join("../../conf", ".env")),
                                computer_test_mode=False)
     droomrobot.expressions('codemao')
