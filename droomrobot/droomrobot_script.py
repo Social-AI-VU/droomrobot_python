@@ -4,7 +4,16 @@ from threading import Event
 from time import sleep
 
 from droomrobot.core import Droomrobot
+from pathlib import Path
 
+prompt_file = Path(__file__).parent / "resources" / "prompts" / "droomplek_keuze.txt" 
+with open(prompt_file, 'r', encoding='utf-8') as f:
+    droomplek_choice_prompt = f.read()
+
+imagery_prompt_file = Path(__file__).parent / "resources" / "prompts" / "droomplek_imagery.txt"
+with open(imagery_prompt_file, 'r', encoding='utf-8') as f:
+    droomplek_imagery_prompt = f.read()
+    
 
 class InteractionChoiceNotAvailable(Exception):
     """Raised when the list of move branches does not have a certain choice option available"""
@@ -238,6 +247,157 @@ class DroomrobotScript:
 
     def set_user_model_variable(self, key: str, value):
         self.user_model[key] = value
+        self.droomrobot.save_user_model(self.participant_id, self.user_model)
 
+    def set_user_model_variables(self, updates: dict):
+        self.user_model.update(updates)
+        self.droomrobot.save_user_model(self.participant_id, self.user_model)
 
+    # Personalisation (For now direct copy from blooddraw)
+    def build_interaction_choice_droomplek(self) -> InteractionChoice:
+        interaction_choice = InteractionChoice('droomplek_raw_answer', InteractionChoiceCondition.HASVALUE)
 
+        def _store_first_payload():
+            payload = self.droomrobot.generate_droomplek_payload(
+                child_name=self.user_model['child_name'],
+                child_age=self.user_model['child_age'],
+                child_answer=self.user_model['droomplek_raw_answer']
+            )
+            self.set_user_model_variables({
+                'droomplek_speech_text': payload['speech_text'],
+                'droomplek_candidate': payload['dream_place_final'],
+                'droomplek_candidate_lidwoord': payload['dream_place_article'],
+                'place_decided': payload['place_decided'],
+            })
+
+        interaction_choice.add_move('success', _store_first_payload)
+
+        first_decision_choice = InteractionChoice('place_decided', InteractionChoiceCondition.MATCHVALUE)
+
+        # CASE 1: first answer is a valid place -> promote and ask for motivation
+        def _promote_first_payload():
+            self.set_user_model_variables({
+                'droomplek': self.user_model['droomplek_candidate'],
+                'droomplek_lidwoord': self.user_model['droomplek_candidate_lidwoord'],
+            })
+
+        first_decision_choice.add_move([True], _promote_first_payload)
+        first_decision_choice.add_move(
+            [True],
+            self.droomrobot.ask_open,
+            lambda: self.user_model['droomplek_speech_text'],
+            user_model_key='droomplek_motivatie'
+        )
+
+        # CASE 2: first answer vague/inappropriate -> ask once more
+        first_decision_choice.add_move(
+            [False],
+            self.droomrobot.ask_open,
+            lambda: self.user_model['droomplek_speech_text'],
+            user_model_key='droomplek_second_answer'
+        )
+
+        second_answer_choice = InteractionChoice('droomplek_second_answer', InteractionChoiceCondition.HASVALUE)
+
+        def _store_second_payload():
+            payload = self.droomrobot.generate_droomplek_payload(
+                child_name=self.user_model['child_name'],
+                child_age=self.user_model['child_age'],
+                child_answer=self.user_model['droomplek_second_answer']
+            )
+            self.set_user_model_variables({
+                'droomplek_speech_text_second': payload['speech_text'],
+                'droomplek_candidate_second': payload['dream_place_final'],
+                'droomplek_candidate_lidwoord_second': payload['dream_place_article'],
+                'place_decided_second': payload['place_decided'],
+            })
+
+        second_answer_choice.add_move('success', _store_second_payload)
+
+        second_decision_choice = InteractionChoice('place_decided_second', InteractionChoiceCondition.MATCHVALUE)
+
+        # CASE 2A: second answer is valid -> promote and ask for motivation
+        def _promote_second_payload():
+            self.set_user_model_variables({
+                'droomplek': self.user_model['droomplek_candidate_second'],
+                'droomplek_lidwoord': self.user_model['droomplek_candidate_lidwoord_second'],
+            })
+
+        second_decision_choice.add_move([True], _promote_second_payload)
+        second_decision_choice.add_move(
+            [True],
+            self.droomrobot.ask_open,
+            lambda: self.user_model['droomplek_speech_text_second'],
+            user_model_key='droomplek_motivatie'
+        )
+
+        # CASE 2B: second answer still not valid -> fallback to strand
+        def _store_strand_fallback():
+            self.set_user_model_variables({
+                'droomplek': 'strand',
+                'droomplek_lidwoord': 'het',
+                'droomplek_speech_text_final': (
+                    'Zullen we anders naar het strand? Ik vind dat altijd zo een fijne plek. '
+                    'Ik kan de golven bijna horen en het zand onder mijn voeten voelen. '
+                    'Weet je wat ik daar graag doe? Een zandkasteel bouwen met een vlag er op. '
+                    f"Wat zou jij op het strand willen doen {self.user_model['child_name']}?"
+                ),
+                'place_decided': True,
+                'place_decided_second': True,
+            })
+
+        second_decision_choice.add_move([False], _store_strand_fallback)
+        second_decision_choice.add_move(
+            [False],
+            self.droomrobot.ask_open,
+            lambda: self.user_model['droomplek_speech_text_final'],
+            user_model_key='droomplek_motivatie'
+        )
+
+        second_answer_choice.add_choice('success', second_decision_choice)
+
+        # Second answer missing entirely -> fallback to strand
+        second_answer_choice.add_move('fail', _store_strand_fallback)
+        second_answer_choice.add_move(
+            'fail',
+            self.droomrobot.ask_open,
+            lambda: self.user_model['droomplek_speech_text_final'],
+            user_model_key='droomplek_motivatie'
+        )
+
+        true_case_terminal = InteractionChoice('child_name', InteractionChoiceCondition.HASVALUE)
+        true_case_terminal.add_move('success', lambda: None)
+        first_decision_choice.add_choice(True, true_case_terminal)
+
+        first_decision_choice.add_choice(False, second_answer_choice)
+        interaction_choice.add_choice('success', first_decision_choice)
+
+        # First answer missing entirely -> fallback to strand
+        interaction_choice.add_move('fail', _store_strand_fallback)
+        interaction_choice.add_move(
+            'fail',
+            self.droomrobot.ask_open,
+            lambda: self.user_model['droomplek_speech_text_final'],
+            user_model_key='droomplek_motivatie'
+        )
+
+        return interaction_choice
+
+    def build_imagery_store_move(self):
+        """Returns an InteractionMove that generates and stores the full imagery payload after droomplek_motivatie is known."""
+        def _store_imagery_payload():
+            payload = self.droomrobot.generate_droomplek_imagery_payload(
+                child_name=self.user_model['child_name'],
+                child_age=self.user_model['child_age'],
+                droomplek=self.user_model['droomplek'],
+                droomplek_article=self.user_model['droomplek_lidwoord'],
+                motivatie=self.user_model.get('droomplek_motivatie', ''),
+            )
+            self.set_user_model_variables({
+                'transition_sentence': payload['transition_sentence'],
+                'guided_imagery_seed': payload['guided_imagery_seed'],
+                'guided_imagery_seed_2': payload['guided_imagery_seed_2'],
+                'intervention_preparation_sentences': payload['intervention_preparation_sentences'],
+                'intervention_procedure_sentences': payload['intervention_procedure_sentences'],
+            })
+        return InteractionMove(_store_imagery_payload)
