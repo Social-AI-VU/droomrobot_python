@@ -56,3 +56,7 @@ conf/env/.env
 # Ignore cached audio files
 droomrobot/tts_cache
 droomrobot/test/tts_cache
+
+# ignore my VM and other local files
+.vscode/
+venv_droom/
