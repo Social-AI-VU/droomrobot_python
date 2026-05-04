@@ -279,7 +279,7 @@ class Droomrobot:
 
         for chunk in text_chunks:
 
-            if animated:
+            if animated and not self.computer_test_mode:
                 self.mini.animate(SDKAnimationType.EXPRESSION, self._random_speaking_eye_expression(), run_async=True)
                 self.mini.animate(SDKAnimationType.ACTION, self._random_speaking_act(), run_async=True)
 
@@ -351,10 +351,12 @@ class Droomrobot:
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
 
-            self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+            if not self.computer_test_mode:
+                self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, {'answer_yesno': 1}))
-            self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
+            if not self.computer_test_mode:
+                self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
             print("The detected intent:", reply.intent)
 
             # return answer
@@ -382,11 +384,13 @@ class Droomrobot:
 
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
-            self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+            if not self.computer_test_mode:
+                self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id, context))
-            self.mini.animate(SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
-            self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
+            if not self.computer_test_mode:
+                self.mini.animate(SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
+                self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
             print("The detected intent:", reply.intent)
 
             # Return entity
@@ -415,11 +419,13 @@ class Droomrobot:
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
 
-            self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+            if not self.computer_test_mode:
+                self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
-            self.mini.animate(SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
-            self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
+            if not self.computer_test_mode:
+                self.mini.animate(SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
+                self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             print("The detected intent:", reply.intent)
 
@@ -432,9 +438,11 @@ class Droomrobot:
     @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'animated'])
     def ask_fake(self, question, duration, speaking_rate=None, animated=None):
         self.say(question, speaking_rate=speaking_rate, animated=animated)
-        self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+        if not self.computer_test_mode:
+            self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
         sleep(duration)
-        self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
+        if not self.computer_test_mode:
+            self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
     @InteractionConf.apply_config_defaults('interaction_conf', ['max_attempts', 'speaking_rate', 'animated'])
     def ask_entity_llm(self, question, strict=False, max_attempts=None, speaking_rate=None, animated=None):
@@ -447,11 +455,13 @@ class Droomrobot:
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
 
-            self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+            if not self.computer_test_mode:
+                self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
-            self.mini.animate(SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
-            self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
+            if not self.computer_test_mode:
+                self.mini.animate(SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
+                self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             strict_instruction = ''
             if strict:
@@ -493,10 +503,12 @@ class Droomrobot:
             # ask question
             self.say(question, speaking_rate=speaking_rate, animated=animated)
 
-            self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
+            if not self.computer_test_mode:
+                self.mini.set_mouth_lamp(MouthLampColor.GREEN, MouthLampMode.NORMAL)
             # listen for answer
             reply = self.dialogflow.request(GetIntentRequest(self.request_id))
-            self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
+            if not self.computer_test_mode:
+                self.mini.set_mouth_lamp(MouthLampColor.WHITE, MouthLampMode.BREATH)
 
             # Return entity
             if reply.response.query_result.query_text:
