@@ -116,34 +116,37 @@ class ElevenLabsTTS:
             # Send sentence
             await self.websocket.send(dumps({"text": text, "flush": True}))
 
+            audio_chunks = []
             while True:
                 try:
                     message = await asyncio.wait_for(self.websocket.recv(), timeout=5.0)
                     data = loads(message)
 
                     if data.get("audio"):
-                        return base64.b64decode(data["audio"])
+                        audio_chunks.append(base64.b64decode(data["audio"]))
                     if data.get("isFinal"):
+                        if audio_chunks:
+                            return b"".join(audio_chunks)
                         return None
                 except asyncio.TimeoutError:
                     self.logger.error('[TTS] No audio received from Elevenlabs')
                     self.websocket = None
-                    return None
+                    return b"".join(audio_chunks) if audio_chunks else None
                 except websockets.exceptions.ConnectionClosedOK:
                     # Normal closure (1000), nothing to worry about
                     self.logger.warning("[TTS] WebSocket closed cleanly by server.")
                     self.websocket = None
-                    return None
+                    return b"".join(audio_chunks) if audio_chunks else None
                 except websockets.exceptions.ConnectionClosedError as e:
                     # Abnormal closure
                     self.logger.error(f"[TTS] WebSocket closed with error: {e}")
                     self.websocket = None
-                    return None
+                    return b"".join(audio_chunks) if audio_chunks else None
                 except Exception as e:
                     # Catch-all for JSON parsing or other issues
                     self.logger.error(f"[TTS] Other failure in elevenlabs tts: {e}")
                     self.websocket = None
-                    return None
+                    return b"".join(audio_chunks) if audio_chunks else None
 
 
 class TTSCacher:

@@ -24,11 +24,56 @@ class Kapinductie4(DroomrobotScript):
             print("Interaction part not recognized")
 
     def _introduction(self):
+        # Introduction to robot, get fav animal + color
         interaction_conf = InteractionConf(amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         intro_moves = IntroductionFactory.age4(droomrobot=self.droomrobot, interaction_context=self.interaction_context, user_model=self.user_model)
         self.add_moves(intro_moves)
 
+        # Droomplek selection (Prompt A — synchronous, small)
+        self.add_move(self.droomrobot.ask_entity_llm,
+                    'Waar zou jij naartoe willen op droomreis?',
+                    user_model_key='droomplek_raw_answer')
+        self.add_choice(self.build_interaction_choice_droomplek())  # uses Prompt A
+        
+        # Prompt B — synchronous (tiny, fast)
+        self.add_move(self._generate_and_speak_motivation_reaction)
+
+        # Prompt C — fire in background
+        self.add_move(self._fire_practice_imagery_background)
+
+        # Fixed scaffold: position + breathing (~30-45s while Prompt C generates)
+        self.add_choice(self._build_interaction_choice_comfortable_position())
+        self.add_move(self.droomrobot.say, 'Adem rustig in.')
+        self.add_move(self.droomrobot.play_audio, 'resources/audio/breath_in.wav')
+        self.add_move(self.droomrobot.say, 'en rustig uit.')
+        self.add_move(self.droomrobot.play_audio, 'resources/audio/breath_out.wav')
+        self.add_move(self.droomrobot.say, 'En voel maar dat je buik rustig op en neer beweegt.')
+
+        # Block for Prompt C + play back + fire Prompt D in background
+        self.add_move(self._play_practice_imagery_and_fire_intervention)
+
+        # Fixed wrap-up
+        self.add_move(self.droomrobot.reset_interaction_conf)
+        self.add_move(self.droomrobot.say,
+                    lambda: f'Nu je genoeg geoefend hebt mag je je ogen weer opendoen {self.user_model["child_name"]}.')
+        self.add_move(self.droomrobot.say, lambda: f'Weet je wat zo fijn is? Je kunt altijd teruggaan naar mooie plekken zoals {self.user_model["droomplek_lidwoord"]} {self.user_model["droomplek"]} in je hoofd.')
+        self.add_move(self.droomrobot.say, 'Je hoeft alleen maar rustig in en uit te ademen.')
+        self.add_move(self.droomrobot.say, f'Ik ben benieuwd hoe goed dit je zometeen gaat helpen.')
+        self.add_move(self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
+        self.add_move(self.droomrobot.say, lambda: f'Straks ga ik je helpen om weer terug naar {self.user_model["droomplek_lidwoord"]} {self.user_model["droomplek"]} te gaan in gedachten. Je hebt super goed geoefend, ik ben benieuwd hoe goed het zometeen gaat!')
+        # self.add_move(self.droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
+        self.add_move(self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
+        self.add_move(self.droomrobot.say, lambda: f'Ik rij zo gewoon met je mee {self.user_model["child_name"]}.')
+
+        # Block for Prompt D result (should be done by now)
+        self.add_move(self._store_intervention_result)
+
+    
+
+        """
+        # Ask for their favorite place
+        
         self.add_move(self.droomrobot.say, 'Je kunt kiezen uit het strand, het bos, of de ruimte.')
         self.add_move(self.droomrobot.ask_entity,
                       'Wat is de plek waar jij je fijn voelt?',
@@ -38,9 +83,9 @@ class Kapinductie4(DroomrobotScript):
                       user_model_key='droomplek')
         self.add_move(self.droomrobot.get_article, lambda: self.user_model['droomplek'],
                       user_model_key='droomplek_lidwoord')
-        self.add_choice(self._build_interaction_choice_droomplek())
-        #self.add_choice(self.build_interaction_choice_droomplek())
-        #self.add_move(self.build_imagery_store_move())
+        #self.add_choice(self._build_interaction_choice_droomplek())
+        self.add_choice(self.build_interaction_choice_droomplek())
+        self.add_move(self.build_imagery_store_move())
         
         # SAMEN OEFENEN
         interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
@@ -68,7 +113,7 @@ class Kapinductie4(DroomrobotScript):
         self.add_move(self.droomrobot.say, lambda: f'Straks ga ik je helpen om weer terug naar {self.user_model["droomplek_lidwoord"]} {self.user_model["droomplek"]} te gaan in gedachten. Je hebt super goed geoefend, ik ben benieuwd hoe goed het zometeen gaat!')
         # self.add_move(self.droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
         self.add_move(self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
-        self.add_move(self.droomrobot.say, lambda: f'Ik rij zo gewoon met je mee {self.user_model["child_name"]}.')
+        self.add_move(self.droomrobot.say, lambda: f'Ik rij zo gewoon met je mee {self.user_model["child_name"]}.')"""
 
     def _intervention(self):
         self.phases = [
@@ -96,7 +141,7 @@ class Kapinductie4(DroomrobotScript):
         self.droomrobot.say('Ik ben benieuwd hoe goed je het de volgende keer gaat doen. Je doet het op jouw eigen manier, en dat is precies goed.')
         '''
 
-    def _build_interaction_choice_droomplek(self) -> InteractionChoice:
+    #def _build_interaction_choice_droomplek(self) -> InteractionChoice:
         interaction_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
 
         # Strand
@@ -204,7 +249,7 @@ class Kapinductie4(DroomrobotScript):
 
         return interaction_choice
 
-    def _build_interaction_choice_oefenen(self) -> InteractionChoice:
+    #def _build_interaction_choice_oefenen(self) -> InteractionChoice:
         interaction_choice = InteractionChoice('droomplek', InteractionChoiceCondition.MATCHVALUE)
 
         # Strand
@@ -278,7 +323,27 @@ class Kapinductie4(DroomrobotScript):
         return interaction_choice
 
     def _intervention_preparation(self, phase_moves: InteractionChoice) -> InteractionChoice:
+        # Set slow speaking rate + animations
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
+        interaction_conf = InteractionConf(speaking_rate=0.75, animated=True, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
+        
+        # Fixed greeting
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, 
+                             self.droomrobot.say, 
+                             f'Wat fijn dat ik je mag helpen {self.user_model["child_name"]}! We gaan samen weer op een mooie droomreis.', 
+                             animated=False)
+
+        # Play pre-generated intervention sentences
+        phase_moves.add_move(InterventionPhase.PREPARATION.name,
+                            self._play_intervention_sentences)
+
+        # Filler loop
+        phase_moves.add_move(InterventionPhase.PREPARATION.name,
+                            self._play_filler_loop)
+
+        """phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
         interaction_conf = InteractionConf(speaking_rate=0.75, animated=True, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.set_interaction_conf, interaction_conf)
@@ -393,9 +458,22 @@ class Kapinductie4(DroomrobotScript):
             'Je wordt steeds lichter en zachter. Merk maar hoe fijn dat is.',
             'Je bent veilig en je hebt alles onder controle.'
         ]
-        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.repeat_sentences, sentences)
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.repeat_sentences, sentences)"""
 
         return phase_moves
+    
+    def _play_intervention_sentences(self):
+        sentences = self.user_model.get('intervention_preparation_sentences', [])
+        for sentence in sentences:
+            if not self.is_running or self._requested_phase:
+                break
+            self.droomrobot.say(sentence)
+
+    def _play_filler_loop(self):
+        fillers = self.user_model.get('filler_sentences', self._get_default_fillers())
+        self.repeat_sentences(fillers)
+
+
 
     def _intervention_procedure(self, phase_moves: InteractionChoice) -> InteractionChoice:
         return phase_moves
