@@ -39,12 +39,14 @@ class Kapinductie4(DroomrobotScript):
         self.add_move(self.droomrobot.get_article, lambda: self.user_model['droomplek'],
                       user_model_key='droomplek_lidwoord')
         self.add_choice(self._build_interaction_choice_droomplek())
+        #self.add_choice(self.build_interaction_choice_droomplek())
+        #self.add_move(self.build_imagery_store_move())
         
         # SAMEN OEFENEN
         interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
 
-        self.add_move(self.droomrobot.say, f'Oke, laten we samen gaan oefenen met het maken van de droomreis naar {self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']}.')
+        self.add_move(self.droomrobot.say, lambda: f'Oke, laten we samen gaan oefenen met het maken van de droomreis naar {self.user_model["droomplek_lidwoord"]} {self.user_model["droomplek"]}.')
 
         self.add_choice(self._build_interaction_choice_comfortable_position())
         
@@ -58,8 +60,8 @@ class Kapinductie4(DroomrobotScript):
         self.add_choice(self._build_interaction_choice_oefenen())
         self.add_move(self.droomrobot.reset_interaction_conf)
 
-        self.add_move(self.droomrobot.say, f'als je klaar bent, mag je je ogen weer open doen {self.user_model["child_name"]}.')
-        self.add_move(self.droomrobot.say, f'Weet je wat zo fijn is? Je kunt altijd teruggaan naar mooie plekken zoals {self.user_model["droomplek_lidwoord"]} {self.user_model["droomplek"]} in je hoofd.')
+        self.add_move(self.droomrobot.say, lambda: f'als je klaar bent, mag je je ogen weer open doen {self.user_model["child_name"]}.')
+        self.add_move(self.droomrobot.say, lambda: f'Weet je wat zo fijn is? Je kunt altijd teruggaan naar mooie plekken zoals {self.user_model["droomplek_lidwoord"]} {self.user_model["droomplek"]} in je hoofd.')
         self.add_move(self.droomrobot.say, 'Je hoeft alleen maar rustig in en uit te ademen.')
         self.add_move(self.droomrobot.say, f'Ik ben benieuwd hoe goed dit je zometeen gaat helpen.')
         self.add_move(self.droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
