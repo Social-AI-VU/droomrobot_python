@@ -191,8 +191,8 @@ class Droomrobot:
                                                                             self.background_loop)
             try:
                 connect_to_elevenlabs_future.result()
-                asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
-                                                 self.background_loop).result()
+                # asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
+                #                                  self.background_loop).result()
                 elevenlabs_thread = Thread(target=self._connect_elevenlabs, daemon=True)
                 elevenlabs_thread.start()
                 print('Elevenlabs TTS activated')
@@ -552,6 +552,165 @@ class Droomrobot:
                 f'Retourneer het bijvoeglijk naamwoord van {word}. Retourneer alleen het bijvoeglijk naamwoord zelf bijv. "groene" of "zachte" en geen andere informatie.'))
         return gpt_response.response
 
+    def _gpt_request_with_timeout(self, prompt: str, max_tokens: int = 1000, timeout: int = 15):
+        """Send a GPT request in a thread with a timeout. Returns response text or None."""
+        import threading
+        gpt_response = [None]
+        gpt_error = [None]
+
+        def _request():
+            try:
+                gpt_response[0] = self.gpt.request(GPTRequest(prompt, max_tokens=max_tokens))
+            except Exception as e:
+                gpt_error[0] = e
+
+        thread = threading.Thread(target=_request, daemon=True)
+        thread.start()
+        thread.join(timeout=timeout)
+
+        if thread.is_alive():
+            print(f"[GPT] Request timed out after {timeout}s")
+            return None
+        if gpt_error[0]:
+            print(f"[GPT] Request failed: {repr(gpt_error[0])}")
+            return None
+        if not gpt_response[0]:
+            print(f"[GPT] No response returned")
+            return None
+        return gpt_response[0].response
+
+    def _extract_json_object(self, text: str) -> dict:
+        """
+        Robustly extract JSON even if the model accidentally wraps it in markdown fences,
+        adds extra text, or the response is truncated.
+        """
+        if text is None:
+            raise ValueError("GPT returned no text")
+
+        cleaned = text.strip()
+        print(f"[JSON] Input text length: {len(text)}, cleaned length: {len(cleaned)}")
+
+        # Remove markdown fences if present
+        if cleaned.startswith("```"):
+            print(f"[JSON] Removing markdown fences...")
+            cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+            cleaned = re.sub(r"\s*```$", "", cleaned)
+            print(f"[JSON] After removing fences: {len(cleaned)} chars")
+
+        # Try direct parse first
+        try:
+            print(f"[JSON] Trying direct JSON parse...")
+            result = json.loads(cleaned)
+            print(f"[JSON] Direct parse succeeded! Keys: {list(result.keys())}")
+            return result
+        except json.JSONDecodeError as e:
+            print(f"[JSON] Direct parse failed: {e}")
+            pass
+
+        # Fallback 1: Find the start of JSON
+        start_idx = cleaned.find('{')
+        if start_idx == -1:
+            raise ValueError(f"Could not find JSON object start in: {text[:100]}...")
+
+        json_str = cleaned[start_idx:]
+        print(f"[JSON] Found JSON start at position {start_idx}, extracted {len(json_str)} chars")
+        print(f"[JSON] JSON content (first 200 chars): {json_str[:200]}...")
+
+        # Try to fix truncated JSON by:
+        # 1. Closing any unterminated strings
+        # 2. Adding missing closing braces
+
+        print(f"[JSON] Attempting to repair truncated JSON...")
+
+        # Count braces and quotes to determine what's missing
+        brace_count = 0
+        quote_count = 0
+        in_string = False
+        escape_next = False
+        last_complete_pos = 0
+
+        for i, char in enumerate(json_str):
+            if escape_next:
+                escape_next = False
+                continue
+
+            if char == '\\' and in_string:
+                escape_next = True
+                continue
+
+            if char == '"':
+                in_string = not in_string
+                quote_count += 1
+                if not in_string:  # Just closed a string
+                    last_complete_pos = i + 1
+                continue
+
+            if not in_string:
+                if char == '{':
+                    brace_count += 1
+                    last_complete_pos = i + 1
+                elif char == '}':
+                    brace_count -= 1
+                    if brace_count >= 0:
+                        last_complete_pos = i + 1
+                elif char == ',' or char == ':':
+                    last_complete_pos = i + 1
+
+        # Repair the JSON
+        # If we're in a string, close it
+        if in_string:
+            json_str = json_str + '"'
+
+        # Add missing closing braces
+        json_str = json_str + ('}' * brace_count)
+
+        try:
+            print(f"[JSON] Auto-repair attempt 1: closing string and braces...")
+            result = json.loads(json_str)
+            print(f"[JSON] Auto-repair succeeded!")
+            return result
+        except json.JSONDecodeError as e:
+            print(f"[JSON] Auto-repair 1 failed: {e}")
+
+        # Fallback 2: Try truncating to the last complete value
+        if last_complete_pos > 0:
+            try:
+                truncated = json_str[:last_complete_pos]
+                # Try to make it valid JSON by removing trailing comma if present
+                if truncated.rstrip().endswith(','):
+                    truncated = truncated.rstrip()[:-1]
+                truncated += ('}' * brace_count)
+
+                print(f"[JSON] Auto-repair attempt 2: truncate to last complete position...")
+                result = json.loads(truncated)
+                print(f"[JSON] Auto-repair succeeded!")
+                return result
+            except json.JSONDecodeError as e:
+                print(f"[JSON] Auto-repair 2 failed: {e}")
+
+        # Fallback 3: Extract first {...} block with greedy regex and try to fix it
+        # Use greedy matching (.*)  to capture the COMPLETE JSON object, not just the first {...} pair
+        match = re.search(r"\{.*\}", cleaned, re.DOTALL)  # Greedy - matches from first { to last }
+        if match:
+            try:
+                potential = match.group(0)
+                # Close any unterminated strings
+                if potential.count('"') % 2 == 1:
+                    potential += '"'
+                # Add missing closing braces
+                open_braces = potential.count('{') - potential.count('}')
+                if open_braces > 0:
+                    potential += ('}' * open_braces)
+
+                print(f"[JSON] Auto-repair attempt 3: greedy regex + repair...")
+                result = json.loads(potential)
+                print(f"[JSON] Auto-repair succeeded!")
+                return result
+            except json.JSONDecodeError as e:
+                print(f"[JSON] Auto-repair 3 failed: {e}")
+
+        raise ValueError(f"Could not extract valid JSON from GPT response: {text[:200]}...")
+
     def personalize(self, robot_input, user_age, user_input):
         gpt_response = self.gpt.request(
             GPTRequest(f'Je bent een sociale robot die praat met een kind van {str(user_age)} jaar oud.'
@@ -866,15 +1025,16 @@ class Droomrobot:
         self.interaction_conf = InteractionConf()
 
     def _connect_elevenlabs(self):
-        while True:
-            try:
-                asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
-                                                 self.background_loop).result()
-                self.logger.info('Elevenlabs still connected')
-            except Exception as e:
-                self.logger.error("Failed to connect to elevenlabs", exc_info=e)
-
-            sleep(150)
+        # while True:
+        #     try:
+        #         asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
+        #                                          self.background_loop).result()
+        #         self.logger.info('Elevenlabs still connected')
+        #     except Exception as e:
+        #         self.logger.error("Failed to connect to elevenlabs", exc_info=e)
+        #
+        #     sleep(150)
+        pass
 
 
     @staticmethod
