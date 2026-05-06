@@ -1,6 +1,6 @@
 import abc
 from enum import Enum
-from threading import Event
+from threading import Event, Thread
 from time import sleep
 
 from droomrobot.core import Droomrobot
@@ -185,7 +185,7 @@ class DroomrobotScript:
                 print(f"[Background] Prompt {key} failed: {e}")
 
         self._pending_futures[key] = ('pending', None)
-        thread = threading.Thread(target=_worker, daemon=True)
+        thread = Thread(target=_worker, daemon=True)
         thread.start()
         
     def _await_background_prompt(self, key, timeout=60):
@@ -313,6 +313,16 @@ class DroomrobotScript:
     def set_user_model_variables(self, updates: dict):
         self.user_model.update(updates)
         self.droomrobot.save_user_model(self.participant_id, self.user_model)
+    
+    def ensure_default_droomplek_motivatie(self, default_value: str = "spelen"):
+        motivation = self.user_model.get('droomplek_motivatie')
+        if motivation is None:
+            self.set_user_model_variable('droomplek_motivatie', default_value)
+            return
+
+        normalized = str(motivation).strip().lower()
+        if normalized in {"", "none", "niet bekend"}:
+            self.set_user_model_variable('droomplek_motivatie', default_value)
 
 
     # ----------------------------------
@@ -526,6 +536,7 @@ class DroomrobotScript:
             lambda: self.user_model['droomplek_speech_text'],
             user_model_key='droomplek_motivatie'
         )
+        first_decision.add_move([True], self.ensure_default_droomplek_motivatie)
 
         # --- CASE B: Vague/inappropriate first answer → ask once more ---
         # Prompt A's speech_text here contains a clarification + 2 suggested alternatives
@@ -557,6 +568,7 @@ class DroomrobotScript:
             lambda: self.user_model['second_droomplek_speech_text'],
             user_model_key='droomplek_motivatie'
         )
+        second_decision.add_move([True], self.ensure_default_droomplek_motivatie)
 
         # --- CASE B2: Still invalid → fallback to strand ---
         second_decision.add_move([False], _set_strand_fallback)
@@ -566,6 +578,7 @@ class DroomrobotScript:
             lambda: self.user_model['fallback_speech_text'],
             user_model_key='droomplek_motivatie'
         )
+        second_decision.add_move([False], self.ensure_default_droomplek_motivatie)
 
         second_answer.add_choice('success', second_decision)
 
@@ -577,6 +590,7 @@ class DroomrobotScript:
             lambda: self.user_model['fallback_speech_text'],
             user_model_key='droomplek_motivatie'
         )
+        second_answer.add_move('fail', self.ensure_default_droomplek_motivatie)
 
         # =====================================================
         # Wire the tree together
@@ -592,6 +606,7 @@ class DroomrobotScript:
             lambda: self.user_model['fallback_speech_text'],
             user_model_key='droomplek_motivatie'
         )
+        root.add_move('fail', self.ensure_default_droomplek_motivatie)
 
         return root
 
