@@ -772,7 +772,8 @@ class Droomrobot:
         )
         print(f"[DROOMPLEK] Prompt length: {len(prompt)}")
 
-        response_text = self._gpt_request_with_timeout(prompt, max_tokens=300)
+        response_text = self._gpt_request_with_timeout(prompt)
+        
         if not response_text:
             print(f"[DROOMPLEK] GPT failed, using fallback")
             return fallback_payload
@@ -886,7 +887,11 @@ class Droomrobot:
         prompt = prompt.replace('{droomplek_article}', droomplek_article)
         prompt = prompt.replace('{motivatie}', motivatie or 'niet bekend')
         
-        response = self.gpt.request(GPTRequest(prompt))
+        #response = self.gpt.request(GPTRequest(prompt))
+        response = self._gpt_request_with_timeout(prompt)
+        if not response:
+            return None # TO DO: define fallback
+        
         return json.loads(response.response)
 
     def generate_practice_imagery(self, child_name, child_age, droomplek,
@@ -923,7 +928,11 @@ class Droomrobot:
             prompt = prompt.replace('{dier_context}',
                 'Het lievelingsdier van het kind is niet bekend.')
 
-        response = self.gpt.request(GPTRequest(prompt))
+        #response = self.gpt.request(GPTRequest(prompt))
+        response = self._gpt_request_with_timeout(prompt)
+        if not response:
+            return None # TO DO: define fallback
+        
         return json.loads(response.response)
 
 
@@ -962,7 +971,11 @@ class Droomrobot:
             prompt = prompt.replace('{dier_context}',
                 'Het lievelingsdier van het kind is niet bekend.')
 
-        response = self.gpt.request(GPTRequest(prompt))
+        #response = self.gpt.request(GPTRequest(prompt))
+        response = self._gpt_request_with_timeout(prompt)
+        if not response:
+            return None # TO DO: define fallback
+        
         return json.loads(response.response)
 
     def _load_prompt(self, filename):
