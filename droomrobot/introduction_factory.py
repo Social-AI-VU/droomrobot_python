@@ -31,11 +31,11 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Laten we even oefenen!')"""
         
         # Add animal question
-        script.add_move(droomrobot.ask_entity,
+        script.add_move(droomrobot.ask_entity_llm,
                         'Welk dier vind jij heel cool?',
-                        {'animals': 1},
-                        'animals',
-                        'animals',
+                        #{'animals': 1},
+                        #'animals',
+                        #'animals',
                         user_model_key='dier')
         # script.add_move(droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "codemao13", run_async=True)
         animal_choice = InteractionChoice('dier', InteractionChoiceCondition.HASVALUE)

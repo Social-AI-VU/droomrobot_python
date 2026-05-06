@@ -485,6 +485,7 @@ class DroomrobotScript:
                     child_answer=self.user_model[answer_key]
                 )
                 self.set_user_model_variables({
+                    f'{prefix}prompt_a_payload': payload,
                     f'{prefix}droomplek_speech_text': payload['speech_text'],
                     f'{prefix}droomplek_candidate': payload['dream_place_final'],
                     f'{prefix}droomplek_candidate_lidwoord': payload['dream_place_article'],
@@ -638,6 +639,7 @@ class DroomrobotScript:
             droomplek_article=self.user_model['droomplek_lidwoord'],
             motivatie=self.user_model.get('droomplek_motivatie', '')
         )
+        self.set_user_model_variable('prompt_b_payload', payload)
         self.droomrobot.say(payload['motivatie_reactie'])
         self.droomrobot.say(payload['transitie_zin'])
 
@@ -662,10 +664,13 @@ class DroomrobotScript:
         payload = self._await_background_prompt('practice_imagery', timeout=45)
 
         if payload and 'practice_imagery' in payload:
+            self.set_user_model_variable('prompt_c_payload', payload)
             sentences = payload['practice_imagery']
         else:
             # Fallback: use generic practice sentences
             sentences = self._get_fallback_practice_imagery()
+            payload = {'practice_imagery': sentences}
+            self.set_user_model_variable('prompt_c_payload', payload)
 
         # Start playing practice imagery
         # Fire Prompt D in background BEFORE first sentence
@@ -694,15 +699,23 @@ class DroomrobotScript:
         payload = self._await_background_prompt('intervention_imagery', timeout=90)
 
         if payload:
+            self.set_user_model_variable('prompt_d_payload', payload)
             self.set_user_model_variables({
                 'intervention_preparation_sentences': payload.get('intervention_preparation', []),
                 'filler_sentences': payload.get('filler_sentences', []),
             })
         else:
             # Fallback stored
+            intervention_sentences = self._get_fallback_intervention_imagery()
+            filler_sentences = self._get_default_fillers()
+            payload = {
+                'intervention_preparation': intervention_sentences,
+                'filler_sentences': filler_sentences,
+            }
+            self.set_user_model_variable('prompt_d_payload', payload)
             self.set_user_model_variables({
-                'intervention_preparation_sentences': self._get_fallback_intervention_imagery(),
-                'filler_sentences': self._get_default_fillers(),
+                'intervention_preparation_sentences': intervention_sentences,
+                'filler_sentences': filler_sentences,
             })
             
     # --------------------------------

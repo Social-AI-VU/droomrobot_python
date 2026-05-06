@@ -879,6 +879,11 @@ class Droomrobot:
     def generate_motivation_reaction(self, child_name, child_age, droomplek,
                                   droomplek_article, motivatie) -> dict:
         """Prompt B: Quick reaction to motivation answer."""
+        fallback_payload = {
+            "motivatie_reactie": "Wat leuk, dat klinkt als een fijn idee!",
+            "transitie_zin": f"Laten we alvast oefenen om samen naar {droomplek_article} {droomplek} te gaan.",
+        }
+
         prompt = self._load_prompt('prompt_b_motivatie_reactie.txt')
         
         prompt = prompt.replace('{kind_naam}', child_name)
@@ -887,17 +892,39 @@ class Droomrobot:
         prompt = prompt.replace('{droomplek_article}', droomplek_article)
         prompt = prompt.replace('{motivatie}', motivatie or 'niet bekend')
         
-        #response = self.gpt.request(GPTRequest(prompt))
-        response = self._gpt_request_with_timeout(prompt)
-        if not response:
-            return None # TO DO: define fallback
-        
-        return json.loads(response.response)
+        response_text = self._gpt_request_with_timeout(prompt, max_tokens=250)
+        if not response_text:
+            return fallback_payload
+
+        try:
+            payload = self._extract_json_object(response_text)
+            if "motivatie_reactie" not in payload or "transitie_zin" not in payload:
+                return fallback_payload
+            return payload
+        except Exception as e:
+            print(f"[MOTIVATIE] JSON parse error: {repr(e)}, using fallback")
+            return fallback_payload
 
     def generate_practice_imagery(self, child_name, child_age, droomplek,
                                 droomplek_article, motivatie,
                                 kleur=None, metgezel=None, dier=None) -> dict:
         """Prompt C: Practice guided imagery (10 sentences)."""
+        fallback_payload = {
+            "practice_imagery": [
+                f"En terwijl je zo rustig aan het ademhalen bent, mag je gaan voorstellen dat je bij {droomplek_article} {droomplek} bent.",
+                "Kijk maar eens in je gedachten om je heen.",
+                "Misschien ben je er alleen, of is er iemand bij je.",
+                "Kijk maar welke mooie kleuren je allemaal om je heen ziet.",
+                "En merk maar hoe fijn jij je op deze plek voelt.",
+                "Luister maar naar alle fijne geluiden om je heen.",
+                "Misschien is het er heerlijk warm. Voel dat maar op je gezicht.",
+                "En kijk, daar is een vrolijk dier dat even naar je zwaait.",
+                "En op deze plek kan je alles doen waar je zin in hebt.",
+                "Misschien doe je iets heel leuks, waar je blij van wordt.",
+                "Merk maar hoe fijn en rustig je je voelt op deze mooie plek.",
+            ]
+        }
+
         prompt = self._load_prompt('prompt_c_practice_imagery.txt')
         
         prompt = prompt.replace('{kind_naam}', child_name)
@@ -928,18 +955,52 @@ class Droomrobot:
             prompt = prompt.replace('{dier_context}',
                 'Het lievelingsdier van het kind is niet bekend.')
 
-        #response = self.gpt.request(GPTRequest(prompt))
-        response = self._gpt_request_with_timeout(prompt)
-        if not response:
-            return None # TO DO: define fallback
-        
-        return json.loads(response.response)
+        response_text = self._gpt_request_with_timeout(prompt, max_tokens=900)
+        if not response_text:
+            return fallback_payload
+
+        try:
+            payload = self._extract_json_object(response_text)
+            if "practice_imagery" not in payload:
+                return fallback_payload
+            return payload
+        except Exception as e:
+            print(f"[PRACTICE_IMAGERY] JSON parse error: {repr(e)}, using fallback")
+            return fallback_payload
 
 
     def generate_intervention_imagery(self, child_name, child_age, droomplek,
                                     droomplek_article, motivatie,
                                     kleur=None, metgezel=None, dier=None) -> dict:
         """Prompt D: Full intervention imagery (16 sentences + 4 fillers)."""
+        fallback_payload = {
+            "intervention_preparation": [
+                f"Stel je maar voor dat je weer bij {droomplek_article} {droomplek} bent, op die fijne plek.",
+                "Kijk maar weer naar alle mooie kleuren en merk hoe fijn het is.",
+                "Voel maar hoe fijn het is om hier te zijn.",
+                "En terwijl je hier zo lekker bent, zie je iets moois voor je.",
+                "Het heeft een kleur die heel mooi bij deze plek past.",
+                "Je mag er rustig naartoe gaan. Het voelt heerlijk zacht.",
+                "Het houdt je veilig en helpt je bij dit mooie avontuur.",
+                "Voel maar hoe alles zachtjes en rustig verder gaat.",
+                "Jij bent de baas. Alles gaat precies zoals jij fijn vindt.",
+                "Het kan een lekker licht gevoel geven in je lichaam.",
+                "En terwijl je daar zo bent, voel je iets zachts op je gezicht.",
+                f"Merk maar hoe rustig en veilig jij je voelt bij {droomplek_article} {droomplek}.",
+                "En er is een lief dier dicht bij je, helemaal rustig en zacht.",
+                "Je hoort alleen maar fijne geluiden die bij deze plek passen.",
+                "De warmte voelt als een zachte deken die over je heen gaat.",
+                "Voel maar hoe je lichaam steeds lichter wordt op deze fijne plek.",
+                "Steeds lichter, steeds rustiger, helemaal ontspannen.",
+            ],
+            "filler_sentences": [
+                "Adem rustig door, je bent helemaal in controle.",
+                f"Merk maar hoe fijn jij je voelt bij {droomplek_article} {droomplek}.",
+                "Je wordt steeds lichter en zachter. Merk maar hoe fijn dat is.",
+                "Je bent veilig en je hebt alles onder controle.",
+            ],
+        }
+
         prompt = self._load_prompt('prompt_d_intervention_imagery.txt')
         
         # Same substitution pattern as generate_practice_imagery
@@ -971,12 +1032,18 @@ class Droomrobot:
             prompt = prompt.replace('{dier_context}',
                 'Het lievelingsdier van het kind is niet bekend.')
 
-        #response = self.gpt.request(GPTRequest(prompt))
-        response = self._gpt_request_with_timeout(prompt)
-        if not response:
-            return None # TO DO: define fallback
-        
-        return json.loads(response.response)
+        response_text = self._gpt_request_with_timeout(prompt, max_tokens=1500)
+        if not response_text:
+            return fallback_payload
+
+        try:
+            payload = self._extract_json_object(response_text)
+            if "intervention_preparation" not in payload or "filler_sentences" not in payload:
+                return fallback_payload
+            return payload
+        except Exception as e:
+            print(f"[INTERVENTION_IMAGERY] JSON parse error: {repr(e)}, using fallback")
+            return fallback_payload
 
     def _load_prompt(self, filename):
         prompt_path = Path(__file__).parent / 'resources' / 'prompts' / filename
