@@ -7,8 +7,17 @@ from os import environ, fsync
 from os.path import exists
 from pathlib import Path
 import random as rand
-from threading import Thread
-from time import sleep, strftime
+from threading import Event, Thread
+from time import monotonic, sleep, strftime
+
+
+class NullMini:
+    """No-op stub used in computer_test_mode instead of a real Alphamini."""
+    def animate(self, *args, **kwargs):
+        pass
+
+    def set_mouth_lamp(self, *args, **kwargs):
+        pass
 
 import numpy as np
 
@@ -220,6 +229,7 @@ class Droomrobot:
             self.speaker = desktop.speakers
             self.mic = desktop.mic
             self.device_name = "computer"
+            self.mini = NullMini()
         print("Complete")
 
         print("\n SETTING UP DIALOGFLOW")
@@ -235,6 +245,11 @@ class Droomrobot:
         self.request_id = np.random.randint(10000)
         self.dialogflow.register_callback(self._on_dialog)
         print("Complete and ready for interaction!")
+        
+        
+    # ------------------------
+    # Logging helpers
+    # ------------------------   
 
     def start_logging(self, log_id, init_data: dict):
         folder = Path(__file__).parent.resolve() / 'logs'
@@ -273,6 +288,10 @@ class Droomrobot:
             timestamp = strftime("%Y-%m-%d %H:%M:%S")
             self._log_queue.put(f"[{timestamp}] recognition result: {recognition_result}")
 
+    # ------------------------
+    # Audio helpers
+    # ------------------------
+    
     @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'sleep_time', 'animated', 'amplified', 'always_regenerate'])
     def say(self, text, speaking_rate=None, sleep_time=None, animated=None, amplified=False, always_regenerate=False):
         text_chunks = self._split_text(text, max_len=80)
@@ -565,7 +584,238 @@ class Droomrobot:
                        f'Genereer nu 1 passende vervolgvraag. '
                        f'De woordenschat en het taalniveau moeten op B2 niveau zijn.'))
         return gpt_response.response
+    
+    # ------------------------
+    # LLM personalization helpers
+    # ------------------------
+    def generate_droomplek_payload(self, child_name: str, child_age: int, child_answer: str) -> dict:
+        print(f"\n[DROOMPLEK] Starting generate_droomplek_payload")
+        print(f"[DROOMPLEK] Input: child_name={child_name}, child_age={child_age}, child_answer={child_answer}")
 
+        fallback_payload = {
+            'speech_text': f'Wat leuk dat je {child_answer} hebt gekozen! Dat is een fijne plek.',
+            'dream_place_final': 'strand',
+            'dream_place_article': 'het',
+            'place_decided': False,
+        }
+
+        if not self.gpt:
+            print(f"[DROOMPLEK] GPT not initialized, using fallback")
+            return fallback_payload
+        
+        prompt = self._load_prompt('prompt_a_droomplek_keuze.txt')
+        prompt = (
+            prompt +
+            f"\n\nCHILD INFORMATION:\n"
+            f"Name: {child_name}\n"
+            f"Age: {child_age}\n"
+            f"Child's answer about dream place: {child_answer}"
+        )
+        print(f"[DROOMPLEK] Prompt length: {len(prompt)}")
+
+        response_text = self._gpt_request_with_timeout(prompt, max_tokens=300)
+        if not response_text:
+            print(f"[DROOMPLEK] GPT failed, using fallback")
+            return fallback_payload
+
+        print(f"[DROOMPLEK] Response (first 300 chars): {response_text[:300]}")
+
+        try:
+            payload = self._extract_json_object(response_text)
+            required_keys = ["speech_text", "dream_place_final", "dream_place_article", "place_decided"]
+            for key in required_keys:
+                if key not in payload:
+                    print(f"[DROOMPLEK] Missing key '{key}', using fallback")
+                    return fallback_payload
+
+            payload["speech_text"] = str(payload["speech_text"]).strip()
+            payload["dream_place_final"] = str(payload["dream_place_final"]).strip().lower()
+            payload["dream_place_article"] = str(payload["dream_place_article"]).strip().lower()
+            payload["place_decided"] = bool(payload["place_decided"])
+            print(f"[DROOMPLEK] Payload validated: {payload}")
+            return payload
+        except Exception as e:
+            print(f"[DROOMPLEK] JSON parse error: {repr(e)}, using fallback")
+            return fallback_payload
+
+    """def generate_droomplek_imagery_payload(self, child_name: str, child_age: int,
+                                           droomplek: str, droomplek_article: str,
+                                           motivatie: str) -> dict:
+        print(f"\n[IMAGERY] Starting generate_droomplek_imagery_payload")
+        print(f"[IMAGERY] Input: name={child_name}, age={child_age}, droomplek={droomplek}, motivatie={motivatie}")
+
+        fallback_payload = {
+            'transition_sentence': 'Oke, laten we samen gaan oefenen.',
+            'guided_imagery_seed': (
+                f'Stel je voor dat je bij {droomplek_article} {droomplek} bent. '
+                'Kijk maar eens in je hoofd om je heen, wat je allemaal op die mooie plek ziet. '
+                'Misschien ben je er alleen, of is er iemand bij je. '
+                'Kijk maar welke mooie kleuren je allemaal om je heen ziet. '
+                'En merk maar hoe fijn jij je op deze plek voelt.'
+            ),
+            'guided_imagery_seed_2': (
+                'Kijk maar weer naar alle mooie kleuren die er zijn, en voel hoe fijn het is om daar te zijn. '
+                'Luister maar naar alle fijne geluiden op die plek.'
+            ),
+            'intervention_preparation_sentences': [
+                f'Kijk maar naar de leuke dingen die je bij {droomplek_article} {droomplek} kunt doen.',
+                'Misschien ben je er alleen of juist met je vrienden.',
+                f'Wat een leuke plek, {droomplek_article} {droomplek}, die wil ik ook wel eens bezoeken.',
+            ],
+            'intervention_procedure_sentences': [
+                f'Je doet het fantastisch bij {droomplek_article} {droomplek}!',
+                'Adem rustig door, je bent helemaal in controle.',
+                f'Kijk maar rond op je droomplek, wat zie je allemaal bij {droomplek_article} {droomplek}?',
+                f'Wat ruik je eigenlijk bij {droomplek_article} {droomplek}?',
+                f'Wat voor geluiden hoor je op die mooie plek?',
+                f'Jouw droomplek bij {droomplek_article} {droomplek} is echt een fijne plek.',
+            ],
+        }
+
+        if not self.gpt:
+            print(f"[IMAGERY] GPT not initialized, using fallback")
+            return fallback_payload
+
+        prompt = (
+            droomplek_imagery_prompt +
+            f"\n\nCHILD INFORMATION:\n"
+            f"Name: {child_name}\n"
+            f"Age: {child_age}\n"
+            f"Droomplek: {droomplek}\n"
+            f"Droomplek article: {droomplek_article}\n"
+            f"Child's motivation (what they want to do there): {motivatie}"
+        )
+        print(f"[IMAGERY] Prompt length: {len(prompt)}")
+
+        response_text = self._gpt_request_with_timeout(prompt, max_tokens=700)
+        if not response_text:
+            print(f"[IMAGERY] GPT failed, using fallback")
+            return fallback_payload
+
+        print(f"[IMAGERY] Response (first 300 chars): {response_text[:300]}")
+
+        try:
+            payload = self._extract_json_object(response_text)
+            required_keys = [
+                "transition_sentence", "guided_imagery_seed", "guided_imagery_seed_2",
+                "intervention_preparation_sentences", "intervention_procedure_sentences"
+            ]
+            for key in required_keys:
+                if key not in payload:
+                    print(f"[IMAGERY] Missing key '{key}', using fallback")
+                    return fallback_payload
+
+            payload["transition_sentence"] = str(payload["transition_sentence"]).strip()
+            payload["guided_imagery_seed"] = str(payload["guided_imagery_seed"]).strip()
+            payload["guided_imagery_seed_2"] = str(payload["guided_imagery_seed_2"]).strip()
+            payload["intervention_preparation_sentences"] = [str(s).strip() for s in payload["intervention_preparation_sentences"]]
+            payload["intervention_procedure_sentences"] = [str(s).strip() for s in payload["intervention_procedure_sentences"]]
+            print(f"[IMAGERY] Payload validated successfully")
+            return payload
+        except Exception as e:
+            print(f"[IMAGERY] JSON parse error: {repr(e)}, using fallback")
+            return fallback_payload"""
+
+    def generate_motivation_reaction(self, child_name, child_age, droomplek,
+                                  droomplek_article, motivatie) -> dict:
+        """Prompt B: Quick reaction to motivation answer."""
+        prompt = self._load_prompt('prompt_b_motivatie_reactie.txt')
+        
+        prompt = prompt.replace('{kind_naam}', child_name)
+        prompt = prompt.replace('{leeftijd}', str(child_age))
+        prompt = prompt.replace('{droomplek}', droomplek)
+        prompt = prompt.replace('{droomplek_article}', droomplek_article)
+        prompt = prompt.replace('{motivatie}', motivatie or 'niet bekend')
+        
+        response = self.gpt.request(GPTRequest(prompt))
+        return json.loads(response.response)
+
+    def generate_practice_imagery(self, child_name, child_age, droomplek,
+                                droomplek_article, motivatie,
+                                kleur=None, metgezel=None, dier=None) -> dict:
+        """Prompt C: Practice guided imagery (10 sentences)."""
+        prompt = self._load_prompt('prompt_c_practice_imagery.txt')
+        
+        prompt = prompt.replace('{kind_naam}', child_name)
+        prompt = prompt.replace('{leeftijd}', str(child_age))
+        prompt = prompt.replace('{droomplek}', droomplek)
+        prompt = prompt.replace('{droomplek_article}', droomplek_article)
+        prompt = prompt.replace('{motivatie}', motivatie or 'niet bekend')
+
+        if kleur:
+            kleur_adj = self.get_adjective(kleur)
+            prompt = prompt.replace('{kleur_context}',
+                f'De lievelingskleur van het kind is: {kleur}. Bijvoeglijk naamwoord: {kleur_adj}.')
+        else:
+            prompt = prompt.replace('{kleur_context}',
+                'De lievelingskleur van het kind is niet bekend.')
+
+        if metgezel:
+            prompt = prompt.replace('{metgezel_context}',
+                f'Het kind wil graag {metgezel} meenemen op avontuur.')
+        else:
+            prompt = prompt.replace('{metgezel_context}',
+                'Het kind heeft geen specifieke metgezel genoemd.')
+            
+        if dier:
+            prompt = prompt.replace('{dier_context}',
+                f'Het lievelingsdier van het kind is {dier}.')
+        else:
+            prompt = prompt.replace('{dier_context}',
+                'Het lievelingsdier van het kind is niet bekend.')
+
+        response = self.gpt.request(GPTRequest(prompt))
+        return json.loads(response.response)
+
+
+    def generate_intervention_imagery(self, child_name, child_age, droomplek,
+                                    droomplek_article, motivatie,
+                                    kleur=None, metgezel=None, dier=None) -> dict:
+        """Prompt D: Full intervention imagery (16 sentences + 4 fillers)."""
+        prompt = self._load_prompt('prompt_d_intervention_imagery.txt')
+        
+        # Same substitution pattern as generate_practice_imagery
+        prompt = prompt.replace('{kind_naam}', child_name)
+        prompt = prompt.replace('{leeftijd}', str(child_age))
+        prompt = prompt.replace('{droomplek}', droomplek)
+        prompt = prompt.replace('{droomplek_article}', droomplek_article)
+        prompt = prompt.replace('{motivatie}', motivatie or 'niet bekend')
+
+        if kleur:
+            kleur_adj = self.get_adjective(kleur)
+            prompt = prompt.replace('{kleur_context}',
+                f'De lievelingskleur van het kind is: {kleur}. Bijvoeglijk naamwoord: {kleur_adj}.')
+        else:
+            prompt = prompt.replace('{kleur_context}',
+                'De lievelingskleur van het kind is niet bekend.')
+
+        if metgezel:
+            prompt = prompt.replace('{metgezel_context}',
+                f'Het kind wil graag {metgezel} meenemen op avontuur.')
+        else:
+            prompt = prompt.replace('{metgezel_context}',
+                'Het kind heeft geen specifieke metgezel genoemd.')
+            
+        if dier:
+            prompt = prompt.replace('{dier_context}',
+                f'Het lievelingsdier van het kind is {dier}.')
+        else:
+            prompt = prompt.replace('{dier_context}',
+                'Het lievelingsdier van het kind is niet bekend.')
+
+        response = self.gpt.request(GPTRequest(prompt))
+        return json.loads(response.response)
+
+    def _load_prompt(self, filename):
+        prompt_path = Path(__file__).parent / 'resources' / 'prompts' / filename
+        with open(prompt_path, 'r', encoding='utf-8') as f:
+            return f.read()
+        
+        
+    # ------------------------
+    # TTS helpers
+    # ------------------------
+    
     def disconnect(self):
         if isinstance(self.tts_conf, ElevenLabsTTSConf):
             disconnect_elevenlabs_future = asyncio.run_coroutine_threadsafe(self.tts.disconnect(), self.background_loop)
