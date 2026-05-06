@@ -1,6 +1,6 @@
 import abc
 from enum import Enum
-from threading import Event
+from threading import Event, Thread
 from time import sleep
 
 from droomrobot.core import Droomrobot
@@ -185,7 +185,7 @@ class DroomrobotScript:
                 print(f"[Background] Prompt {key} failed: {e}")
 
         self._pending_futures[key] = ('pending', None)
-        thread = threading.Thread(target=_worker, daemon=True)
+        thread = Thread(target=_worker, daemon=True)
         thread.start()
         
     def _await_background_prompt(self, key, timeout=60):
