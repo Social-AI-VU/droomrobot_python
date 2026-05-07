@@ -191,8 +191,8 @@ class Droomrobot:
                                                                             self.background_loop)
             try:
                 connect_to_elevenlabs_future.result()
-                # asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
-                #                                  self.background_loop).result()
+                asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
+                                                 self.background_loop).result()
                 elevenlabs_thread = Thread(target=self._connect_elevenlabs, daemon=True)
                 elevenlabs_thread.start()
                 print('Elevenlabs TTS activated')
@@ -1105,16 +1105,15 @@ class Droomrobot:
         self.interaction_conf = InteractionConf()
 
     def _connect_elevenlabs(self):
-        # while True:
-        #     try:
-        #         asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
-        #                                          self.background_loop).result()
-        #         self.logger.info('Elevenlabs still connected')
-        #     except Exception as e:
-        #         self.logger.error("Failed to connect to elevenlabs", exc_info=e)
-        #
-        #     sleep(150)
-        pass
+        while True:
+            try:
+                asyncio.run_coroutine_threadsafe(self.tts.speak("Ik ben aan het initializeren"),
+                                                 self.background_loop).result()
+                self.logger.info('Elevenlabs still connected')
+            except Exception as e:
+                self.logger.error("Failed to connect to elevenlabs", exc_info=e)
+
+            sleep(150)
 
 
     @staticmethod
