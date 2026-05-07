@@ -124,14 +124,20 @@ class ElevenLabsTTS:
 
                     if data.get("audio"):
                         audio_chunks.append(base64.b64decode(data["audio"]))
+
                     if data.get("isFinal"):
                         if audio_chunks:
                             return b"".join(audio_chunks)
                         return None
+
                 except asyncio.TimeoutError:
+                    if audio_chunks:
+                        return b"".join(audio_chunks)
+
                     self.logger.error('[TTS] No audio received from Elevenlabs')
                     self.websocket = None
-                    return b"".join(audio_chunks) if audio_chunks else None
+                    return None
+
                 except websockets.exceptions.ConnectionClosedOK:
                     # Normal closure (1000), nothing to worry about
                     self.logger.warning("[TTS] WebSocket closed cleanly by server.")
@@ -147,7 +153,6 @@ class ElevenLabsTTS:
                     self.logger.error(f"[TTS] Other failure in elevenlabs tts: {e}")
                     self.websocket = None
                     return b"".join(audio_chunks) if audio_chunks else None
-
 
 class TTSCacher:
 
