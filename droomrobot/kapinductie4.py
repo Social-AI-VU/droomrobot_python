@@ -31,7 +31,7 @@ class Kapinductie4(DroomrobotScript):
         self.add_moves(intro_moves)
 
         # Droomplek selection (Prompt A — synchronous, small)
-        self.add_move(self.droomrobot.ask_entity_llm,
+        self.add_move(self.droomrobot.ask_open,
                     'Waar zou jij naartoe willen op droomreis?',
                     user_model_key='droomplek_raw_answer')
         self.add_choice(self.build_interaction_choice_droomplek())  # uses Prompt A
