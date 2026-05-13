@@ -20,6 +20,14 @@ Genereer de volledige begeleide verbeelding die de robot uitspreekt tijdens het 
 De verbeelding moet het narcosemasker en de bijbehorende sensaties POSITIEF HERKADEREN als onderdeel van het droomavontuur.
 De zinnen worden één voor één uitgesproken op een langzaam, kalm tempo (0.75× snelheid, 0.5s pauze tussen zinnen).
 
+TONE ANCHOR
+Elke zin moet klinken als:
+- rustig fluisterend
+- vriendelijk speels
+- nooit technisch
+- nooit uitleggerig
+- nooit volwassen-therapeutisch
+
 === STRUCTUUR: 7-FASEN-BOOG ===
 
 Genereer precies 17 zinnen die de volgende 7 fasen doorlopen. Elke fase heeft een specifiek doel.
