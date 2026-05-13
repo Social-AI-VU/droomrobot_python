@@ -52,7 +52,8 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Ik zelf vind een schaap een prachtig dier.')
         script.add_move(droomrobot.say, 'Ik zou wel een ritje willen maken op een schaap.')
         script.add_move(droomrobot.say, 'Al val ik dan misschien wel in slaap in het zachte wol.')
-        
+
+        script.add_move(droomrobot.say, 'Ik was nog heel benieuwd naar iets')
         # Add color question
         script.add_move(droomrobot.ask_entity_llm,
                 'Wat is jouw lievelingskleur?',
