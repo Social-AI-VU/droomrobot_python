@@ -7,7 +7,7 @@ from os import environ, fsync
 from os.path import exists
 from pathlib import Path
 import random as rand
-from threading import Event, Thread
+from threading import Event, Thread, Lock
 from time import monotonic, sleep, strftime
 
 
@@ -200,6 +200,7 @@ class Droomrobot:
                 self.logger.error("Failed to connect to elevenlabs", exc_info=e)
         else:
             raise ValueError(f"Unknown tts_conf {self.tts_conf}")
+        self.audio_generation_lock = Lock()
 
         self.tts_cacher = TTSCacher()
         print("Complete")
@@ -214,7 +215,7 @@ class Droomrobot:
                 mini_password=mini_password,
                 redis_ip=redis_ip,
                 speaker_conf=MiniSpeakersConf(sample_rate=self.sample_rate),
-                bypass_install=False
+                bypass_install=True
             )
             self.speaker = self.mini.speaker
             self.mic = self.mini.mic
@@ -323,9 +324,11 @@ class Droomrobot:
                 sample_rate = reply.sample_rate
 
             elif isinstance(self.tts_conf, ElevenLabsTTSConf):
-                # ElevenLabs TTS returns bytes
-                audio_bytes = asyncio.run_coroutine_threadsafe(self.tts.speak(chunk), self.background_loop).result()
-                sample_rate = self.sample_rate
+                with self.audio_generation_lock:
+                    # ElevenLabs TTS returns bytes
+                    print(f"Lock acquired for: {text}")
+                    audio_bytes = asyncio.run_coroutine_threadsafe(self.tts.speak(chunk), self.background_loop).result()
+                    sample_rate = self.sample_rate
             else:
                 raise ValueError(f"TTS conf {self.tts_conf} is not supported")
 
@@ -1114,6 +1117,35 @@ class Droomrobot:
                 self.logger.error("Failed to connect to elevenlabs", exc_info=e)
 
             sleep(150)
+
+    def generate_audio(self, text, amplified=False):
+        print("generation audio:", text)
+
+        text_chunks = self._split_text(text, max_len=80)
+
+        for chunk in text_chunks:
+            tts_key = self.tts_cacher.make_tts_key(chunk, self.tts_conf)
+
+            if tts_key in self.tts_cacher.tts_cache:
+                continue
+
+            self.generate_chunk_audio(chunk, amplified)
+
+    def generate_chunk_audio(self, chunk, amplified=False):
+        tts_key = self.tts_cacher.make_tts_key(chunk, self.tts_conf)
+
+        # ElevenLabs TTS returns bytes
+        with self.audio_generation_lock:
+            audio_bytes = asyncio.run_coroutine_threadsafe(self.tts.speak(chunk), self.background_loop).result()
+
+            if audio_bytes and amplified:
+                audio_bytes = self._amplify_audio(audio_bytes)
+            # Save to cache file
+            self.tts_cacher.save_audio_file(tts_key, audio_bytes, self.sample_rate)
+
+            print("Generated audio:", chunk)
+
+        return audio_bytes
 
 
     @staticmethod
