@@ -60,7 +60,7 @@ BEPAAL VERVOLGENS:
 dream_place_final:
   De concrete plek (enkelvoud, geen kleur of vaag woord).
   Als place_decided = true: gebruik de plek uit het antwoord van het kind (eventueel licht verduidelijkt).
-  Als place_decided = false: gebruik de eerste van de twee voorgestelde alternatieven als tijdelijke placeholder.
+  Als place_decided = false: gebruik "strand" als tijdelijke placeholder.
 
 dream_place_article:
   Het correcte lidwoord ("de" of "het") voor dream_place_final.
@@ -71,7 +71,7 @@ Controleer intern dat:
 - Maximaal 4 zinnen
 - Elke zin maximaal 75 tekens
 - Geen meta-zinnen, geen emoji's
-- dream_place_final concreet is
+- dream_place_final concreet is en geen lidwoord bevat (die staat bij dream_place_article )
 - JSON geldig is
 
 OUTPUTFORMAT

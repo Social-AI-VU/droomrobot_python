@@ -329,6 +329,10 @@ class Droomrobot:
             else:
                 raise ValueError(f"TTS conf {self.tts_conf} is not supported")
 
+            if not isinstance(audio_bytes, bytes) or not audio_bytes:
+                print(f"[TTS] Skipping playback because no audio was generated for: {chunk!r}")
+                continue
+
             # Optional amplification
             if audio_bytes and amplified:
                 audio_bytes = self._amplify_audio(audio_bytes)
@@ -729,8 +733,8 @@ class Droomrobot:
                        f'Jij bent daar om het kind af te leiden met een leuk gesprek.'
                        f'Dit is de context van het gesprek: {context}'
                        f'Het kind reageerde met het volgende: "{user_input}"'
-                       f'Genereer nu een grappige reactie in één of twee zinnen. '
-                       f'Het mag geen vraag zijn. De woordenschat en het taalniveau moeten op B2 niveau zijn.'))
+                       f'Genereer nu een positieve en grappige reactie in één of twee zinnen. '
+                       f'Het mag GEEN vraag zijn, NIET relateren aan het ziekenhuis of andere negatieve onderwerpen. De woordenschat en het taalniveau moeten op B2 niveau zijn.'))
         return gpt_response.response
 
     def generate_question(self, user_age, robot_input, user_input):
@@ -1032,7 +1036,7 @@ class Droomrobot:
             prompt = prompt.replace('{dier_context}',
                 'Het lievelingsdier van het kind is niet bekend.')
 
-        response_text = self._gpt_request_with_timeout(prompt, max_tokens=1500)
+        response_text = self._gpt_request_with_timeout(prompt, max_tokens=1500, timeout=40)
         if not response_text:
             return fallback_payload
 
