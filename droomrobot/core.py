@@ -1210,7 +1210,7 @@ class Droomrobot:
         return audio_int16.tobytes()
 
     @staticmethod
-    def _split_text(text: str, max_len: int = 80, min_tail: int = 20):
+    def _split_text(text: str, max_len: int = 200, min_tail: int = 20):
         """
             Split text into natural chunks of ~max_len characters.
             - First, split by sentence boundaries (.?!)
