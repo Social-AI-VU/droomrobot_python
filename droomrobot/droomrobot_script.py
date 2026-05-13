@@ -237,8 +237,6 @@ class DroomrobotScript:
                 if move.user_model_key:
                     self.user_model[move.user_model_key] = result
                     self.droomrobot.save_user_model(self.participant_id, self.user_model)
-                    print("Should be preparing user audio")
-                    print(f"with variable {move.user_model_key}")
                     thread = Thread(
                         target = self.prepare_user_model_audio,
                         args = (move.user_model_key,),
@@ -316,11 +314,6 @@ class DroomrobotScript:
     def set_user_model_variable(self, key: str, value):
         self.user_model[key] = value
         self.droomrobot.save_user_model(self.participant_id, self.user_model)
-        thread = Thread(
-            target = self.prepare_user_model_audio,
-            args = (key,),
-            daemon = True)
-        thread.start()
 
     def set_user_model_variables(self, updates: dict):
         self.user_model.update(updates)
@@ -485,7 +478,7 @@ class DroomrobotScript:
         - droomplek_lidwoord (str): "de" or "het"  
         - droomplek_motivatie (str|None): what the child wants to do there
         """
-        
+
         # --- Helper functions ---
         
         def _run_prompt_a(answer_key: str, prefix: str = ''):
@@ -655,6 +648,12 @@ class DroomrobotScript:
         self.droomrobot.say(payload['motivatie_reactie'])
         self.droomrobot.say(payload['transitie_zin'])
 
+        thread = Thread(
+            target=self.prepare_user_model_audio,
+            args=("droomplek",),
+            daemon=True)
+        thread.start()
+
     def _fire_practice_imagery_background(self):
         """Fire Prompt C in background — result needed after breathing exercise."""
         self._fire_background_prompt(
@@ -684,12 +683,14 @@ class DroomrobotScript:
             payload = {'practice_imagery': sentences}
             self.set_user_model_variable('prompt_c_payload', payload)
 
-        if sentences:
-            thread = Thread(
-                target=self.pregenerate_prompt_output,
-                args=(sentences,),
-                daemon=True)
-            thread.start()
+        # can be here to pregenerate sentences
+        # but does not seem to save time
+        # if sentences:
+        #     thread = Thread(
+        #         target=self.pregenerate_prompt_output,
+        #         args=(sentences,),
+        #         daemon=True)
+        #     thread.start()
 
         # Start playing practice imagery
         # Fire Prompt D in background BEFORE first sentence
@@ -804,15 +805,11 @@ class DroomrobotScript:
         ]
 
     def prepare_user_model_audio(self, variable=None):
-        print("VARIABLE:", variable)
-
         if self.phases:
             moves = []
 
             for phase in self.phases:
-                # print(self.phase_moves.execute(phase))
                 things = self.phase_moves.execute(phase)
-
                 for move in things:
                     moves.append(move)
         else:
@@ -822,20 +819,16 @@ class DroomrobotScript:
             if hasattr(move, 'func') and move.func == self.droomrobot.say:
                 if callable(move.args[0]):
                     constants = move.args[0].__code__.co_consts
-                    # print(f"Yash! Dynamic text found: {text}")
 
                     if variable and variable in constants or variable is None:
                         try:
                             text = move.args[0]()
-                            print(f"Lock acquired for: {text}")
                             self.droomrobot.generate_audio(text, self.droomrobot.interaction_conf.amplified)
-                            # self.droomrobot.generate_audio(text, self.droomrobot.interaction_conf.amplified)
-                            # print("generate them audio", text)
                         except KeyError:
-                            print(f"Skipping move {move.args[0].__code__.co_consts}: Required information not in user_model.")
                             continue
 
     def pregenerate_prompt_output(self, sentences):
         for sentence in sentences:
-            print('GENERATING', sentence)
+            print('[background TTS generation]', sentence)
             self.droomrobot.generate_audio(sentence)
+        print("DONE PREGENERATING PROMPT OUTPUT")

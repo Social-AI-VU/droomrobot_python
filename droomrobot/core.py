@@ -324,11 +324,8 @@ class Droomrobot:
                 sample_rate = reply.sample_rate
 
             elif isinstance(self.tts_conf, ElevenLabsTTSConf):
-                with self.audio_generation_lock:
-                    # ElevenLabs TTS returns bytes
-                    print(f"Lock acquired for: {text}")
-                    audio_bytes = asyncio.run_coroutine_threadsafe(self.tts.speak(chunk), self.background_loop).result()
-                    sample_rate = self.sample_rate
+                audio_bytes = asyncio.run_coroutine_threadsafe(self.tts.speak(chunk), self.background_loop).result()
+                sample_rate = self.sample_rate
             else:
                 raise ValueError(f"TTS conf {self.tts_conf} is not supported")
 
@@ -1119,8 +1116,6 @@ class Droomrobot:
             sleep(150)
 
     def generate_audio(self, text, amplified=False):
-        print("generation audio:", text)
-
         text_chunks = self._split_text(text, max_len=80)
 
         for chunk in text_chunks:
@@ -1142,8 +1137,6 @@ class Droomrobot:
                 audio_bytes = self._amplify_audio(audio_bytes)
             # Save to cache file
             self.tts_cacher.save_audio_file(tts_key, audio_bytes, self.sample_rate)
-
-            print("Generated audio:", chunk)
 
         return audio_bytes
 
