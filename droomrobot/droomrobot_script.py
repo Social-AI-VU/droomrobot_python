@@ -719,52 +719,98 @@ class DroomrobotScript:
             })
             
     # --------------------------------
-    # Fallback content generators:
+    # Fallback content generators: go to the beach
     # --------------------------------
     def _get_fallback_practice_imagery(self):
-        dp = self.user_model.get('droomplek', 'strand')
-        art = self.user_model.get('droomplek_lidwoord', 'het')
-        return [
-            f'En terwijl je zo rustig aan het ademhalen bent, mag je gaan voorstellen dat je bij {art} {dp} bent.',
-            'Kijk maar eens in je gedachten om je heen.',
+        # fallback to het strand
+        return [        
+            'En terwijl je zo rustig aan het ademhalen bent, mag je gaan voorstellen dat je op het strand bent.',
+            'Kijk maar eens in je gedachten om je heen wat je allemaal op die mooie plek ziet.',
             'Misschien ben je er alleen, of is er iemand bij je.',
-            'Kijk maar welke mooie kleuren je allemaal om je heen ziet.',
+            'Kijk maar welke mooie kleuren je allemaal ziet.',
+            'Misschien wel groen of paars of regenboog kleuren.',
             'En merk maar hoe fijn jij je op deze plek voelt.',
-            'Luister maar naar alle fijne geluiden om je heen.',
-            'Misschien is het er heerlijk warm. Voel de warmte maar op je gezicht.',
+            'Luister maar lekker naar de golven van de zee.',
+            'Misschien is het er heerlijk warm of lekker koel. Voel de zonnestralen maar op je gezicht.',
             'En op deze plek kan je alles doen waar je zin in hebt.',
-            'Misschien doe je iets heel leuks, waar je blij van wordt.',
-            'Merk maar hoe fijn en rustig je je voelt op deze mooie plek.',
+            'Misschien ga je een zandkaasteel bouwen, of spring je over de golven heen.'
         ]
+        
 
-    def _get_fallback_intervention_imagery(self):
-        dp = self.user_model.get('droomplek', 'strand')
-        art = self.user_model.get('droomplek_lidwoord', 'het')
-        return [
-            f'Stel je maar voor dat je weer bij {art} {dp} bent, op die fijne plek.',
-            'Kijk maar weer naar alle mooie kleuren en merk hoe fijn je je voelt.',
-            'Voel maar hoe fijn het is om hier te zijn.',
-            'En terwijl je hier zo lekker bent, zie je een mooie schommel staan.',
-            'Precies in de kleur die jij mooi vindt.',
-            'Je mag op de schommel gaan zitten. Het voelt lekker zacht.',
-            'De schommel houdt je helemaal veilig en voelt heel fijn.',
-            'Voel maar hoe je zachtjes heen en weer gaat, heen en weer.',
-            'Jij bent de baas. Het gaat precies zo hoog als jij fijn vindt.',
-            'Het kan ook een lekker kriebelend gevoel in je buik geven.',
-            'En terwijl je schommelt, voel je een zachte warme wind op je gezicht.',
-            f'Merk maar hoe lekker rustig je lichaam wordt en hoe veilig jij je voelt bij {art} {dp}.',
-            'Je hoort alle fijne geluiden om je heen terwijl je lekker schommelt.',
-            'De warmte is net als een zachte deken die over je heen gaat.',
-            'Voel maar hoe je lichaam steeds lichter wordt nu je zo lekker schommelt.',
-            'Steeds lichter, steeds rustiger, helemaal ontspannen.',
-        ]
+    def _get_fallback_intervention_imagery(self, age=None):
+        # fall back to het strand
+        if age == 4:
+            return [
+                'Stel je maar voor dat je weer op het strand bent, op die fijne plek.',
+                'Wat zie je daar allemaal? Misschien een grote zee en zacht zand.',
+                'Luister maar naar alle fijne geluiden op het strand.',
+                'Voel het zand maar onder je voeten. Het is lekker zacht en warm.'
+                'Als je je tenen beweegt, voel je hoe lekker het zand voelt.',
+                'En terwijl je nu zo lekker op het strand bent, zie je een mooie schommel staan.',
+                'Die heeft precies jouw lievelingskleur.',
+                'Je mag op de schommel gaan zitten.',
+                'Voel maar hoe je zachtjes heen en weer gaat.',
+                'Voel maar hoe makkelijk de schommel doet wat jij wil',
+                'heen en weer', 
+                'heen en weer',
+                'De schommel gaat precies zo hoog als jij fijn vindt.', 
+                'Jij bent de baas.', 
+                'Het kan ook een lekker kriebelend gevoel in je buik geven.', 
+                'En terwijl je zo lekker aan het schommelen bent, voel je de zachte warme wind op je gezicht.', 
+                'Merk maar hoe lekker rustig je lichaam wordt en hoe veilig en fijn jij je voelt op het strand.',
+                'Je hoort de golven van de zee, terwijl je lekker blijft schommelen.', 
+                'De zon is net als een warme zachte deken die over je heen gaat.', 
+                'Voel maar hoe je lichaam steeds lichter wordt nu je zo lekker aan het schommelen bent.', 
+                'Steeds lichter, steeds rustiger, helemaal ontspannen.'
+                ]
+        if age == 6:
+            return [
+                'Stel je maar voor dat je weer op het strand bent, op die fijne plek.',
+                'Kijk maar weer naar alle mooie kleuren die er zijn en merk hoe fijn je je voelt op deze plek.',
+                'Luister maar naar alle fijne geluiden op het strand.',
+                'Het zand onder je voeten is heerlijk zacht.', 
+                'Als je je tenen beweegt, voel je hoe lekker het zand voelt.',
+                'En terwijl je nu zo lekker op het strand bent, zie je een mooie schommel staan.',
+                'Precies in de kleur die jij mooi vindt.',
+                'Je mag naar de schommel toe gaan en lekker gaan schommelen.',
+                'Voel maar hoe makkelijk de schommel met je mee beweegt, heen en weer, heen en weer.',  
+                'De schommel gaat precies zo hoog als dat jij het fijn vindt.',
+                'Jij hebt namelijk alle controle.',
+                'Het kan ook een lekker kriebelend gevoel in je buik geven.',
+                'En terwijl je zo lekker aan het schommelen bent, voel je de zachte warme wind op je gezicht.',
+                'Merk maar hoe lekker rustig je lichaam wordt en hoe veilig en fijn jij je voelt op het strand.',
+                'Je hoort de golven van de zee, terwijl je lekker blijft schommelen.',
+                'De zon is net als een warme zachte deken die over je heen gaat.',
+                'Voel maar hoe je lichaam steeds lichter wordt nu je zo lekker aan het schommelen bent.',
+                'Steeds lichter, steeds rustiger, helemaal ontspannen.'
+            ]
+        else: # age 9
+            return [
+                'Stel je maar voor dat je weer op het strand bent, op die fijne plek.',
+                'Kijk maar weer naar alle mooie kleuren die er zijn en merk hoe fijn je je voelt op deze plek.',
+                'Luister maar naar alle fijne geluiden op het strand.',
+                'Het zand onder je voeten is heerlijk zacht.',
+                'Als je je tenen beweegt, voel je hoe lekker het zand voelt.',
+                'En terwijl je nu zo lekker op het strand bent, zie je een mooie schommel staan.',
+                'Precies in de kleur die jij mooi vindt.',
+                'Je mag naar de schommel toe gaan en lekker gaan schommelen.',
+                'Voel maar hoe makkelijk de schommel met je mee beweegt, heen en weer, heen en weer.',
+                'De schommel gaat precies zo hoog als dat jij het fijn vindt.',
+                'Jij hebt namelijk alle controle.',
+                'Het kan ook een lekker kriebelend gevoel in je buik geven.',
+                'En terwijl je zo lekker aan het schommelen bent, voel je de zachte warme wind op je gezicht.',
+                'Merk maar hoe lekker rustig je lichaam wordt en hoe veilig en fijn jij je voelt op het strand.',
+                'Je hoort de golven van de zee, terwijl je lekker blijft schommelen.',
+                'De zon is net als een warme zachte deken die over je heen gaat.',
+                'Voel maar hoe je lichaam steeds lichter wordt nu je zo lekker aan het schommelen bent.',
+                'Steeds lichter, steeds rustiger, helemaal ontspannen.'
+    ]
 
     def _get_default_fillers(self):
-        dp = self.user_model.get('droomplek', 'strand')
-        art = self.user_model.get('droomplek_lidwoord', 'het')
+        # fallback to het strand
         return [
-            'Adem rustig door, je bent helemaal in controle.',
-            f'Merk maar hoe fijn jij je voelt bij {art} {dp}.',
+            'Adem rustig door, je bent echt heel goed bezig!',
+            f'Merk maar hoe fijn jij je voelt bij het strand.',
             'Je wordt steeds lichter en zachter. Merk maar hoe fijn dat is.',
-            'Je bent veilig en je hebt alles onder controle.',
+            'Je bent veilig en je hebt alles onder controle.'
         ]

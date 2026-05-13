@@ -1,3 +1,5 @@
+import traceback
+
 from droomrobot.bloedafname4 import Bloedafname4
 from droomrobot.bloedafname6 import Bloedafname6
 from droomrobot.bloedafname9 import Bloedafname9
@@ -83,6 +85,7 @@ class DroomrobotControl:
             print("[Interrupted] Interaction is stopped manually")
         except Exception as e:
             print(f"[Error] Exception while running script: {e}")
+            traceback.print_exc()
         finally:
             self.stop()
 

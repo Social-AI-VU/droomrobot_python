@@ -24,7 +24,7 @@ class Kapinductie4(DroomrobotScript):
             print("Interaction part not recognized")
 
     def _introduction(self):
-        # Introduction to robot, get fav animal + color
+        # Introduction to robot, get fav animal + color + company
         interaction_conf = InteractionConf(amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
         intro_moves = IntroductionFactory.age4(droomrobot=self.droomrobot, interaction_context=self.interaction_context, user_model=self.user_model)
@@ -43,6 +43,9 @@ class Kapinductie4(DroomrobotScript):
         self.add_move(self._fire_practice_imagery_background)
 
         # Fixed scaffold: position + breathing (~30-45s while Prompt C generates)
+        interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
+        self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
+        
         self.add_choice(self._build_interaction_choice_comfortable_position())
         self.add_move(self.droomrobot.say, 'Adem rustig in.')
         self.add_move(self.droomrobot.play_audio, 'resources/audio/breath_in.wav')
@@ -463,7 +466,7 @@ class Kapinductie4(DroomrobotScript):
         return phase_moves
     
     def _play_intervention_sentences(self):
-        sentences = self.user_model.get('intervention_preparation_sentences', [])
+        sentences = self.user_model.get('intervention_preparation_sentences', self._get_fallback_intervention_imagery(4))
         for sentence in sentences:
             if not self.is_running or self._requested_phase:
                 break
