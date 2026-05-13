@@ -1,3 +1,4 @@
+import threading
 import traceback
 
 from droomrobot.bloedafname4 import Bloedafname4
@@ -79,6 +80,12 @@ class DroomrobotControl:
                 'session': session,
                 'child_age': user_model['child_age']
             })
+            thread = threading.Thread(
+                target = self.interaction_script.prepare_user_model_audio,
+                args = ('child_name',),
+                daemon = True)
+            thread.start()
+            # self.interaction_script.prepare_all_user_model_audio()
             self.interaction_script.run()
             self.droomrobot.stop_logging()
         except KeyboardInterrupt:
