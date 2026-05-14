@@ -150,7 +150,7 @@ class DroomrobotScript:
         self.audio_amplified = audio_amplified
         self.always_regenerate = always_regenerate
 
-        if 'droomplek' in self.user_model:
+        if 'droomplek' in self.user_model and not self.user_model.get('droomplek_lidwoord'):
             self.user_model['droomplek_lidwoord'] = self.droomrobot.get_article(self.user_model['droomplek'])
 
         #if 'kleur' in self.user_model:

@@ -545,10 +545,17 @@ class Droomrobot:
         return None
 
     def get_article(self, word):
-        gpt_response = self.gpt.request(
-            GPTRequest(
-                f'Retourneer het lidwoord van {word}. Retouneer alleen het lidwoord zelf bijv. "de" of "het" en geen andere informatie.'))
-        return gpt_response.response
+        try:
+            gpt_response = self.gpt.request(
+                GPTRequest(
+                    f'Retourneer het lidwoord van {word}. Retouneer alleen het lidwoord zelf bijv. "de" of "het" en geen andere informatie.'))
+            article = str(gpt_response.response).strip().lower()
+            if article in {"de", "het"}:
+                return article
+            print(f"[GPT] Unexpected article response for {word!r}: {gpt_response.response!r}, using 'het'")
+        except Exception as e:
+            print(f"[GPT] Article lookup failed for {word!r}: {e}, using 'het'")
+        return "het"
 
     def get_adjective(self, word):
         gpt_response = self.gpt.request(
