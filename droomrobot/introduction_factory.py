@@ -55,14 +55,15 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Al val ik dan misschien wel in slaap in het zachte wol.')
 
         script.add_move(droomrobot.say, 'Ik was nog heel benieuwd naar iets')
-        
+        """
         # Add color question
         script.add_move(droomrobot.ask_entity_llm,
-                'Wat is jouw lievelingskleur?',
+                'Wat is jouw lievelingskleur?', 
+                strict=True,
                 user_model_key='kleur')
         colour_choice = InteractionChoice('kleur', InteractionChoiceCondition.HASVALUE)
         colour_choice.add_move('success', droomrobot.say, lambda: f'{user_model["kleur"]}, mooie keuze!')
-        colour_choice.add_move('fail', droomrobot.say, 'Alle kleuren zijn mooi!')
+        colour_choice.add_move('fail', droomrobot.say, 'Alle kleuren zijn zo mooi! Mijn favoriet is groen.')
         script.add_choice(colour_choice)
         
         # Add companion question
@@ -76,7 +77,7 @@ class IntroductionFactory:
                 user_model['metgezel'])))
         companion_choice.add_move('fail', droomrobot.say, 'Het is ook fijn om zelf op avontuur te gaan!')
         script.add_choice(companion_choice)
-        
+        """
 
         script.add_move(droomrobot.say, 'Laat ik nu wat vertellen over de droomreis.')
         script.add_move(droomrobot.say, 'Je mag zo een fijne plek kiezen.')
@@ -91,7 +92,7 @@ class IntroductionFactory:
         script = DroomrobotScript(droomrobot, interaction_context)
 
         # REMOVE COMMENT BEFORE FINAL UPLOAD, THIS IS JUST TO SPEED UP TESTING
-        
+        """
         script.add_move(droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
         script.add_move(droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
         script.add_move(droomrobot.say, 'Hoi hoi, ik ben de droomrobot.')
@@ -110,7 +111,7 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'En omdat ik nog maar aan het leren ben, gaat het soms ook mis.')
         script.add_move(droomrobot.say, 'Maar dat hoort er bij. Ik stel de vraag dan gewoon nog een keer.')
         script.add_move(droomrobot.say, 'Degene die met je mee is mag ook helpen.')
-
+        """
         script.add_move(droomrobot.say, 'Laten we even oefenen!')
 
         script.add_move(droomrobot.ask_entity_llm,
@@ -138,10 +139,11 @@ class IntroductionFactory:
         # Add color question
         script.add_move(droomrobot.ask_entity_llm,
                 'Wat is jouw lievelingskleur?',
+                strict=True,
                 user_model_key='kleur')
         colour_choice = InteractionChoice('kleur', InteractionChoiceCondition.HASVALUE)
         colour_choice.add_move('success', droomrobot.say, lambda: f'{user_model["kleur"]}, mooie keuze!')
-        colour_choice.add_move('fail', droomrobot.say, 'Alle kleuren zijn mooi!')
+        colour_choice.add_move('fail', droomrobot.say, 'Alle kleuren zijn zo mooi! Mijn favoriet is groen.')
         script.add_choice(colour_choice)
         
         # Add companion question

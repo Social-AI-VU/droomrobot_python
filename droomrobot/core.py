@@ -103,7 +103,8 @@ class InteractionConf:
         return decorator
 
 
-ELEVENLABS_TTS_TIMEOUT_SECONDS = 8
+ELEVENLABS_TTS_TIMEOUT_SECONDS = 30
+SPEAKER_PLAYBACK_PADDING_SECONDS = 0.2
 
 
 class WiFiDevice:
@@ -300,9 +301,11 @@ class Droomrobot:
     
     @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'sleep_time', 'animated', 'amplified', 'always_regenerate'])
     def say(self, text, speaking_rate=None, sleep_time=None, animated=None, amplified=False, always_regenerate=False):
-        text_chunks = self._split_text(text, max_len=80)
+        print(f"[TTS] say() called with text: {text!r}")
+        text_chunks = self._split_text(text, max_len=120)
 
         for chunk in text_chunks:
+            print(f"[TTS] Handling chunk: {chunk!r}")
 
             if animated:
                 self.mini.animate(SDKAnimationType.EXPRESSION, self._random_speaking_eye_expression(), run_async=True)
@@ -313,11 +316,13 @@ class Droomrobot:
             if not always_regenerate:
                 audio_file = self.tts_cacher.load_audio_file(tts_key)
                 if audio_file:
+                    print(f"Using cached TTS audio for text: {chunk!r}")
                     self.log_utterance(speaker='robot', text=f'{chunk} (cache)')
                     self.play_audio(audio_file, log=False)
                     continue
 
             # Otherwise, generate TTS
+            print(f"[TTS] Cache miss; generating audio for: {chunk!r}")
             if isinstance(self.tts_conf, GoogleTTSConf):
                 reply = self.tts.request(GetSpeechRequest(
                     text=chunk,
@@ -342,15 +347,35 @@ class Droomrobot:
             if audio_bytes and amplified:
                 audio_bytes = self._amplify_audio(audio_bytes)
 
-            # Play audio
-            self.speaker.request(AudioRequest(audio_bytes, sample_rate))
-            self.log_utterance(speaker='robot', text=chunk)
-
-            # Save to cache file
+            # Save to cache before playback so live-generated speech is not lost
+            # if the robot speaker request times out.
             self.tts_cacher.save_audio_file(tts_key, audio_bytes, sample_rate)
+            print(f"[TTS] Saved generated audio to cache for: {chunk!r}")
+
+            if self._send_audio_to_speaker(audio_bytes, sample_rate, text=chunk):
+                self.log_utterance(speaker='robot', text=chunk)
 
         if sleep_time and sleep_time > 0:
             sleep(sleep_time)
+
+    @staticmethod
+    def _audio_duration_seconds(audio_bytes, sample_rate, sample_width=2, channels=1):
+        if not audio_bytes or sample_rate <= 0:
+            return 0
+        return len(audio_bytes) / float(sample_rate * sample_width * channels)
+
+    def _send_audio_to_speaker(self, audio_bytes, sample_rate, text=None):
+        duration = self._audio_duration_seconds(audio_bytes, sample_rate)
+        try:
+            print(f"[TTS] Sending audio to speaker; duration={duration:.2f}s text={text!r}")
+            self.speaker.request(AudioRequest(audio_bytes, sample_rate), block=False)
+            sleep(duration + SPEAKER_PLAYBACK_PADDING_SECONDS)
+            print(f"[TTS] Finished speaker wait for text={text!r}")
+            return True
+        except Exception as e:
+            label = f" for: {text!r}" if text else ""
+            print(f"[TTS] Speaker playback failed{label}: {repr(e)}")
+            return False
 
     def play_audio(self, audio_file, amplified=False, log=True):
         audio_file_full_path = Path(__file__).parent.resolve() / audio_file
@@ -368,8 +393,8 @@ class Droomrobot:
             if amplified:
                 audio = self._amplify_audio(audio)
 
-            self.speaker.request(AudioRequest(audio, framerate))
-            if log:
+            played = self._send_audio_to_speaker(audio, framerate, text=str(audio_file))
+            if played and log:
                 self.log_utterance(speaker='robot', text=f'plays {audio_file}')
 
     def _speak_elevenlabs_with_timeout(self, chunk, timeout=ELEVENLABS_TTS_TIMEOUT_SECONDS):
@@ -603,10 +628,14 @@ class Droomrobot:
 
         def _request():
             try:
+                print(f"[GPT] Worker starting request max_tokens={max_tokens}")
                 gpt_response[0] = self.gpt.request(GPTRequest(prompt, max_tokens=max_tokens))
+                print("[GPT] Worker received response")
             except Exception as e:
+                print(f"[GPT] Worker failed: {repr(e)}")
                 gpt_error[0] = e
 
+        print(f"[GPT] Starting request with timeout={timeout}s")
         thread = threading.Thread(target=_request, daemon=True)
         thread.start()
         thread.join(timeout=timeout)
@@ -620,6 +649,7 @@ class Droomrobot:
         if not gpt_response[0]:
             print(f"[GPT] No response returned")
             return None
+        print("[GPT] Returning response text")
         return gpt_response[0].response
 
     def _extract_json_object(self, text: str) -> dict:
@@ -766,6 +796,7 @@ class Droomrobot:
         return gpt_response.response
 
     def generate_funny_response(self, user_age, context, user_input):
+        print(f"[FUNNY] Generating funny response for input={user_input!r}, age={user_age!r}")
         gpt_response = self._gpt_request_with_timeout(
             f'Je bent een sociale robot die praat met een kind van {str(user_age)} jaar oud.'
             f'Het kind ligt in het ziekenhuis.'
@@ -774,6 +805,7 @@ class Droomrobot:
             f'Het kind reageerde met het volgende: "{user_input}"'
             f'Genereer nu een positieve en grappige reactie in één of twee zinnen. '
             f'Het mag GEEN vraag zijn, NIET relateren aan het ziekenhuis of andere negatieve onderwerpen. De woordenschat en het taalniveau moeten op B2 niveau zijn.')
+        print(f"[FUNNY] Result: {gpt_response!r}")
         return gpt_response or "Wat leuk zeg!"
 
     def generate_question(self, user_age, robot_input, user_input):
@@ -1159,7 +1191,7 @@ class Droomrobot:
             sleep(150)
 
     def generate_audio(self, text, amplified=False):
-        text_chunks = self._split_text(text, max_len=80)
+        text_chunks = self._split_text(text, max_len=120)
 
         for chunk in text_chunks:
             tts_key = self.tts_cacher.make_tts_key(chunk, self.tts_conf)
@@ -1284,10 +1316,15 @@ class Droomrobot:
 
                 # Prefer splitting at last comma
                 break_pos = chunk.rfind(',')
+                split_after_break = True
+                if break_pos < max_len // 3:
+                    break_pos = -1
+                    split_after_break = False
 
                 if break_pos == -1:
                     # otherwise split at last space
                     break_pos = chunk.rfind(' ')
+                    split_after_break = False
 
                     if break_pos == -1 or break_pos < max_len // 3:
                         # fallback: just split at max_len
@@ -1297,8 +1334,9 @@ class Droomrobot:
                 if len(sentence) - break_pos < min_tail:
                     break_pos = len(sentence)
 
-                chunks.append(sentence[:break_pos].strip())
-                sentence = sentence[break_pos:].strip()
+                split_pos = break_pos + 1 if split_after_break and break_pos < len(sentence) else break_pos
+                chunks.append(sentence[:split_pos].strip())
+                sentence = sentence[split_pos:].strip()
 
             if sentence:
                 chunks.append(sentence)

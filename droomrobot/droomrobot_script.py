@@ -233,10 +233,14 @@ class DroomrobotScript:
             move = self.interaction_moves[self.script_idx]
 
             if isinstance(move, InteractionMove):
+                move_name = getattr(move.func, "__name__", repr(move.func))
+                print(f"[SCRIPT] Starting move {self.script_idx}: {move_name}")
                 result = move.execute()
+                print(f"[SCRIPT] Finished move {self.script_idx}: {move_name} -> {result!r}")
                 if move.user_model_key:
                     self.user_model[move.user_model_key] = result
                     self.droomrobot.save_user_model(self.participant_id, self.user_model)
+                    print(f"[SCRIPT] Saved user_model[{move.user_model_key!r}] = {result!r}")
                     thread = Thread(
                         target = self.prepare_user_model_audio,
                         args = (move.user_model_key,),
@@ -245,7 +249,9 @@ class DroomrobotScript:
                 self.script_idx += 1
 
             elif isinstance(move, InteractionChoice):
+                print(f"[SCRIPT] Resolving choice {self.script_idx}: target={move.target!r}, condition={move.condition.name}")
                 moves = move.execute(self.user_model)
+                print(f"[SCRIPT] Choice {move.target!r} inserted {len(moves)} move(s)")
                 self.interaction_moves[self.script_idx:self.script_idx + 1] = moves  # insert the moves beloning to the choice in the list
 
         self.is_running = False

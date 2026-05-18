@@ -197,27 +197,32 @@ class TTSCacher:
         return hashlib.md5(canonical.encode("utf-8")).hexdigest()
 
     def save_audio_file(self, tts_key: str, audio_bytes: bytes, sample_rate: int, sample_width: int = 2, channels: int = 1):
-        subfolder = self.tts_cache_dir / tts_key[:self.subfolder_depth]
+        subfolder_name = tts_key[:self.subfolder_depth]
+        subfolder = self.tts_cache_dir / subfolder_name
         os.makedirs(subfolder, exist_ok=True)
-        filename = os.path.join(subfolder, f"{tts_key}.wav")
+        filename = subfolder / f"{tts_key}.wav"
 
-        with wave.open(filename, "wb") as wf:
+        with wave.open(str(filename), "wb") as wf:
             wf.setnchannels(channels)
             wf.setsampwidth(sample_width)  # 2 bytes = 16-bit
             wf.setframerate(sample_rate)
             wf.writeframes(audio_bytes)
 
-        self.tts_cache[tts_key] = filename
+        self.tts_cache[tts_key] = f"{subfolder_name}/{tts_key}.wav"
         self._save_cache()
 
     def load_audio_file(self, tts_key):
         if tts_key in self.tts_cache:
             # Cached audio exists, play it
             audio_file = self.tts_cache[tts_key]
-            if os.path.exists(audio_file):
-                return audio_file
+            audio_path = Path(audio_file)
+            if not audio_path.is_absolute():
+                audio_path = self.tts_cache_dir / audio_path
+            if os.path.exists(audio_path):
+                return str(audio_path)
             else:
                 del self.tts_cache[tts_key]
+                self._save_cache()
         return None
 
     def _load_cache(self) -> dict:

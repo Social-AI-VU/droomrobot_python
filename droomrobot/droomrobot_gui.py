@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 import tkinter as tk
@@ -408,6 +409,8 @@ class DroomrobotGUI:
 
     def handle_connect(self):
         def connect_thread():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
             try:
                 self.connect_btn.config(text="Connecting...", state="disabled")
                 self.progress.grid()
@@ -426,6 +429,8 @@ class DroomrobotGUI:
                 self.progress.grid_remove()
                 self.connect_btn.config(text="Retry Connect", state="normal")
                 print("Connection failed:", e)
+            finally:
+                loop.close()
 
         Thread(target=connect_thread, daemon=True).start()
 

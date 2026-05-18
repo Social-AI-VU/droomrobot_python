@@ -185,10 +185,10 @@ Zin 2:
 
 Eindig de zin met:
 Als er een metgezel bekend is: noem deze specifiek ("En {metgezel} is er ook, vlak naast je.").
-Als er geen metgezel bekend is: "Misschien ben je er alleen, of is er iemand bij je."
+Als er geen metgezel bekend is: "misschien ben je er alleen, of is er iemand bij je."
 
 Voorbeeld:
-"Kijk maar naar de golven en het warme zand om je heen, En {metgezel} is er ook, vlak naast je"
+"Kijk maar naar de golven en het warme zand om je heen, en {metgezel} is er ook, vlak naast je"
 
 --- FASE 2: ZINTUIGLIJKE VERANKERING ---
 
