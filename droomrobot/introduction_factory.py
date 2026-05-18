@@ -55,6 +55,7 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Al val ik dan misschien wel in slaap in het zachte wol.')
 
         script.add_move(droomrobot.say, 'Ik was nog heel benieuwd naar iets')
+        
         # Add color question
         script.add_move(droomrobot.ask_entity_llm,
                 'Wat is jouw lievelingskleur?',
@@ -90,7 +91,7 @@ class IntroductionFactory:
         script = DroomrobotScript(droomrobot, interaction_context)
 
         # REMOVE COMMENT BEFORE FINAL UPLOAD, THIS IS JUST TO SPEED UP TESTING
-        """
+        
         script.add_move(droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
         script.add_move(droomrobot.mini.animate, SDKAnimationType.EXPRESSION, "emo_007", run_async=True)
         script.add_move(droomrobot.say, 'Hoi hoi, ik ben de droomrobot.')
@@ -110,7 +111,7 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Maar dat hoort er bij. Ik stel de vraag dan gewoon nog een keer.')
         script.add_move(droomrobot.say, 'Degene die met je mee is mag ook helpen.')
 
-        script.add_move(droomrobot.say, 'Laten we even oefenen!')"""
+        script.add_move(droomrobot.say, 'Laten we even oefenen!')
 
         script.add_move(droomrobot.ask_entity_llm,
                         'Welk dier vind jij heel cool?',
@@ -133,6 +134,7 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Ik zou wel een ritje willen maken op een schaap.')
         script.add_move(droomrobot.say, 'Al val ik dan misschien wel in slaap in het zachte wol.')
         
+        script.add_move(droomrobot.say, 'Ik was nog heel benieuwd naar iets')
         # Add color question
         script.add_move(droomrobot.ask_entity_llm,
                 'Wat is jouw lievelingskleur?',

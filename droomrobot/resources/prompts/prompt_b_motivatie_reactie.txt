@@ -23,10 +23,6 @@ Voorbeelden:
 - "Wauw, boompje klimmen in het bos, dat is echt stoer!"
 - "Jaa, naar de sterren vliegen, dat zou ik ook wel willen!"
 
-De zin moet:
-- beginnen met een korte enthousiaste reactie
-- daarna het antwoord van het kind herhalen of parafraseren
-
 --- ONDERDEEL 2: transitie_zin ---
 EXACT 1 zin die:
 - Vloeiend overgaat naar het oefenen van de droomreis.
@@ -34,7 +30,7 @@ EXACT 1 zin die:
 - Geen vraag is.
 - De naam van het kind NIET gebruikt.
 - Maximaal 75 tekens is.
-Voorbeeld: "Laten we alvast oefenen om samen een mooie droomreis te maken naar het strand."
+Voorbeeld: "Laten we alvast oefenen om samen een mooie droomreis te maken naar het strand, dat gaat je zometeen helpen bij de slaapdokter."
 
 LEEFTIJDAFSTEMMING
 4-6 jaar: Heel eenvoudig, speels, kort.

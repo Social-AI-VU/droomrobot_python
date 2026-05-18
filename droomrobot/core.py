@@ -3,6 +3,7 @@ import json
 import queue
 import re
 import wave
+from concurrent.futures import TimeoutError
 from os import environ, fsync
 from os.path import exists
 from pathlib import Path
@@ -100,6 +101,10 @@ class InteractionConf:
                 return func(self, *args, **kwargs)
             return wrapper
         return decorator
+
+
+ELEVENLABS_TTS_TIMEOUT_SECONDS = 8
+
 
 class WiFiDevice:
     """
@@ -324,7 +329,7 @@ class Droomrobot:
                 sample_rate = reply.sample_rate
 
             elif isinstance(self.tts_conf, ElevenLabsTTSConf):
-                audio_bytes = asyncio.run_coroutine_threadsafe(self.tts.speak(chunk), self.background_loop).result()
+                audio_bytes = self._speak_elevenlabs_with_timeout(chunk)
                 sample_rate = self.sample_rate
             else:
                 raise ValueError(f"TTS conf {self.tts_conf} is not supported")
@@ -366,6 +371,18 @@ class Droomrobot:
             self.speaker.request(AudioRequest(audio, framerate))
             if log:
                 self.log_utterance(speaker='robot', text=f'plays {audio_file}')
+
+    def _speak_elevenlabs_with_timeout(self, chunk, timeout=ELEVENLABS_TTS_TIMEOUT_SECONDS):
+        future = asyncio.run_coroutine_threadsafe(self.tts.speak(chunk), self.background_loop)
+        try:
+            return future.result(timeout=timeout)
+        except TimeoutError:
+            future.cancel()
+            print(f"[TTS] ElevenLabs timed out after {timeout}s for: {chunk!r}")
+            return None
+        except Exception as e:
+            print(f"[TTS] ElevenLabs failed for {chunk!r}: {repr(e)}")
+            return None
 
     @InteractionConf.apply_config_defaults('interaction_conf', ['max_attempts', 'speaking_rate', 'animated'])
     def ask_yesno(self, question, max_attempts=None, speaking_rate=None, animated=None):
@@ -484,26 +501,35 @@ class Droomrobot:
                                       f'dan is "koffie" niet gerelateerd aan de vraag.')
             # Return entity
             if reply.response.query_result.query_text:
-                print(f'transcript is {reply.response.query_result.query_text}')
-                gpt_response = self.gpt.request(
-                    GPTRequest(f'Je bent een sociale robot die praat met een kind tussen de 6 en 9 jaar oud. '
-                               f'De robot stelt een vraag over een interesse van het kind.'
-                               f'Jouw taak is om de key entity er uit te filteren'
-                               f'Bijvoorbeeld bij de vraag: "wat is je lievelingsdier?" '
-                               f'en de reactie "mijn lievelingsdier is een hond" '
-                               f'filter je alleen "hond" als key entity uit. '
-                               f'{strict_instruction}'
-                               # f'of bijvoorbeeld "wat is je superkracht?" en de reactie '
-                               # f'is "mijn superkracht is heel hard rennen"'
-                               # f'filter je "heel hard rennen" er uit.'
-                               f'Als robot heb je net het volgende gevraagt {question}'
-                               f'Dit is de reactie van het kind {reply.response.query_result.query_text}'
-                               f'Return alleen de key entity string terug (of none).'))
-                print(f'response is {gpt_response.response}')
+                transcript = reply.response.query_result.query_text
+                print(f'transcript is {transcript}')
+                gpt_response = self._gpt_request_with_timeout(
+                    f'Je bent een sociale robot die praat met een kind tussen de 6 en 9 jaar oud. '
+                    f'De robot stelt een vraag over een interesse van het kind.'
+                    f'Jouw taak is om de key entity er uit te filteren'
+                    f'Bijvoorbeeld bij de vraag: "wat is je lievelingsdier?" '
+                    f'en de reactie "mijn lievelingsdier is een hond" '
+                    f'filter je alleen "hond" als key entity uit. '
+                    f'{strict_instruction}'
+                    # f'of bijvoorbeeld "wat is je superkracht?" en de reactie '
+                    # f'is "mijn superkracht is heel hard rennen"'
+                    # f'filter je "heel hard rennen" er uit.'
+                    f'Als robot heb je net het volgende gevraagt {question}'
+                    f'Dit is de reactie van het kind {transcript}'
+                    f'Return alleen de key entity string terug (of none).',
+                    max_tokens=50,
+                    timeout=8)
 
-                self.log_recognition_result(f'llm extracted entity: {gpt_response.response}')
-                if gpt_response.response != 'none':
-                    return gpt_response.response
+                if not gpt_response:
+                    self.log_recognition_result('llm extracted entity: None')
+                    return None
+
+                entity = str(gpt_response).strip()
+                print(f'response is {entity}')
+
+                self.log_recognition_result(f'llm extracted entity: {entity}')
+                if entity.lower() != 'none':
+                    return entity
             attempts += 1
         self.log_recognition_result('llm extracted entity: None')
         return None
@@ -545,17 +571,23 @@ class Droomrobot:
         return None
 
     def get_article(self, word):
-        try:
-            gpt_response = self.gpt.request(
-                GPTRequest(
-                    f'Retourneer het lidwoord van {word}. Retouneer alleen het lidwoord zelf bijv. "de" of "het" en geen andere informatie.'))
-            article = str(gpt_response.response).strip().lower()
-            if article in {"de", "het"}:
-                return article
-            print(f"[GPT] Unexpected article response for {word!r}: {gpt_response.response!r}, using 'het'")
-        except Exception as e:
-            print(f"[GPT] Article lookup failed for {word!r}: {e}, using 'het'")
-        return "het"
+        fallback_article = 'de'
+        if not word:
+            return fallback_article
+
+        gpt_response = self._gpt_request_with_timeout(
+            f'Retourneer het lidwoord van {word}. Retouneer alleen het lidwoord zelf bijv. "de" of "het" en geen andere informatie.',
+            max_tokens=10,
+            timeout=8)
+        if not gpt_response:
+            return fallback_article
+
+        article = str(gpt_response).strip().lower()
+        if article in {'de', 'het'}:
+            return article
+
+        print(f"[GPT] Invalid article response for '{word}': {gpt_response!r}, using fallback")
+        return fallback_article
 
     def get_adjective(self, word):
         gpt_response = self.gpt.request(
@@ -734,15 +766,15 @@ class Droomrobot:
         return gpt_response.response
 
     def generate_funny_response(self, user_age, context, user_input):
-        gpt_response = self.gpt.request(
-            GPTRequest(f'Je bent een sociale robot die praat met een kind van {str(user_age)} jaar oud.'
-                       f'Het kind ligt in het ziekenhuis.'
-                       f'Jij bent daar om het kind af te leiden met een leuk gesprek.'
-                       f'Dit is de context van het gesprek: {context}'
-                       f'Het kind reageerde met het volgende: "{user_input}"'
-                       f'Genereer nu een positieve en grappige reactie in één of twee zinnen. '
-                       f'Het mag GEEN vraag zijn, NIET relateren aan het ziekenhuis of andere negatieve onderwerpen. De woordenschat en het taalniveau moeten op B2 niveau zijn.'))
-        return gpt_response.response
+        gpt_response = self._gpt_request_with_timeout(
+            f'Je bent een sociale robot die praat met een kind van {str(user_age)} jaar oud.'
+            f'Het kind ligt in het ziekenhuis.'
+            f'Jij bent daar om het kind af te leiden met een leuk gesprek.'
+            f'Dit is de context van het gesprek: {context}'
+            f'Het kind reageerde met het volgende: "{user_input}"'
+            f'Genereer nu een positieve en grappige reactie in één of twee zinnen. '
+            f'Het mag GEEN vraag zijn, NIET relateren aan het ziekenhuis of andere negatieve onderwerpen. De woordenschat en het taalniveau moeten op B2 niveau zijn.')
+        return gpt_response or "Wat leuk zeg!"
 
     def generate_question(self, user_age, robot_input, user_input):
         gpt_response = self.gpt.request(
@@ -1142,9 +1174,12 @@ class Droomrobot:
 
         # ElevenLabs TTS returns bytes
         with self.audio_generation_lock:
-            audio_bytes = asyncio.run_coroutine_threadsafe(self.tts.speak(chunk), self.background_loop).result()
+            audio_bytes = self._speak_elevenlabs_with_timeout(chunk)
+            if not isinstance(audio_bytes, bytes) or not audio_bytes:
+                print(f"[TTS] Skipping cache because no audio was generated for: {chunk!r}")
+                return None
 
-            if audio_bytes and amplified:
+            if amplified:
                 audio_bytes = self._amplify_audio(audio_bytes)
             # Save to cache file
             self.tts_cacher.save_audio_file(tts_key, audio_bytes, self.sample_rate)

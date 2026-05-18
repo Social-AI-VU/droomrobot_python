@@ -183,8 +183,12 @@ Zin 2:
 - Nodig uit om rond te kijken in de verbeelding.
 - Noem 1 of 2 concrete details die bij de droomplek passen.
 
+Eindig de zin met:
+Als er een metgezel bekend is: noem deze specifiek ("En {metgezel} is er ook, vlak naast je.").
+Als er geen metgezel bekend is: "Misschien ben je er alleen, of is er iemand bij je."
+
 Voorbeeld:
-"Kijk maar naar de golven en het warme zand om je heen."
+"Kijk maar naar de golven en het warme zand om je heen, En {metgezel} is er ook, vlak naast je"
 
 --- FASE 2: ZINTUIGLIJKE VERANKERING ---
 
