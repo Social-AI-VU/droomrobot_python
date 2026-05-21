@@ -53,7 +53,7 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Ik zou wel een ritje willen maken op een schaap.')
         script.add_move(droomrobot.say, 'Al val ik dan misschien wel in slaap in het zachte wol.')
 
-        """
+        #"""
         script.add_move(droomrobot.say, 'Ik was nog heel benieuwd naar iets')
         # Add color question
         script.add_move(droomrobot.ask_entity_llm,
@@ -76,7 +76,7 @@ class IntroductionFactory:
                 user_model['metgezel'])))
         companion_choice.add_move('fail', droomrobot.say, 'Het is ook fijn om zelf op avontuur te gaan!')
         script.add_choice(companion_choice)
-        """
+        #"""
 
         script.add_move(droomrobot.say, 'Laat ik nu wat vertellen over de droomreis.')
         script.add_move(droomrobot.say, 'Je mag zo een fijne plek kiezen.')
@@ -132,7 +132,7 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Ik zou wel een ritje willen maken op een schaap.')
         script.add_move(droomrobot.say, 'Al val ik dan misschien wel in slaap in het zachte wol.')
 
-        """
+        #"""
         script.add_move(droomrobot.say, 'Ik was nog heel benieuwd naar iets')
         # Add color question
         script.add_move(droomrobot.ask_entity_llm,
@@ -155,7 +155,7 @@ class IntroductionFactory:
                 user_model['metgezel'])))
         companion_choice.add_move('fail', droomrobot.say, 'Het is ook fijn om zelf op avontuur te gaan!')
         script.add_choice(companion_choice)
-        """
+        #"""
         
 
         script.add_move(droomrobot.say, 'Laat ik nu wat vertellen over de droomreis.')
