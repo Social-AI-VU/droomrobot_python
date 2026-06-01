@@ -362,13 +362,12 @@ class Kapinductie6(DroomrobotScript):
 
         phase_moves.add_choice(InterventionPhase.PREPARATION.name, intervention_prep_choice)
 
-        # sentences = [
-        #     'Adem rustig door, je bent helemaal in controle. Goed bezig!',
-        #     'Merk maar hoe fijn jij je voelt op je fijne veilige plek.',
-        #     'Je wordt steeds lichter en zachter. Merk maar hoe fijn dat is.',
-        #     'Je bent veilig en je hebt alles onder controle.'
-        # ]
-        # phase_moves.add_move(InterventionPhase.PREPARATION.name, self.repeat_sentences, sentences)
+        sentences = [
+            'Kijk maar naar de leuke dingen die je daar kunt doen',
+            'Misschien ben je er alleen of juist met je vrienden',
+            'Wat een leuke plek, die wil ik ook wel eens bezoeken',
+        ]
+        phase_moves.add_move(InterventionPhase.PREPARATION.name, self.repeat_sentences, sentences)
 
         return phase_moves
 
