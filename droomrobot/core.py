@@ -3,7 +3,7 @@ import json
 import queue
 import re
 import wave
-from concurrent.futures import TimeoutError
+from concurrent.futures import TimeoutError, ThreadPoolExecutor
 from os import environ, fsync
 from os.path import exists
 from pathlib import Path
@@ -151,6 +151,8 @@ class Droomrobot:
         self.background_loop = asyncio.new_event_loop()
         self.background_thread = Thread(target=self._start_loop, daemon=True)
         self.background_thread.start()
+
+        self._executor = ThreadPoolExecutor(max_workers=2)
 
         # Mini IP address
         self.mini_ip = mini_ip
@@ -301,11 +303,11 @@ class Droomrobot:
     
     @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'sleep_time', 'animated', 'amplified', 'always_regenerate'])
     def say(self, text, speaking_rate=None, sleep_time=None, animated=None, amplified=False, always_regenerate=False):
-        print(f"[TTS] say() called with text: {text!r}")
+        # print(f"[TTS] say() called with text: {text!r}")
         text_chunks = self._split_text(text, max_len=120)
 
         for chunk in text_chunks:
-            print(f"[TTS] Handling chunk: {chunk!r}")
+            # print(f"[TTS] Handling chunk: {chunk!r}")
 
             if animated:
                 self.mini.animate(SDKAnimationType.EXPRESSION, self._random_speaking_eye_expression(), run_async=True)
@@ -316,13 +318,13 @@ class Droomrobot:
             if not always_regenerate:
                 audio_file = self.tts_cacher.load_audio_file(tts_key)
                 if audio_file:
-                    print(f"Using cached TTS audio for text: {chunk!r}")
+                    # print(f"Using cached TTS audio for text: {chunk!r}")
                     self.log_utterance(speaker='robot', text=f'{chunk} (cache)')
                     self.play_audio(audio_file, log=False)
                     continue
 
             # Otherwise, generate TTS
-            print(f"[TTS] Cache miss; generating audio for: {chunk!r}")
+            # print(f"[TTS] Cache miss; generating audio for: {chunk!r}")
             if isinstance(self.tts_conf, GoogleTTSConf):
                 reply = self.tts.request(GetSpeechRequest(
                     text=chunk,
@@ -340,17 +342,24 @@ class Droomrobot:
                 raise ValueError(f"TTS conf {self.tts_conf} is not supported")
 
             if not isinstance(audio_bytes, bytes) or not audio_bytes:
-                print(f"[TTS] Skipping playback because no audio was generated for: {chunk!r}")
+                # print(f"[TTS] Skipping playback because no audio was generated for: {chunk!r}")
                 continue
 
             # Optional amplification
             if audio_bytes and amplified:
                 audio_bytes = self._amplify_audio(audio_bytes)
 
-            # Save to cache before playback so live-generated speech is not lost
-            # if the robot speaker request times out.
-            self.tts_cacher.save_audio_file(tts_key, audio_bytes, sample_rate)
-            print(f"[TTS] Saved generated audio to cache for: {chunk!r}")
+            # # Save to cache before playback so live-generated speech is not lost
+            # # if the robot speaker request times out.
+            # self.tts_cacher.save_audio_file(tts_key, audio_bytes, sample_rate)
+            # print(f"[TTS] Saved generated audio to cache for: {chunk!r}")
+            # print(f"[TTS] Queueing background save for: {chunk!r}")
+            self._executor.submit(
+                self.tts_cacher.save_audio_file,
+                tts_key,
+                audio_bytes,
+                sample_rate
+            )
 
             if self._send_audio_to_speaker(audio_bytes, sample_rate, text=chunk):
                 self.log_utterance(speaker='robot', text=chunk)
@@ -367,14 +376,14 @@ class Droomrobot:
     def _send_audio_to_speaker(self, audio_bytes, sample_rate, text=None):
         duration = self._audio_duration_seconds(audio_bytes, sample_rate)
         try:
-            print(f"[TTS] Sending audio to speaker; duration={duration:.2f}s text={text!r}")
+            # print(f"[TTS] Sending audio to speaker; duration={duration:.2f}s text={text!r}")
             self.speaker.request(AudioRequest(audio_bytes, sample_rate), block=False)
             sleep(duration + SPEAKER_PLAYBACK_PADDING_SECONDS)
-            print(f"[TTS] Finished speaker wait for text={text!r}")
+            # print(f"[TTS] Finished speaker wait for text={text!r}")
             return True
         except Exception as e:
             label = f" for: {text!r}" if text else ""
-            print(f"[TTS] Speaker playback failed{label}: {repr(e)}")
+            # print(f"[TTS] Speaker playback failed{label}: {repr(e)}")
             return False
 
     def play_audio(self, audio_file, amplified=False, log=True):
@@ -403,10 +412,10 @@ class Droomrobot:
             return future.result(timeout=timeout)
         except TimeoutError:
             future.cancel()
-            print(f"[TTS] ElevenLabs timed out after {timeout}s for: {chunk!r}")
+            # print(f"[TTS] ElevenLabs timed out after {timeout}s for: {chunk!r}")
             return None
         except Exception as e:
-            print(f"[TTS] ElevenLabs failed for {chunk!r}: {repr(e)}")
+            # print(f"[TTS] ElevenLabs failed for {chunk!r}: {repr(e)}")
             return None
 
     @InteractionConf.apply_config_defaults('interaction_conf', ['max_attempts', 'speaking_rate', 'animated'])
@@ -611,7 +620,7 @@ class Droomrobot:
         if article in {'de', 'het'}:
             return article
 
-        print(f"[GPT] Invalid article response for '{word}': {gpt_response!r}, using fallback")
+        # print(f"[GPT] Invalid article response for '{word}': {gpt_response!r}, using fallback")
         return fallback_article
 
     def get_adjective(self, word):
@@ -628,28 +637,28 @@ class Droomrobot:
 
         def _request():
             try:
-                print(f"[GPT] Worker starting request max_tokens={max_tokens}")
+                # print(f"[GPT] Worker starting request max_tokens={max_tokens}")
                 gpt_response[0] = self.gpt.request(GPTRequest(prompt, max_tokens=max_tokens))
-                print("[GPT] Worker received response")
+                # print("[GPT] Worker received response")
             except Exception as e:
-                print(f"[GPT] Worker failed: {repr(e)}")
+                # print(f"[GPT] Worker failed: {repr(e)}")
                 gpt_error[0] = e
 
-        print(f"[GPT] Starting request with timeout={timeout}s")
+        # print(f"[GPT] Starting request with timeout={timeout}s")
         thread = threading.Thread(target=_request, daemon=True)
         thread.start()
         thread.join(timeout=timeout)
 
         if thread.is_alive():
-            print(f"[GPT] Request timed out after {timeout}s")
+            # print(f"[GPT] Request timed out after {timeout}s")
             return None
         if gpt_error[0]:
-            print(f"[GPT] Request failed: {repr(gpt_error[0])}")
+            # print(f"[GPT] Request failed: {repr(gpt_error[0])}")
             return None
         if not gpt_response[0]:
-            print(f"[GPT] No response returned")
+            # print(f"[GPT] No response returned")
             return None
-        print("[GPT] Returning response text")
+        # print("[GPT] Returning response text")
         return gpt_response[0].response
 
     def _extract_json_object(self, text: str) -> dict:
@@ -661,23 +670,23 @@ class Droomrobot:
             raise ValueError("GPT returned no text")
 
         cleaned = text.strip()
-        print(f"[JSON] Input text length: {len(text)}, cleaned length: {len(cleaned)}")
+        # print(f"[JSON] Input text length: {len(text)}, cleaned length: {len(cleaned)}")
 
         # Remove markdown fences if present
         if cleaned.startswith("```"):
-            print(f"[JSON] Removing markdown fences...")
+            # print(f"[JSON] Removing markdown fences...")
             cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
             cleaned = re.sub(r"\s*```$", "", cleaned)
-            print(f"[JSON] After removing fences: {len(cleaned)} chars")
+            # print(f"[JSON] After removing fences: {len(cleaned)} chars")
 
         # Try direct parse first
         try:
-            print(f"[JSON] Trying direct JSON parse...")
+            # print(f"[JSON] Trying direct JSON parse...")
             result = json.loads(cleaned)
-            print(f"[JSON] Direct parse succeeded! Keys: {list(result.keys())}")
+            # print(f"[JSON] Direct parse succeeded! Keys: {list(result.keys())}")
             return result
         except json.JSONDecodeError as e:
-            print(f"[JSON] Direct parse failed: {e}")
+            # print(f"[JSON] Direct parse failed: {e}")
             pass
 
         # Fallback 1: Find the start of JSON
@@ -686,14 +695,14 @@ class Droomrobot:
             raise ValueError(f"Could not find JSON object start in: {text[:100]}...")
 
         json_str = cleaned[start_idx:]
-        print(f"[JSON] Found JSON start at position {start_idx}, extracted {len(json_str)} chars")
-        print(f"[JSON] JSON content (first 200 chars): {json_str[:200]}...")
+        # print(f"[JSON] Found JSON start at position {start_idx}, extracted {len(json_str)} chars")
+        # print(f"[JSON] JSON content (first 200 chars): {json_str[:200]}...")
 
         # Try to fix truncated JSON by:
         # 1. Closing any unterminated strings
         # 2. Adding missing closing braces
 
-        print(f"[JSON] Attempting to repair truncated JSON...")
+        # print(f"[JSON] Attempting to repair truncated JSON...")
 
         # Count braces and quotes to determine what's missing
         brace_count = 0
@@ -738,9 +747,9 @@ class Droomrobot:
         json_str = json_str + ('}' * brace_count)
 
         try:
-            print(f"[JSON] Auto-repair attempt 1: closing string and braces...")
+            # print(f"[JSON] Auto-repair attempt 1: closing string and braces...")
             result = json.loads(json_str)
-            print(f"[JSON] Auto-repair succeeded!")
+            # print(f"[JSON] Auto-repair succeeded!")
             return result
         except json.JSONDecodeError as e:
             print(f"[JSON] Auto-repair 1 failed: {e}")
@@ -754,9 +763,9 @@ class Droomrobot:
                     truncated = truncated.rstrip()[:-1]
                 truncated += ('}' * brace_count)
 
-                print(f"[JSON] Auto-repair attempt 2: truncate to last complete position...")
+                # print(f"[JSON] Auto-repair attempt 2: truncate to last complete position...")
                 result = json.loads(truncated)
-                print(f"[JSON] Auto-repair succeeded!")
+                # print(f"[JSON] Auto-repair succeeded!")
                 return result
             except json.JSONDecodeError as e:
                 print(f"[JSON] Auto-repair 2 failed: {e}")
@@ -775,9 +784,9 @@ class Droomrobot:
                 if open_braces > 0:
                     potential += ('}' * open_braces)
 
-                print(f"[JSON] Auto-repair attempt 3: greedy regex + repair...")
+                # print(f"[JSON] Auto-repair attempt 3: greedy regex + repair...")
                 result = json.loads(potential)
-                print(f"[JSON] Auto-repair succeeded!")
+                # print(f"[JSON] Auto-repair succeeded!")
                 return result
             except json.JSONDecodeError as e:
                 print(f"[JSON] Auto-repair 3 failed: {e}")
@@ -796,7 +805,7 @@ class Droomrobot:
         return gpt_response.response
 
     def generate_funny_response(self, user_age, context, user_input):
-        print(f"[FUNNY] Generating funny response for input={user_input!r}, age={user_age!r}")
+        # print(f"[FUNNY] Generating funny response for input={user_input!r}, age={user_age!r}")
         gpt_response = self._gpt_request_with_timeout(
             f'Je bent een sociale robot die praat met een kind van {str(user_age)} jaar oud.'
             f'Het kind ligt in het ziekenhuis.'
@@ -805,7 +814,7 @@ class Droomrobot:
             f'Het kind reageerde met het volgende: "{user_input}"'
             f'Genereer nu een positieve en grappige reactie in één of twee zinnen. '
             f'Het mag GEEN vraag zijn, NIET relateren aan het ziekenhuis of andere negatieve onderwerpen. De woordenschat en het taalniveau moeten op B2 niveau zijn.')
-        print(f"[FUNNY] Result: {gpt_response!r}")
+        # print(f"[FUNNY] Result: {gpt_response!r}")
         return gpt_response or "Wat leuk zeg!"
 
     def generate_question(self, user_age, robot_input, user_input):
@@ -823,8 +832,8 @@ class Droomrobot:
     # LLM personalization helpers
     # ------------------------
     def generate_droomplek_payload(self, child_name: str, child_age: int, child_answer: str) -> dict:
-        print(f"\n[DROOMPLEK] Starting generate_droomplek_payload")
-        print(f"[DROOMPLEK] Input: child_name={child_name}, child_age={child_age}, child_answer={child_answer}")
+        # print(f"\n[DROOMPLEK] Starting generate_droomplek_payload")
+        # print(f"[DROOMPLEK] Input: child_name={child_name}, child_age={child_age}, child_answer={child_answer}")
 
         fallback_payload = {
             'speech_text': f'Wat leuk dat je {child_answer} hebt gekozen! Dat is een fijne plek.',
@@ -834,7 +843,7 @@ class Droomrobot:
         }
 
         if not self.gpt:
-            print(f"[DROOMPLEK] GPT not initialized, using fallback")
+            # print(f"[DROOMPLEK] GPT not initialized, using fallback")
             return fallback_payload
         
         prompt = self._load_prompt('prompt_a_droomplek_keuze.txt')
@@ -845,22 +854,22 @@ class Droomrobot:
             f"Age: {child_age}\n"
             f"Child's answer about dream place: {child_answer}"
         )
-        print(f"[DROOMPLEK] Prompt length: {len(prompt)}")
+        # print(f"[DROOMPLEK] Prompt length: {len(prompt)}")
 
         response_text = self._gpt_request_with_timeout(prompt)
         
         if not response_text:
-            print(f"[DROOMPLEK] GPT failed, using fallback")
+            # print(f"[DROOMPLEK] GPT failed, using fallback")
             return fallback_payload
 
-        print(f"[DROOMPLEK] Response (first 300 chars): {response_text[:300]}")
+        # print(f"[DROOMPLEK] Response (first 300 chars): {response_text[:300]}")
 
         try:
             payload = self._extract_json_object(response_text)
             required_keys = ["speech_text", "dream_place_final", "dream_place_article", "place_decided"]
             for key in required_keys:
                 if key not in payload:
-                    print(f"[DROOMPLEK] Missing key '{key}', using fallback")
+                    # print(f"[DROOMPLEK] Missing key '{key}', using fallback")
                     return fallback_payload
 
             payload["speech_text"] = str(payload["speech_text"]).strip()
@@ -870,7 +879,7 @@ class Droomrobot:
             print(f"[DROOMPLEK] Payload validated: {payload}")
             return payload
         except Exception as e:
-            print(f"[DROOMPLEK] JSON parse error: {repr(e)}, using fallback")
+            # print(f"[DROOMPLEK] JSON parse error: {repr(e)}, using fallback")
             return fallback_payload
 
     """def generate_droomplek_imagery_payload(self, child_name: str, child_age: int,
@@ -977,7 +986,7 @@ class Droomrobot:
                 return fallback_payload
             return payload
         except Exception as e:
-            print(f"[MOTIVATIE] JSON parse error: {repr(e)}, using fallback")
+            # print(f"[MOTIVATIE] JSON parse error: {repr(e)}, using fallback")
             return fallback_payload
 
     def generate_practice_imagery(self, child_name, child_age, droomplek,
@@ -1040,7 +1049,7 @@ class Droomrobot:
                 return fallback_payload
             return payload
         except Exception as e:
-            print(f"[PRACTICE_IMAGERY] JSON parse error: {repr(e)}, using fallback")
+            # print(f"[PRACTICE_IMAGERY] JSON parse error: {repr(e)}, using fallback")
             return fallback_payload
 
 
@@ -1117,7 +1126,7 @@ class Droomrobot:
                 return fallback_payload
             return payload
         except Exception as e:
-            print(f"[INTERVENTION_IMAGERY] JSON parse error: {repr(e)}, using fallback")
+            # print(f"[INTERVENTION_IMAGERY] JSON parse error: {repr(e)}, using fallback")
             return fallback_payload
 
     def _load_prompt(self, filename):
@@ -1208,7 +1217,7 @@ class Droomrobot:
         with self.audio_generation_lock:
             audio_bytes = self._speak_elevenlabs_with_timeout(chunk)
             if not isinstance(audio_bytes, bytes) or not audio_bytes:
-                print(f"[TTS] Skipping cache because no audio was generated for: {chunk!r}")
+                # print(f"[TTS] Skipping cache because no audio was generated for: {chunk!r}")
                 return None
 
             if amplified:
