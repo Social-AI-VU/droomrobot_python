@@ -174,12 +174,41 @@ class DroomrobotScript:
     # ----------------------------------
     # Background prompt functions:
     # ----------------------------------
+    # def _fire_background_prompt(self, key, generate_func, *args, **kwargs):
+        # """Fire an LLM generation in a background thread."""
+        # def _worker():
+        #     try:
+        #         result = generate_func(*args, **kwargs)
+        #         self._pending_futures[key] = ('success', result)
+        #     except Exception as e:
+        #         self._pending_futures[key] = ('error', str(e))
+        #         print(f"[Background] Prompt {key} failed: {e}")
+        #
+        # self._pending_futures[key] = ('pending', None)
+        # thread = Thread(target=_worker, daemon=True)
+        # thread.start()
+
     def _fire_background_prompt(self, key, generate_func, *args, **kwargs):
-        """Fire an LLM generation in a background thread."""
+        """Fire an LLM generation in a background thread and pre-generate audio."""
+
         def _worker():
             try:
+                # 1. Get the text from the LLM
                 result = generate_func(*args, **kwargs)
                 self._pending_futures[key] = ('success', result)
+
+                # 2. NEW: Automatically trigger TTS pre-generation for lists of sentences
+                if isinstance(result, dict):
+                    sentences_to_pregen = []
+                    for val in result.values():
+                        if isinstance(val, list):
+                            sentences_to_pregen.extend([s for s in val if isinstance(s, str)])
+
+                    if sentences_to_pregen:
+                        print(f"[Background] LLM {key} finished. Starting TTS pre-generation...")
+                        # Since we are already in a background thread, we can call this directly
+                        self.pregenerate_prompt_output(sentences_to_pregen)
+
             except Exception as e:
                 self._pending_futures[key] = ('error', str(e))
                 print(f"[Background] Prompt {key} failed: {e}")
@@ -774,7 +803,7 @@ class DroomrobotScript:
             'Luister maar lekker naar de golven van de zee.',
             'Misschien is het er heerlijk warm of lekker koel. Voel de zonnestralen maar op je gezicht.',
             'En op deze plek kan je alles doen waar je zin in hebt.',
-            'Misschien ga je een zandkaasteel bouwen, of spring je over de golven heen.'
+            'Misschien ga je een zandkasteel bouwen, of spring je over de golven heen.'
         ]
         
 
@@ -878,9 +907,22 @@ class DroomrobotScript:
                             self.droomrobot.generate_audio(text, self.droomrobot.interaction_conf.amplified)
                         except KeyError:
                             continue
+    #
+    # def pregenerate_prompt_output(self, sentences):
+    #     for sentence in sentences:
+    #         print('[background TTS generation]', sentence)
+    #         self.droomrobot.generate_audio(sentence)
+    #     print("DONE PREGENERATING PROMPT OUTPUT")
+
 
     def pregenerate_prompt_output(self, sentences):
-        for sentence in sentences:
-            print('[background TTS generation]', sentence)
-            self.droomrobot.generate_audio(sentence)
+        from concurrent.futures import ThreadPoolExecutor
+        print(f"PREGENERATING {len(sentences)} sentences...")
+
+        # Using 2 or 3 workers allows ElevenLabs to process multiple sentences in parallel
+        # while the script continues to run the introduction.
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            for sentence in sentences:
+                executor.submit(self.droomrobot.generate_audio, sentence)
+
         print("DONE PREGENERATING PROMPT OUTPUT")
