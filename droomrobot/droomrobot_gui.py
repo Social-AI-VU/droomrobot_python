@@ -398,6 +398,7 @@ class DroomrobotGUI:
         self.phase_buttons = {}
         self.droomrobot_control = None
         self.script_thread = None
+        self._last_known_phase_idx = None
 
         # Ensure priklocatie field visibility matches initial context
         self.on_interaction_context_change()
@@ -695,7 +696,36 @@ class DroomrobotGUI:
             btn.pack(side="left", padx=5, pady=5)
             self.phase_buttons[name] = btn
 
+        self._last_known_phase_idx = current
         self.phase_frame.grid()
+
+        # Some scripts advance phases internally (e.g. kapinductie
+        # auto-advances from PREPARATION to PROCEDURE when the setting
+        # context finishes). Keep the button highlight in sync.
+        self.root.after(500, self._poll_phase_change)
+
+    def _poll_phase_change(self):
+        if not self.droomrobot_control:
+            return
+        script = self.droomrobot_control.interaction_script
+        if script is None or not getattr(script, 'phases', None):
+            return
+        if not self.script_thread or not self.script_thread.is_alive():
+            return
+
+        current = script.current_phase
+        if current != self._last_known_phase_idx:
+            self._last_known_phase_idx = current
+            for idx, name in enumerate(script.phases):
+                btn = self.phase_buttons.get(name)
+                if btn is None:
+                    continue
+                is_current = idx == current
+                btn.config(
+                    state="disabled" if is_current else "normal",
+                    style="CurrentPhase.TButton" if is_current else "TButton",
+                )
+        self.root.after(500, self._poll_phase_change)
 
     def next_phase(self, phase_name):
         for phase, btn in self.phase_buttons.items():

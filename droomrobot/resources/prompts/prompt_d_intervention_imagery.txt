@@ -56,10 +56,12 @@ OUTPUTFORMAT
 Geef uitsluitend geldige JSON in exact deze structuur:
 
 {
-  "intervention_preparation": [
+  "setting_context": [
     "zin 1",
     "zin 2",
-    "zin 3",
+    "zin 3"
+  ],
+  "start_analogy": [
     "zin 4",
     "zin 5",
     "zin 6",
@@ -83,8 +85,16 @@ Geef uitsluitend geldige JSON in exact deze structuur:
   ]
 }
 
+BELANGRIJK OVER DE SPLITSING
+- "setting_context" bevat zinnen 1 t/m 3 (FASE 1 en FASE 2): terugkeer naar de droomplek en zintuiglijke verankering.
+- "start_analogy" bevat zinnen 4 t/m 17 (FASE 3 t/m FASE 6): introductie van de analogie (schommel, masker, enz.) en alles wat daarna komt.
+- De samengevoegde lijst (setting_context + start_analogy) moet samen exact de 17 zinnen vormen die in de 7-fasen-boog beschreven staan.
+- De zinnen moeten zo geschreven zijn dat ze, achter elkaar uitgesproken, een vloeiend verhaal vormen alsof het één lijst was.
+- De eerste zin van "start_analogy" (zin 4) moet ook goed klinken als startpunt, voor het geval setting_context wordt overgeslagen.
+
 HARDE OUTPUTREGELS
-- "intervention_preparation" bevat precies 17 zinnen.
+- "setting_context" bevat precies 3 zinnen.
+- "start_analogy" bevat precies 14 zinnen.
 - "filler_sentences" bevat precies 4 zinnen.
 - Elke interventiezin is maximaal 100 tekens.
 - Elke opvulzin is maximaal 60 tekens.
@@ -476,12 +486,14 @@ Controleer intern vóór je antwoord:
 Algemeen:
 - Is de JSON geldig?
 - Bevat de output alleen JSON?
-- Zijn er precies 17 interventiezinnen?
+- Bevat "setting_context" precies 3 zinnen (zin 1 t/m 3)?
+- Bevat "start_analogy" precies 14 zinnen (zin 4 t/m 17)?
 - Zijn er precies 4 opvulzinnen?
 - Is elke interventiezin maximaal 100 tekens?
 - Is elke opvulzin maximaal 60 tekens?
 - Bevat geen enkele zin een vraagteken?
 - Bevat geen enkele zin een verboden woord?
+- Klinkt de eerste zin van "start_analogy" goed als zelfstandig startpunt?
 
 Fasecontrole:
 - Begint zin 1 exact met "Stel je maar voor dat je weer"?

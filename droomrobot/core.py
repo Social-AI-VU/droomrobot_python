@@ -1047,12 +1047,15 @@ class Droomrobot:
     def generate_intervention_imagery(self, child_name, child_age, droomplek,
                                     droomplek_article, motivatie,
                                     kleur=None, metgezel=None, dier=None) -> dict:
-        """Prompt D: Full intervention imagery (16 sentences + 4 fillers)."""
+        """Prompt D: Full intervention imagery split into setting_context (zin 1-3),
+        start_analogy (zin 4-17) and 4 filler sentences."""
         fallback_payload = {
-            "intervention_preparation": [
+            "setting_context": [
                 f"Stel je maar voor dat je weer bij {droomplek_article} {droomplek} bent, op die fijne plek.",
                 "Kijk maar weer naar alle mooie kleuren en merk hoe fijn het is.",
                 "Voel maar hoe fijn het is om hier te zijn.",
+            ],
+            "start_analogy": [
                 "En terwijl je hier zo lekker bent, zie je iets moois voor je.",
                 "Het heeft een kleur die heel mooi bij deze plek past.",
                 "Je mag er rustig naartoe gaan. Het voelt heerlijk zacht.",
@@ -1113,7 +1116,8 @@ class Droomrobot:
 
         try:
             payload = self._extract_json_object(response_text)
-            if "intervention_preparation" not in payload or "filler_sentences" not in payload:
+            required_keys = ("setting_context", "start_analogy", "filler_sentences")
+            if not all(k in payload for k in required_keys):
                 return fallback_payload
             return payload
         except Exception as e:

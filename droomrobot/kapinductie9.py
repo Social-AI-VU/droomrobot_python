@@ -314,13 +314,11 @@ class Kapinductie9(DroomrobotScript):
                              f'Wat fijn dat ik je mag helpen {self.user_model["child_name"]}! We gaan samen weer op een mooie droomreis.',
                              animated=False)
         
-        # Play pre-generated intervention sentences
+        # Phase 1+2 of Prompt D: setting_context. Auto-advances to PROCEDURE
+        # when finished. Operator can press the PROCEDURE phase button at
+        # any moment to jump straight into the analogy.
         phase_moves.add_move(InterventionPhase.PREPARATION.name,
-                            self._play_intervention_sentences)
-
-        # Filler loop
-        phase_moves.add_move(InterventionPhase.PREPARATION.name,
-                            self._play_filler_loop)
+                            self._play_setting_context)
     
         """
         # phase_moves.add_move(InterventionPhase.PREPARATION.name, self.droomrobot.say,
@@ -449,12 +447,35 @@ class Kapinductie9(DroomrobotScript):
 
         return phase_moves
     
-    def _play_intervention_sentences(self):
+    def _play_setting_context(self):
+        """Plays Prompt D setting_context (zin 1-3). Auto-advances to
+        PROCEDURE when the loop completes; if the operator clicks the
+        PROCEDURE button mid-block, _requested_phase breaks out and the
+        normal phase-switch in run() handles the jump."""
         payload = self.user_model.get('prompt_d_payload', {})
-        sentences = payload.get('intervention_preparation') or self._get_fallback_intervention_imagery(9)
+        fallback = self._get_fallback_intervention_imagery(9)
+        sentences = payload.get('setting_context') or fallback['setting_context']
+
         for sentence in sentences:
             if not self.is_running or self._requested_phase:
-                break
+                return
+            self.droomrobot.say(sentence)
+
+        # Finished naturally — fluidly continue into the analogy by
+        # requesting the next phase.
+        if self.is_running and not self._requested_phase:
+            self.next_phase(InterventionPhase.PROCEDURE.name)
+
+    def _play_start_analogy(self):
+        """Plays Prompt D start_analogy (zin 4-17). This is the analogy
+        and lighter-cocoon block."""
+        payload = self.user_model.get('prompt_d_payload', {})
+        fallback = self._get_fallback_intervention_imagery(9)
+        sentences = payload.get('start_analogy') or fallback['start_analogy']
+
+        for sentence in sentences:
+            if not self.is_running:
+                return
             self.droomrobot.say(sentence)
 
     def _play_filler_loop(self):
@@ -465,6 +486,12 @@ class Kapinductie9(DroomrobotScript):
         
 
     def _intervention_procedure(self, phase_moves: InteractionChoice) -> InteractionChoice:
+        # Phase 3-6 of Prompt D: the analogy block, followed by the filler
+        # loop that keeps repeating until the script is stopped.
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name,
+                             self._play_start_analogy)
+        phase_moves.add_move(InterventionPhase.PROCEDURE.name,
+                             self._play_filler_loop)
         return phase_moves
 
     def _build_interaction_choice_comfortable_position(self) -> InteractionChoice:
