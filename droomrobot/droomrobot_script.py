@@ -140,6 +140,11 @@ class DroomrobotScript:
         # Background generation storage
         self._pending_futures = {}
 
+        # Signals that the Prompt C TTS pregen finished. D's on_success
+        # blocks on this so D's TTS pregen runs strictly after C's, in
+        # the otherwise-idle TTS window during C playback + wrap-up.
+        self._prompt_c_tts_pregen_done = Event()
+
     @abc.abstractmethod
     def prepare(self, participant_id: str, session: InteractionSession, user_model_addendum: dict,
                 audio_amplified: bool = False, always_regenerate: bool = False):
@@ -336,49 +341,13 @@ class DroomrobotScript:
         self.droomrobot.save_user_model(self.participant_id, self.user_model)
     
     def ensure_default_droomplek_motivatie(self, default_value: str = "spelen"):
-        """If the child's motivation answer is missing or unclear, fall back
-        to `default_value` (default 'spelen'). This runs before Prompt B
-        fires, so Prompt B's reaction will naturally propose the default
-        ("Ooh wat leuk, lekker spelen op het strand!") instead of trying to
-        echo a vague answer.
-        """
         motivation = self.user_model.get('droomplek_motivatie')
         if motivation is None:
             self.set_user_model_variable('droomplek_motivatie', default_value)
             return
 
-        import re
-        cleaned = re.sub(r'[^\w\s]', ' ', str(motivation)).lower()
-        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
-
-        # Empty or an explicit "no info" sentinel.
-        if cleaned in {"", "none", "niet bekend"}:
-            self.set_user_model_variable('droomplek_motivatie', default_value)
-            return
-
-        # Common Dutch "I don't know" / nonsense replies. Treated as unclear
-        # so Prompt B falls back to proposing the default activity.
-        unclear_phrases = {
-            "ik weet het niet", "ik weet niet", "weet ik niet",
-            "weet het niet", "weet niet", "weetniet",
-            "geen idee", "geen flauw idee", "geen antwoord",
-            "geen", "niks", "niets", "weet ik echt niet",
-            "ja", "nee", "nou", "hmm", "hm", "uhm", "uh", "eh", "euh",
-        }
-        if cleaned in unclear_phrases:
-            self.set_user_model_variable('droomplek_motivatie', default_value)
-            return
-
-        # Catch sentence-starts like "ik weet het niet, maar ..." too.
-        unclear_prefixes = (
-            "ik weet het niet",
-            "ik weet niet",
-            "weet ik niet",
-            "weet het niet",
-            "geen idee",
-            "geen flauw idee",
-        )
-        if any(cleaned.startswith(p) for p in unclear_prefixes):
+        normalized = str(motivation).strip().lower()
+        if normalized in {"", "none", "niet bekend"}:
             self.set_user_model_variable('droomplek_motivatie', default_value)
 
 
@@ -711,7 +680,12 @@ class DroomrobotScript:
         )
 
     def _await_motivation_reaction(self):
-        """Block on Prompt B and store the payload. Does not speak yet."""
+        """Block on Prompt B and store the payload. Does not speak yet.
+
+        Also promotes Prompt B's `effective_motivatie` into
+        `droomplek_motivatie` so Prompt C and D — which fire right after
+        this move — use the cleaned-up activity (or 'spelen' if the child's
+        answer was unclear)."""
         import time
         print(f"[INTRO] Awaiting Prompt B...")
         start = time.time()
@@ -721,16 +695,21 @@ class DroomrobotScript:
         if not payload:
             print(f"[INTRO] Prompt B fallback after {elapsed:.1f}s")
             payload = {
-                "motivatie_reactie": "Wat leuk, dat klinkt als een fijn idee!",
+                "motivatie_reactie": "Soms is het lastig kiezen, laten we gewoon lekker gaan spelen!",
                 "transitie_zin": (
                     f"Laten we alvast oefenen om samen naar "
                     f"{self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} te gaan."
                 ),
+                "effective_motivatie": "spelen",
             }
         else:
             print(f"[INTRO] Prompt B ready in {elapsed:.1f}s")
 
         self.set_user_model_variable('prompt_b_payload', payload)
+
+        effective = (payload.get('effective_motivatie') or '').strip()
+        if effective:
+            self.set_user_model_variable('droomplek_motivatie', effective)
 
     def _speak_motivation_reaction(self):
         """Speak Prompt B's output. C and D continue in background."""
@@ -746,25 +725,45 @@ class DroomrobotScript:
             daemon=True)
         thread.start()
 
-    def _fire_practice_imagery_background(self):
-        """Fire Prompt C in background.
-
-        When GPT-C resolves, the on_success callback immediately pregenerates
-        TTS for C's sentences — this runs during the (mostly cached) breathing
-        scaffold, when the TTS service is otherwise idle. By the time the
-        main thread reaches _play_practice_imagery, C's sentences are cache hits.
-        """
-        def _pregen_c_tts(result):
-            sentences = result.get('practice_imagery', []) if result else []
+    def _pregen_c_tts(self, c_result):
+        """on_success for Prompt C. Pregenerates C's TTS during the
+        (mostly cached) breathing scaffold so live C playback is all
+        cache hits. Always signals _prompt_c_tts_pregen_done at the end
+        so D's chained pregen can unblock even if C had no sentences."""
+        try:
+            sentences = c_result.get('practice_imagery', []) if c_result else []
             if sentences:
                 print(f"[BG] Prompt C done — pregenerating TTS for {len(sentences)} sentences")
                 self.pregenerate_prompt_output(sentences)
+        finally:
+            self._prompt_c_tts_pregen_done.set()
 
+    def _pregen_d_tts_chained(self, d_result):
+        """on_success for Prompt D. Blocks until C's TTS pregen has
+        finished, then pregens D's TTS — using the idle TTS window
+        during C playback and the wrap-up moves. By the time
+        _store_intervention_result runs, D's TTS is largely cached."""
+        if not self._prompt_c_tts_pregen_done.wait(timeout=60):
+            print("[BG] C TTS pregen didn't signal done in 60s — pregenning D anyway")
+        sentences = []
+        sentences.extend(d_result.get('setting_context', []) or [])
+        sentences.extend(d_result.get('start_analogy', []) or [])
+        sentences.extend(d_result.get('filler_sentences', []) or [])
+        if sentences:
+            print(f"[BG] Pregenerating D TTS for {len(sentences)} sentences (chained after C)")
+            self.pregenerate_prompt_output(sentences)
+
+    def _fire_practice_imagery_background(self):
+        """Fire Prompt C in background.
+
+        When GPT-C resolves, on_success pregens C's TTS, then signals
+        the C-pregen-done event so D's chained pregen can start.
+        """
         print(f"[INTRO] Firing Prompt C in background")
         self._fire_background_prompt(
             'practice_imagery',
             self.droomrobot.generate_practice_imagery,
-            on_success=_pregen_c_tts,
+            on_success=self._pregen_c_tts,
             child_name=self.user_model['child_name'],
             child_age=self.user_model['child_age'],
             droomplek=self.user_model['droomplek'],
@@ -780,12 +779,14 @@ class DroomrobotScript:
 
         The SIC GPT service serializes requests (see sic_redis.register_request_handler):
         D queues behind C, so this MUST be called after _fire_practice_imagery_background.
-        D's result is awaited far downstream in _store_intervention_result.
+        on_success chains D's TTS pregen right after C's, so D's TTS is
+        ready well before _store_intervention_result runs.
         """
         print(f"[INTRO] Firing Prompt D in background (queues behind C)")
         self._fire_background_prompt(
             'intervention_imagery',
             self.droomrobot.generate_intervention_imagery,
+            on_success=self._pregen_d_tts_chained,
             child_name=self.user_model['child_name'],
             child_age=self.user_model['child_age'],
             droomplek=self.user_model['droomplek'],
@@ -822,7 +823,10 @@ class DroomrobotScript:
             
     
     def _store_intervention_result(self):
-        """Block for Prompt D result, store in user_model for intervention session."""
+        """Block for Prompt D result, store in user_model for intervention
+        session. On the success path, D's TTS pregen was already chained
+        after C's (see _pregen_d_tts_chained). On the failure path we fall
+        back to canned content and pregen its TTS here."""
         payload = self._await_background_prompt('intervention_imagery', timeout=90)
 
         if not payload:
@@ -832,18 +836,17 @@ class DroomrobotScript:
                 'start_analogy': fallback['start_analogy'],
                 'filler_sentences': self._get_default_fillers(),
             }
+            sentences = []
+            sentences.extend(payload['setting_context'])
+            sentences.extend(payload['start_analogy'])
+            sentences.extend(payload['filler_sentences'])
+            Thread(
+                target=self.pregenerate_prompt_output,
+                args=(sentences,),
+                daemon=True,
+            ).start()
+
         self.set_user_model_variable('prompt_d_payload', payload)
-
-        sentences = []
-        sentences.extend(payload.get('setting_context', []))
-        sentences.extend(payload.get('start_analogy', []))
-        sentences.extend(payload.get('filler_sentences', []))
-
-        thread = Thread(
-            target=self.pregenerate_prompt_output,
-            args=(sentences,),
-            daemon=True)
-        thread.start()
 
             
     # --------------------------------

@@ -8,20 +8,50 @@ Het kind heeft gekozen voor de droomplek: {droomplek_article} {droomplek}.
 Je hebt gevraagd wat het kind daar het liefste zou willen doen.
 Het kind antwoordde: "{motivatie}"
 
+BEPAAL EERST OF HET ANTWOORD DUIDELIJK IS
+Een DUIDELIJK antwoord noemt een concrete activiteit of iets wat het kind
+daar wil doen of zien. Voorbeelden:
+- "zwemmen", "zandkasteel bouwen", "vliegen tussen de sterren", "schommelen",
+  "naar de dieren kijken", "voetballen".
+
+Een ONDUIDELIJK antwoord is leeg, vaag, een ontkenning, een niet-weet
+antwoord, of geeft geen activiteit aan. Voorbeelden:
+- "weet ik niet", "geen idee", "ja", "nee", "hmm", "niets", "niks",
+  "huh", "weetniet", "niet bekend", of een leeg / onbegrijpelijk antwoord.
+
+Als het antwoord ONDUIDELIJK is:
+- Erken vriendelijk dat het soms lastig is om te kiezen en stel voor om
+  lekker te gaan spelen op de droomplek. NIET enthousiast doen alsof het
+  kind dit zelf had gezegd — het is een voorstel.
+- Vul effective_motivatie met exact: "spelen".
+
+Als het antwoord DUIDELIJK is:
+- Reageer enthousiast en warm op het antwoord van het kind in
+  motivatie_reactie, met een bevestiging zoals in de voorbeelden hieronder.
+- Vul effective_motivatie met een korte beschrijving (1-3 woorden) van
+  de gekozen activiteit, zonder lidwoord, in de infinitief.
+
 OPDRACHT
-Genereer twee onderdelen:
+Genereer drie onderdelen:
 
 --- ONDERDEEL 1: motivatie_reactie ---
 EXACT 1 korte zin die:
-- Enthousiast en warm reageert op wat het kind wil doen.
-- Het antwoord van het kind benoemt of parafraseert.
+- Bij DUIDELIJK antwoord: enthousiast en warm reageert op wat het kind wil
+  doen, het antwoord benoemt of parafraseert.
+- Bij ONDUIDELIJK antwoord: kort erkent dat kiezen soms lastig is en
+  voorstelt om lekker te gaan spelen op de droomplek. Geen overdreven
+  enthousiasme — het is een vriendelijk voorstel.
 - Geen vraag is.
 - De naam van het kind NIET gebruikt.
-- Maximaal 70 tekens is.
-Voorbeelden:
+- Maximaal 80 tekens is.
+Voorbeelden bij DUIDELIJK antwoord:
 - "Ooh wat leuk, zwemmen met dolfijnen, dat lijkt me ook geweldig!"
 - "Wauw, boompje klimmen in het bos, dat is echt stoer!"
 - "Jaa, naar de sterren vliegen, dat zou ik ook wel willen!"
+Voorbeelden bij ONDUIDELIJK antwoord:
+- "Soms is het best lastig kiezen, laten we gewoon lekker gaan spelen!"
+- "Niet gek dat je het nog niet weet, we gaan gewoon lekker spelen!"
+- "Best moeilijk kiezen hè, dan gaan we lekker samen spelen."
 
 --- ONDERDEEL 2: transitie_zin ---
 EXACT 1 zin die:
@@ -32,6 +62,13 @@ EXACT 1 zin die:
 - Maximaal 75 tekens is.
 Voorbeeld: "Laten we alvast oefenen om samen een mooie droomreis te maken naar het strand, dat gaat je zometeen helpen bij de slaapdokter."
 
+--- ONDERDEEL 3: effective_motivatie ---
+1 t/m 3 woorden, in de infinitief, zonder lidwoord, die de activiteit
+beschrijven die feitelijk wordt gebruikt voor de droomreis.
+- Bij DUIDELIJK antwoord: een kernachtige samenvatting van het antwoord
+  van het kind (bv. "zwemmen", "zandkasteel bouwen", "vliegen").
+- Bij ONDUIDELIJK antwoord: exact "spelen".
+
 LEEFTIJDAFSTEMMING
 4-6 jaar: Heel eenvoudig, speels, kort.
 6-9 jaar: Iets meer enthousiasme, herkenbare taal.
@@ -41,13 +78,14 @@ REGELS
 - Alleen veilige, vrolijke en warme beelden.
 - Geen medische verwijzingen.
 - Alleen tekst, geen emoji's.
-- Beide zinnen maximaal 75 tekens.
+- motivatie_reactie is maximaal 80 tekens, transitie_zin maximaal 75 tekens.
 
 OUTPUTFORMAT
 Geef uitsluitend geldige JSON zonder extra tekst.
 {
   "motivatie_reactie": "...",
-  "transitie_zin": "..."
+  "transitie_zin": "...",
+  "effective_motivatie": "..."
 }
 
 Toon alleen de JSON.

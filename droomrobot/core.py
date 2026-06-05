@@ -953,27 +953,31 @@ class Droomrobot:
 
     def generate_motivation_reaction(self, child_name, child_age, droomplek,
                                   droomplek_article, motivatie) -> dict:
-        """Prompt B: Quick reaction to motivation answer."""
+        """Prompt B: Quick reaction to motivation answer. Also returns
+        effective_motivatie — either a short summary of the child's answer,
+        or "spelen" if the answer was unclear."""
         fallback_payload = {
-            "motivatie_reactie": "Wat leuk, dat klinkt als een fijn idee!",
+            "motivatie_reactie": "Soms is het lastig kiezen, laten we gewoon lekker gaan spelen!",
             "transitie_zin": f"Laten we alvast oefenen om samen naar {droomplek_article} {droomplek} te gaan.",
+            "effective_motivatie": "spelen",
         }
 
         prompt = self._load_prompt('prompt_b_motivatie_reactie.txt')
-        
+
         prompt = prompt.replace('{kind_naam}', child_name)
         prompt = prompt.replace('{leeftijd}', str(child_age))
         prompt = prompt.replace('{droomplek}', droomplek)
         prompt = prompt.replace('{droomplek_article}', droomplek_article)
         prompt = prompt.replace('{motivatie}', motivatie or 'niet bekend')
-        
-        response_text = self._gpt_request_with_timeout(prompt, max_tokens=250)
+
+        response_text = self._gpt_request_with_timeout(prompt, max_tokens=300)
         if not response_text:
             return fallback_payload
 
         try:
             payload = self._extract_json_object(response_text)
-            if "motivatie_reactie" not in payload or "transitie_zin" not in payload:
+            required = ("motivatie_reactie", "transitie_zin", "effective_motivatie")
+            if not all(k in payload for k in required):
                 return fallback_payload
             return payload
         except Exception as e:
