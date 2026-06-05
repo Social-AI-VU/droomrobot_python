@@ -269,6 +269,11 @@ class DroomrobotGUI:
             context_enum = InteractionContext.SONDE
         self.context = tk.StringVar(value=context_enum.name)
 
+        # Kapinductie-only: when True, the IntroductionFactory skips the
+        # color + companion questions and asks only the animal question.
+        # Default False (= ask all three).
+        self.only_animal_intro = tk.BooleanVar(value=False)
+
         try:
             session_enum = InteractionSession[self.config.get("session")]
         except KeyError:
@@ -318,6 +323,15 @@ class DroomrobotGUI:
         self.priklocatie_entry.grid(row=8, column=1)
         self.priklocatie_label.grid_remove()
         self.priklocatie_entry.grid_remove()
+
+        # Kapinductie-only "Alleen dier vragen" toggle. Visible only when
+        # context == KAPINDUCTIE (see on_interaction_context_change).
+        self.only_animal_label = ttk.Label(interaction_frame, text="Alleen dier vragen")
+        self.only_animal_chk = ttk.Checkbutton(interaction_frame, variable=self.only_animal_intro)
+        self.only_animal_label.grid(row=9, column=0)
+        self.only_animal_chk.grid(row=9, column=1, sticky="w")
+        self.only_animal_label.grid_remove()
+        self.only_animal_chk.grid_remove()
 
         # Advanced Settings
         self.advanced_visible = False
@@ -448,6 +462,13 @@ class DroomrobotGUI:
             self.priklocatie_label.grid_remove()
             self.priklocatie_entry.grid_remove()
 
+        if self.context.get() == "KAPINDUCTIE":
+            self.only_animal_label.grid()
+            self.only_animal_chk.grid()
+        else:
+            self.only_animal_label.grid_remove()
+            self.only_animal_chk.grid_remove()
+
     def on_tts_service_selected(self, event=None):
         selected_service = self.tts_service.get()
         tts_service_enum = TTSService[selected_service]
@@ -477,6 +498,8 @@ class DroomrobotGUI:
         }
         if self.context.get() == "BLOEDAFNAME":
             user_model["priklocatie"] = self.priklocatie.get()
+        if self.context.get() == "KAPINDUCTIE":
+            user_model["only_animal_intro"] = bool(self.only_animal_intro.get())
         for key_var, val_var in self.advanced_fields:
             key = key_var.get().strip()
             val = val_var.get().strip()

@@ -28,7 +28,8 @@ class Kapinductie6(DroomrobotScript):
         # Introduction to robot, get fav animal, color + company
         interaction_conf = InteractionConf(amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
-        intro_moves = IntroductionFactory.age6_9(droomrobot=self.droomrobot, interaction_context=self.interaction_context, user_model=self.user_model)
+        intro_moves = IntroductionFactory.age6_9(droomrobot=self.droomrobot, interaction_context=self.interaction_context, user_model=self.user_model,
+                                                 only_animal=bool(self.user_model.get('only_animal_intro', False)))
         self.add_moves(intro_moves)
 
         # Droomplek selection (Prompt A — synchronous, small)

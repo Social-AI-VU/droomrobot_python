@@ -6,7 +6,13 @@ from droomrobot.droomrobot_script import DroomrobotScript, InteractionContext, I
 class IntroductionFactory:
 
     @staticmethod
-    def age4(droomrobot: Droomrobot, interaction_context: InteractionContext, user_model):
+    def age4(droomrobot: Droomrobot, interaction_context: InteractionContext, user_model, only_animal: bool = False):
+        """Build the age-4 introduction.
+
+        only_animal: if True, ask ONLY the animal question and skip the color
+        and companion questions. Currently driven by the kapinductie-only
+        toggle in the GUI. Other contexts always ask all three.
+        """
         script = DroomrobotScript(droomrobot, interaction_context)
 
         script.add_move(droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
@@ -53,30 +59,29 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Ik zou wel een ritje willen maken op een schaap.')
         script.add_move(droomrobot.say, 'Al val ik dan misschien wel in slaap in het zachte wol.')
 
-        #"""
-        script.add_move(droomrobot.say, 'Ik was nog heel benieuwd naar iets')
-        # Add color question
-        script.add_move(droomrobot.ask_entity_llm,
-                'Wat is jouw lievelingskleur?', 
-                strict=True,
-                user_model_key='kleur')
-        colour_choice = InteractionChoice('kleur', InteractionChoiceCondition.HASVALUE)
-        colour_choice.add_move('success', droomrobot.say, lambda: f'{user_model["kleur"]}, mooie keuze!')
-        colour_choice.add_move('fail', droomrobot.say, 'Alle kleuren zijn zo mooi! Mijn favoriet is groen.')
-        script.add_choice(colour_choice)
-        
-        # Add companion question
-        script.add_move(droomrobot.ask_entity_llm,
-                'En als je leuke dingen gaat doen, wie neem je dan het liefste mee?',
-                user_model_key='metgezel')
-        companion_choice = InteractionChoice('metgezel', InteractionChoiceCondition.HASVALUE)
-        companion_choice.add_move('success', lambda: droomrobot.say(
-            droomrobot.generate_funny_response(user_model['child_age'],
-                'Je hebt gevraagd wie het kind mee zou nemen om leuke dingen mee te doen.',
-                user_model['metgezel'])))
-        companion_choice.add_move('fail', droomrobot.say, 'Het is ook fijn om zelf op avontuur te gaan!')
-        script.add_choice(companion_choice)
-        #"""
+        if not only_animal:
+            script.add_move(droomrobot.say, 'Ik was nog heel benieuwd naar iets')
+            # Add color question
+            script.add_move(droomrobot.ask_entity_llm,
+                    'Wat is jouw lievelingskleur?',
+                    strict=True,
+                    user_model_key='kleur')
+            colour_choice = InteractionChoice('kleur', InteractionChoiceCondition.HASVALUE)
+            colour_choice.add_move('success', droomrobot.say, lambda: f'{user_model["kleur"]}, mooie keuze!')
+            colour_choice.add_move('fail', droomrobot.say, 'Alle kleuren zijn zo mooi! Mijn favoriet is groen.')
+            script.add_choice(colour_choice)
+
+            # Add companion question
+            script.add_move(droomrobot.ask_entity_llm,
+                    'En als je leuke dingen gaat doen, wie neem je dan het liefste mee?',
+                    user_model_key='metgezel')
+            companion_choice = InteractionChoice('metgezel', InteractionChoiceCondition.HASVALUE)
+            companion_choice.add_move('success', lambda: droomrobot.say(
+                droomrobot.generate_funny_response(user_model['child_age'],
+                    'Je hebt gevraagd wie het kind mee zou nemen om leuke dingen mee te doen.',
+                    user_model['metgezel'])))
+            companion_choice.add_move('fail', droomrobot.say, 'Het is ook fijn om zelf op avontuur te gaan!')
+            script.add_choice(companion_choice)
 
         script.add_move(droomrobot.say, 'Laat ik nu wat vertellen over de droomreis.')
         script.add_move(droomrobot.say, 'Je mag zo een fijne plek kiezen.')
@@ -87,7 +92,13 @@ class IntroductionFactory:
         return script.interaction_moves
 
     @staticmethod
-    def age6_9(droomrobot: Droomrobot, interaction_context: InteractionContext, user_model):
+    def age6_9(droomrobot: Droomrobot, interaction_context: InteractionContext, user_model, only_animal: bool = False):
+        """Build the age 6-9 introduction.
+
+        only_animal: if True, ask ONLY the animal question and skip the color
+        and companion questions. Currently driven by the kapinductie-only
+        toggle in the GUI. Other contexts always ask all three.
+        """
         script = DroomrobotScript(droomrobot, interaction_context)
 
         script.add_move(droomrobot.mini.animate, SDKAnimationType.ACTION, "random_short4", run_async=True)
@@ -132,31 +143,29 @@ class IntroductionFactory:
         script.add_move(droomrobot.say, 'Ik zou wel een ritje willen maken op een schaap.')
         script.add_move(droomrobot.say, 'Al val ik dan misschien wel in slaap in het zachte wol.')
 
-        #"""
-        script.add_move(droomrobot.say, 'Ik was nog heel benieuwd naar iets')
-        # Add color question
-        script.add_move(droomrobot.ask_entity_llm,
-                'Wat is jouw lievelingskleur?',
-                strict=True,
-                user_model_key='kleur')
-        colour_choice = InteractionChoice('kleur', InteractionChoiceCondition.HASVALUE)
-        colour_choice.add_move('success', droomrobot.say, lambda: f'{user_model["kleur"]}, mooie keuze!')
-        colour_choice.add_move('fail', droomrobot.say, 'Alle kleuren zijn zo mooi! Mijn favoriet is groen.')
-        script.add_choice(colour_choice)
-        
-        # Add companion question
-        script.add_move(droomrobot.ask_entity_llm,
-                'En als je leuke dingen gaat doen, wie neem je dan het liefste mee?',
-                user_model_key='metgezel')
-        companion_choice = InteractionChoice('metgezel', InteractionChoiceCondition.HASVALUE)
-        companion_choice.add_move('success', lambda: droomrobot.say(
-            droomrobot.generate_funny_response(user_model['child_age'],
-                'Je hebt gevraagd wie het kind mee zou nemen om leuke dingen mee te doen.',
-                user_model['metgezel'])))
-        companion_choice.add_move('fail', droomrobot.say, 'Het is ook fijn om zelf op avontuur te gaan!')
-        script.add_choice(companion_choice)
-        #"""
-        
+        if not only_animal:
+            script.add_move(droomrobot.say, 'Ik was nog heel benieuwd naar iets')
+            # Add color question
+            script.add_move(droomrobot.ask_entity_llm,
+                    'Wat is jouw lievelingskleur?',
+                    strict=True,
+                    user_model_key='kleur')
+            colour_choice = InteractionChoice('kleur', InteractionChoiceCondition.HASVALUE)
+            colour_choice.add_move('success', droomrobot.say, lambda: f'{user_model["kleur"]}, mooie keuze!')
+            colour_choice.add_move('fail', droomrobot.say, 'Alle kleuren zijn zo mooi! Mijn favoriet is groen.')
+            script.add_choice(colour_choice)
+
+            # Add companion question
+            script.add_move(droomrobot.ask_entity_llm,
+                    'En als je leuke dingen gaat doen, wie neem je dan het liefste mee?',
+                    user_model_key='metgezel')
+            companion_choice = InteractionChoice('metgezel', InteractionChoiceCondition.HASVALUE)
+            companion_choice.add_move('success', lambda: droomrobot.say(
+                droomrobot.generate_funny_response(user_model['child_age'],
+                    'Je hebt gevraagd wie het kind mee zou nemen om leuke dingen mee te doen.',
+                    user_model['metgezel'])))
+            companion_choice.add_move('fail', droomrobot.say, 'Het is ook fijn om zelf op avontuur te gaan!')
+            script.add_choice(companion_choice)
 
         script.add_move(droomrobot.say, 'Laat ik nu wat vertellen over de droomreis.')
         script.add_move(droomrobot.say, 'Je mag zo een fijne plek kiezen.')
