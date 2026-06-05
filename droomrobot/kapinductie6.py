@@ -36,14 +36,24 @@ class Kapinductie6(DroomrobotScript):
                     'Waar zou jij naartoe willen op droomreis?',
                     user_model_key='droomplek_raw_answer')
         self.add_choice(self.build_interaction_choice_droomplek())  # uses Prompt A
-        
-        # Prompt B — synchronous (tiny, fast)
-        self.add_move(self._generate_and_speak_motivation_reaction)
 
-        # Prompt C — fire in background
-        self.add_move(self._fire_practice_imagery_background)
+        # Prompt B — fire in background, mask the GPT wait with a cached filler.
+        self.add_move(self._fire_motivation_reaction_background)
+        self.add_move(self.droomrobot.say, lambda: f'Wat een leuk idee {self.user_model["child_name"]}!')
+        self.add_move(self._await_motivation_reaction)
+
+        # Prompt C and D — fire NOW so the GPT service preps as much as possible
+        # in advance. ORDER MATTERS: SIC GPT serializes requests; C must queue
+        # before D so D never blocks C.
+        self.add_move(self._fire_practice_imagery_background)   # C (with TTS pregen on resolve)
+        self.add_move(self._fire_intervention_imagery_background)  # D queues behind C
+
+        # Speak Prompt B's output. C and D continue running in the background.
+        self.add_move(self._speak_motivation_reaction)
 
         # SAMEN OEFENEN
+        # Audio is cached/wav-based after first run → TTS service is idle here,
+        # so the on_success pregen for C runs without competing with live say().
         interaction_conf = InteractionConf(speaking_rate=0.75, sleep_time=0.5, animated=False, amplified=self.audio_amplified, always_regenerate=self.always_regenerate)
         self.add_move(self.droomrobot.set_interaction_conf, interaction_conf)
 
@@ -57,8 +67,8 @@ class Kapinductie6(DroomrobotScript):
         self.add_move(self.droomrobot.play_audio, 'resources/audio/breath_out.wav')
         self.add_move(self.droomrobot.say, 'En voel maar dat je buik en je handen iedere keer rustig omhoog en omlaag gaan terwijl je zo lekker aan het ademhalen bent.')
 
-        # Block for Prompt C + play back + fire Prompt D in background
-        self.add_move(self._play_practice_imagery_and_fire_intervention)
+        # Block on Prompt C and play it back (D is already firing in background).
+        self.add_move(self._play_practice_imagery)
         
         #self.add_choice(self._build_interaction_choice_oefenen())
         
@@ -399,14 +409,16 @@ class Kapinductie6(DroomrobotScript):
         return phase_moves
     
     def _play_intervention_sentences(self):
-        sentences = self.user_model.get('intervention_preparation_sentences', self._get_fallback_intervention_imagery(6))
+        payload = self.user_model.get('prompt_d_payload', {})
+        sentences = payload.get('intervention_preparation') or self._get_fallback_intervention_imagery(6)
         for sentence in sentences:
             if not self.is_running or self._requested_phase:
                 break
             self.droomrobot.say(sentence)
 
     def _play_filler_loop(self):
-        fillers = self.user_model.get('filler_sentences', self._get_default_fillers())
+        payload = self.user_model.get('prompt_d_payload', {})
+        fillers = payload.get('filler_sentences') or self._get_default_fillers()
         self.repeat_sentences(fillers)
         
         

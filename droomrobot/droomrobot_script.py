@@ -174,12 +174,22 @@ class DroomrobotScript:
     # ----------------------------------
     # Background prompt functions:
     # ----------------------------------
-    def _fire_background_prompt(self, key, generate_func, *args, **kwargs):
-        """Fire an LLM generation in a background thread."""
+    def _fire_background_prompt(self, key, generate_func, *args, on_success=None, **kwargs):
+        """Fire an LLM generation in a background thread.
+
+        on_success(result) runs in the worker thread immediately after the
+        future is marked 'success' — used e.g. to pregenerate TTS for the
+        result while the GPT service is idle, before the main thread awaits.
+        """
         def _worker():
             try:
                 result = generate_func(*args, **kwargs)
                 self._pending_futures[key] = ('success', result)
+                if on_success is not None:
+                    try:
+                        on_success(result)
+                    except Exception as cb_err:
+                        print(f"[Background] on_success for {key} failed: {cb_err}")
             except Exception as e:
                 self._pending_futures[key] = ('error', str(e))
                 print(f"[Background] Prompt {key} failed: {e}")
@@ -641,19 +651,59 @@ class DroomrobotScript:
             })
         return InteractionMove(_store_imagery_payload)"""
     
-    def _generate_and_speak_motivation_reaction(self):
-        """Prompt B: generate quick reaction + transition, speak immediately."""
-        payload = self.droomrobot.generate_motivation_reaction(
+    # ----------------------------------
+    # Prompt B (motivation reaction) — split flow:
+    #   1. _fire_motivation_reaction_background   → start GPT-B (head of queue)
+    #   2. <filler say()>                          → cached "Jaa wat een leuk idee {kind}!"
+    #   3. _await_motivation_reaction              → block on GPT-B, store payload
+    #   4. _fire_practice_imagery_background       → queue GPT-C (with TTS pregen on resolve)
+    #   5. _fire_intervention_imagery_background   → queue GPT-D behind C
+    #   6. _speak_motivation_reaction              → speak B's output; C+D run in background
+    # ----------------------------------
+
+    def _fire_motivation_reaction_background(self):
+        """Prompt B: fire in background. Filler covers the wait; await + speak follow."""
+        print(f"[INTRO] Firing Prompt B in background")
+        self._fire_background_prompt(
+            'motivation_reaction',
+            self.droomrobot.generate_motivation_reaction,
             child_name=self.user_model['child_name'],
             child_age=self.user_model['child_age'],
             droomplek=self.user_model['droomplek'],
             droomplek_article=self.user_model['droomplek_lidwoord'],
             motivatie=self.user_model.get('droomplek_motivatie', '')
         )
+
+    def _await_motivation_reaction(self):
+        """Block on Prompt B and store the payload. Does not speak yet."""
+        import time
+        print(f"[INTRO] Awaiting Prompt B...")
+        start = time.time()
+        payload = self._await_background_prompt('motivation_reaction', timeout=20)
+        elapsed = time.time() - start
+
+        if not payload:
+            print(f"[INTRO] Prompt B fallback after {elapsed:.1f}s")
+            payload = {
+                "motivatie_reactie": "Wat leuk, dat klinkt als een fijn idee!",
+                "transitie_zin": (
+                    f"Laten we alvast oefenen om samen naar "
+                    f"{self.user_model['droomplek_lidwoord']} {self.user_model['droomplek']} te gaan."
+                ),
+            }
+        else:
+            print(f"[INTRO] Prompt B ready in {elapsed:.1f}s")
+
         self.set_user_model_variable('prompt_b_payload', payload)
+
+    def _speak_motivation_reaction(self):
+        """Speak Prompt B's output. C and D continue in background."""
+        payload = self.user_model.get('prompt_b_payload', {})
+        print(f"[INTRO] Speaking motivatie_reactie + transitie_zin")
         self.droomrobot.say(payload['motivatie_reactie'])
         self.droomrobot.say(payload['transitie_zin'])
 
+        # Background TTS prep for upcoming droomplek-lambda say() calls.
         thread = Thread(
             target=self.prepare_user_model_audio,
             args=("droomplek",),
@@ -661,10 +711,24 @@ class DroomrobotScript:
         thread.start()
 
     def _fire_practice_imagery_background(self):
-        """Fire Prompt C in background — result needed after breathing exercise."""
+        """Fire Prompt C in background.
+
+        When GPT-C resolves, the on_success callback immediately pregenerates
+        TTS for C's sentences — this runs during the (mostly cached) breathing
+        scaffold, when the TTS service is otherwise idle. By the time the
+        main thread reaches _play_practice_imagery, C's sentences are cache hits.
+        """
+        def _pregen_c_tts(result):
+            sentences = result.get('practice_imagery', []) if result else []
+            if sentences:
+                print(f"[BG] Prompt C done — pregenerating TTS for {len(sentences)} sentences")
+                self.pregenerate_prompt_output(sentences)
+
+        print(f"[INTRO] Firing Prompt C in background")
         self._fire_background_prompt(
             'practice_imagery',
             self.droomrobot.generate_practice_imagery,
+            on_success=_pregen_c_tts,
             child_name=self.user_model['child_name'],
             child_age=self.user_model['child_age'],
             droomplek=self.user_model['droomplek'],
@@ -674,32 +738,15 @@ class DroomrobotScript:
             metgezel=self.user_model.get('metgezel'),
             dier=self.user_model.get('dier')
         )
-        
-    def _play_practice_imagery_and_fire_intervention(self):
-        """Block for Prompt C, play it back, fire Prompt D during playback."""
-        # Wait for practice imagery
-        payload = self._await_background_prompt('practice_imagery', timeout=45)
 
-        if payload and 'practice_imagery' in payload:
-            self.set_user_model_variable('prompt_c_payload', payload)
-            sentences = payload['practice_imagery']
-        else:
-            # Fallback: use generic practice sentences
-            sentences = self._get_fallback_practice_imagery()
-            payload = {'practice_imagery': sentences}
-            self.set_user_model_variable('prompt_c_payload', payload)
+    def _fire_intervention_imagery_background(self):
+        """Fire Prompt D in background.
 
-        # can be here to pregenerate sentences
-        # but does not seem to save time
-        # if sentences:
-        #     thread = Thread(
-        #         target=self.pregenerate_prompt_output,
-        #         args=(sentences,),
-        #         daemon=True)
-        #     thread.start()
-
-        # Start playing practice imagery
-        # Fire Prompt D in background BEFORE first sentence
+        The SIC GPT service serializes requests (see sic_redis.register_request_handler):
+        D queues behind C, so this MUST be called after _fire_practice_imagery_background.
+        D's result is awaited far downstream in _store_intervention_result.
+        """
+        print(f"[INTRO] Firing Prompt D in background (queues behind C)")
         self._fire_background_prompt(
             'intervention_imagery',
             self.droomrobot.generate_intervention_imagery,
@@ -713,7 +760,25 @@ class DroomrobotScript:
             dier=self.user_model.get('dier')
         )
 
-        # Play practice sentences one by one
+    def _play_practice_imagery(self):
+        """Block on Prompt C, play its sentences back.
+
+        D was fired upstream (_fire_intervention_imagery_background) so it is
+        already running in the background by the time we get here.
+        TTS for C's sentences was pregenerated via the on_success callback
+        on the C fire — playback should be a stream of cache hits.
+        """
+        payload = self._await_background_prompt('practice_imagery', timeout=45)
+
+        if payload and 'practice_imagery' in payload:
+            self.set_user_model_variable('prompt_c_payload', payload)
+            sentences = payload['practice_imagery']
+        else:
+            sentences = self._get_fallback_practice_imagery()
+            payload = {'practice_imagery': sentences}
+            self.set_user_model_variable('prompt_c_payload', payload)
+
+        print(f"[INTRO] Playing {len(sentences)} practice imagery sentences")
         for sentence in sentences:
             if not self.is_running:
                 break
@@ -724,33 +789,16 @@ class DroomrobotScript:
         """Block for Prompt D result, store in user_model for intervention session."""
         payload = self._await_background_prompt('intervention_imagery', timeout=90)
 
-        if payload:
-            self.set_user_model_variable('prompt_d_payload', payload)
-            self.set_user_model_variables({
-                'intervention_preparation_sentences': payload.get('intervention_preparation', []),
-                'filler_sentences': payload.get('filler_sentences', []),
-            })
-        else:
-            # Fallback stored
-            intervention_sentences = self._get_fallback_intervention_imagery()
-            filler_sentences = self._get_default_fillers()
+        if not payload:
             payload = {
-                'intervention_preparation': intervention_sentences,
-                'filler_sentences': filler_sentences,
+                'intervention_preparation': self._get_fallback_intervention_imagery(),
+                'filler_sentences': self._get_default_fillers(),
             }
-            self.set_user_model_variable('prompt_d_payload', payload)
-            self.set_user_model_variables({
-                'intervention_preparation_sentences': intervention_sentences,
-                'filler_sentences': filler_sentences,
-            })
+        self.set_user_model_variable('prompt_d_payload', payload)
 
         sentences = []
-        if 'intervention_preparation_sentences' in self.user_model:
-            for sentence in self.user_model['intervention_preparation_sentences']:
-                sentences.append(sentence)
-        if 'filler_sentences' in self.user_model:
-            for sentence in self.user_model['filler_sentences']:
-                sentences.append(sentence)
+        sentences.extend(payload.get('intervention_preparation', []))
+        sentences.extend(payload.get('filler_sentences', []))
 
         thread = Thread(
             target=self.pregenerate_prompt_output,
