@@ -316,7 +316,7 @@ class Droomrobot:
             if not always_regenerate:
                 audio_file = self.tts_cacher.load_audio_file(tts_key)
                 if audio_file:
-                    print(f"Using cached TTS audio for text: {chunk!r}")
+                    print(f"[TTS] Using cached audio for text: {chunk!r}")
                     self.log_utterance(speaker='robot', text=f'{chunk} (cache)')
                     self.play_audio(audio_file, log=False)
                     continue
@@ -792,7 +792,7 @@ class Droomrobot:
                        f'Als robot heb je zojuist het volgende gevraagd: {robot_input}'
                        f'Het kind reageerde met het volgende: "{user_input}"'
                        f'Genereer nu een passende reactie in 1 zin. '
-                       f'Het mag geen vraag zijn. De woordenschat en het taalniveau moeten op B2 niveau zijn.'))
+                       f'Het mag geen vraag zijn en geen emojis bevatten. De woordenschat en het taalniveau moeten op B2 niveau zijn.'))
         return gpt_response.response
 
     def generate_funny_response(self, user_age, context, user_input):
@@ -804,7 +804,7 @@ class Droomrobot:
             f'Dit is de context van het gesprek: {context}'
             f'Het kind reageerde met het volgende: "{user_input}"'
             f'Genereer nu een positieve en grappige reactie in één of twee zinnen. '
-            f'Het mag GEEN vraag zijn, NIET relateren aan het ziekenhuis of andere negatieve onderwerpen. De woordenschat en het taalniveau moeten op B2 niveau zijn.')
+            f'Het mag GEEN vraag zijn, geen emojis bevatten, NIET relateren aan het ziekenhuis of andere negatieve onderwerpen. De woordenschat en het taalniveau moeten op B2 niveau zijn.')
         print(f"[FUNNY] Result: {gpt_response!r}")
         return gpt_response or "Wat leuk zeg!"
 
@@ -816,7 +816,7 @@ class Droomrobot:
                        f'Als robot heb je zojuist het volgende gevraagd: {robot_input}'
                        f'Het kind reageerde met het volgende: "{user_input}"'
                        f'Genereer nu 1 passende vervolgvraag. '
-                       f'De woordenschat en het taalniveau moeten op B2 niveau zijn.'))
+                       f'De woordenschat en het taalniveau moeten op B2 niveau zijn en mag geen emojis bevatten.'))
         return gpt_response.response
     
     # ------------------------

@@ -17,17 +17,73 @@ from droomrobot.droomrobot_control import DroomrobotControl
 
 
 class TextRedirector:
-    def __init__(self, text_widget, tag):
+    """Redirects a stream to a Tk Text widget, optionally filtering noisy
+    debug-tagged lines for speed.
+
+    When ``debug_enabled`` returns False, any line whose first non-whitespace
+    characters match one of the tags in ``DEBUG_TAGS`` is silently dropped
+    (no insert, no auto-scroll, no idletasks). Untagged lines and lines tagged
+    with ``ALWAYS_SHOW_TAGS`` (errors, interrupts, tracebacks) always render.
+
+    Filtering happens at line boundaries — partial writes are buffered so a
+    print() that arrives as multiple write() calls is still filtered as one.
+    """
+
+    # Noisy debug-style prefixes used throughout droomrobot. Lines starting
+    # with any of these are dropped when debug is disabled.
+    DEBUG_TAGS = (
+        "[TTS]", "[GPT]", "[JSON]", "[BG]", "[Background]",
+        "[INTRO]", "[SCRIPT]", "[DROOMPLEK]", "[IMAGERY]",
+        "[INTERVENTION_IMAGERY]", "[MOTIVATIE]", "[PRACTICE_IMAGERY]",
+        "[FUNNY]",
+    )
+
+    # Always-show prefixes — these are operationally relevant and must
+    # render even when debug is off.
+    ALWAYS_SHOW_TAGS = ("[Error]", "[Interrupted]")
+
+    def __init__(self, text_widget, tag, debug_enabled=None):
         self.text_widget = text_widget
         self.tag = tag
+        # Callable returning bool. None means "always render" (no filtering).
+        self.debug_enabled = debug_enabled
+        self._line_buf = ""
 
-    def write(self, message):
+    def _should_render(self, line):
+        """Decide whether a single line (including its newline) should render."""
+        if self.debug_enabled is None or self.debug_enabled():
+            return True
+        stripped = line.lstrip()
+        # Always show explicit always-show tags, and anything that isn't
+        # a known debug tag (tracebacks, plain prints, logger output, ...).
+        if stripped.startswith(self.ALWAYS_SHOW_TAGS):
+            return True
+        if stripped.startswith(self.DEBUG_TAGS):
+            return False
+        return True
+
+    def _render(self, line):
         self.text_widget.configure(state="normal")
-        self.text_widget.insert("end", message)
+        self.text_widget.insert("end", line)
         self.text_widget.configure(state="disabled")
         self.text_widget.see("end")
 
+    def write(self, message):
+        # Accumulate until a newline arrives so the tag prefix and its
+        # trailing "\n" are evaluated as one unit.
+        self._line_buf += message
+        while "\n" in self._line_buf:
+            line, self._line_buf = self._line_buf.split("\n", 1)
+            line += "\n"
+            if self._should_render(line):
+                self._render(line)
+
     def flush(self):
+        # Any trailing un-newlined content: evaluate and render if appropriate.
+        if self._line_buf:
+            if self._should_render(self._line_buf):
+                self._render(self._line_buf)
+            self._line_buf = ""
         self.text_widget.update_idletasks()
 
 
@@ -56,6 +112,9 @@ class DroomrobotGUI:
         self.full_control_frame.grid(row=0, column=0, sticky="nsew")
         self.full_control_frame.grid_remove()
 
+        # Load config early so the console/debug widgets can use it.
+        self.config = self.load_config()
+
         # Console Frame (hidden by default)
         self.console_visible = False
         self.console_frame = ttk.LabelFrame(root, text="Console Output")
@@ -66,17 +125,35 @@ class DroomrobotGUI:
         self.console_toggle_btn = ttk.Button(root, text="Show Console ⯈", command=self.toggle_console)
         self.console_toggle_btn.grid(row=98, column=0, padx=10, pady=(5, 0), sticky="w")
 
+        # Debug-prints toggle. When off, noisy [TAG]-prefixed prints (TTS, GPT,
+        # JSON, INTRO, SCRIPT, ...) are dropped at the TextRedirector before the
+        # Tk Text widget paints them — that's where the slowdown lives.
+        # [Error]/[Interrupted]/tracebacks/untagged prints always render.
+        # Persisted via the "debug_console" key in default_settings.json (default off).
+        self.debug_console_enabled = tk.BooleanVar(
+            value=bool(self.config.get("debug_console", False))
+        )
+        self.debug_toggle_chk = ttk.Checkbutton(
+            root,
+            text="Debug Prints",
+            variable=self.debug_console_enabled,
+        )
+        self.debug_toggle_chk.grid(row=98, column=0, padx=(160, 10), pady=(5, 0), sticky="w")
+
         # Console text widget
         self.console = ScrolledText(self.console_frame, height=10, state="disabled", wrap="word")
         self.console.pack(fill="both", expand=True)
 
-        # Redirect stdout/stderr
-        sys.stdout = TextRedirector(self.console, "stdout")
-        sys.stderr = TextRedirector(self.console, "stderr")
+        # Redirect stdout/stderr. Both honour the debug toggle so e.g. a
+        # noisy [TTS] line on stderr is also filtered; the always-show list
+        # keeps [Error]/tracebacks visible.
+        sys.stdout = TextRedirector(self.console, "stdout",
+                                    debug_enabled=self.debug_console_enabled.get)
+        sys.stderr = TextRedirector(self.console, "stderr",
+                                    debug_enabled=self.debug_console_enabled.get)
 
         # === Setup (Connect) Screen ===
-        # Load them from config file
-        self.config = self.load_config()
+        # Load them from config file (self.config was loaded earlier).
         self.mini_ip = tk.StringVar(value=self.config.get("mini_ip", "192.168.178.111"))
         self.mini_id = tk.StringVar(value=self.config.get("mini_id", "00167"))
         self.mini_password = tk.StringVar(value=self.config.get("mini_password", "alphago"))
