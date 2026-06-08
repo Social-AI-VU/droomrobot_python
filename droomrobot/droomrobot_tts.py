@@ -4,6 +4,7 @@ import logging
 import os
 import hashlib
 import string
+import threading
 import wave
 from json import dumps, loads, load, dump
 from pathlib import Path
@@ -164,6 +165,11 @@ class TTSCacher:
 
         self.tts_cache = self._load_cache()
 
+        # Serializes save_audio_file and _save_cache so concurrent writers
+        # (e.g. live say() racing with a background pregen) don't collide
+        # on the same .wav file or corrupt the JSON cache map.
+        self._write_lock = threading.Lock()
+
     @staticmethod
     def normalize_text(text: str) -> str:
         """Lowercase, strip, remove punctuation for consistent caching"""
@@ -197,19 +203,52 @@ class TTSCacher:
         return hashlib.md5(canonical.encode("utf-8")).hexdigest()
 
     def save_audio_file(self, tts_key: str, audio_bytes: bytes, sample_rate: int, sample_width: int = 2, channels: int = 1):
+        """Write the wav for `tts_key` and register it in the cache map.
+
+        Safe to call from multiple threads — a single lock serializes
+        callers, and a second caller for the same key short-circuits
+        once it sees the first writer already cached it. The wav itself
+        is written atomically (temp file + rename) so a partial write
+        can never produce a half-written .wav on disk."""
         subfolder_name = tts_key[:self.subfolder_depth]
         subfolder = self.tts_cache_dir / subfolder_name
-        os.makedirs(subfolder, exist_ok=True)
         filename = subfolder / f"{tts_key}.wav"
 
-        with wave.open(str(filename), "wb") as wf:
-            wf.setnchannels(channels)
-            wf.setsampwidth(sample_width)  # 2 bytes = 16-bit
-            wf.setframerate(sample_rate)
-            wf.writeframes(audio_bytes)
+        with self._write_lock:
+            # If another writer beat us to it, don't redo the work — the
+            # bytes are already on disk and registered.
+            if tts_key in self.tts_cache and filename.exists():
+                return
 
-        self.tts_cache[tts_key] = f"{subfolder_name}/{tts_key}.wav"
-        self._save_cache()
+            try:
+                os.makedirs(subfolder, exist_ok=True)
+
+                tmp_filename = subfolder / (
+                    f"{tts_key}.{os.getpid()}.{threading.get_ident()}.tmp.wav"
+                )
+                with wave.open(str(tmp_filename), "wb") as wf:
+                    wf.setnchannels(channels)
+                    wf.setsampwidth(sample_width)  # 2 bytes = 16-bit
+                    wf.setframerate(sample_rate)
+                    wf.writeframes(audio_bytes)
+
+                # Atomic publish — readers either see the old file (if
+                # any) or the complete new one, never a half-written wav.
+                os.replace(str(tmp_filename), str(filename))
+
+                self.tts_cache[tts_key] = f"{subfolder_name}/{tts_key}.wav"
+                self._save_cache_locked()
+            except Exception as e:
+                # Don't let a transient FS error (permission, brief lock,
+                # antivirus, etc.) crash the script. Worst case we miss
+                # the cache once and regenerate next time.
+                print(f"[TTS] save_audio_file failed for {tts_key}: {e!r}")
+                # Best-effort cleanup of any leftover temp file.
+                try:
+                    if 'tmp_filename' in locals() and tmp_filename.exists():
+                        tmp_filename.unlink()
+                except Exception:
+                    pass
 
     def load_audio_file(self, tts_key):
         if tts_key in self.tts_cache:
@@ -221,8 +260,12 @@ class TTSCacher:
             if os.path.exists(audio_path):
                 return str(audio_path)
             else:
-                del self.tts_cache[tts_key]
-                self._save_cache()
+                # Stale map entry; drop it under the write lock so we
+                # don't race with a save_audio_file() that's mid-flight.
+                with self._write_lock:
+                    if tts_key in self.tts_cache:
+                        del self.tts_cache[tts_key]
+                        self._save_cache_locked()
         return None
 
     def _load_cache(self) -> dict:
@@ -232,5 +275,24 @@ class TTSCacher:
         return {}
 
     def _save_cache(self):
-        with open(self.tts_cache_map_file, "w") as f:
-            dump(self.tts_cache, f, indent=2)
+        with self._write_lock:
+            self._save_cache_locked()
+
+    def _save_cache_locked(self):
+        """Caller must already hold self._write_lock. Writes via temp file
+        + rename so an interrupted dump can never leave the JSON map
+        truncated (which would orphan every cached wav)."""
+        tmp = self.tts_cache_map_file.with_suffix(
+            self.tts_cache_map_file.suffix + f".{os.getpid()}.{threading.get_ident()}.tmp"
+        )
+        try:
+            with open(tmp, "w") as f:
+                dump(self.tts_cache, f, indent=2)
+            os.replace(str(tmp), str(self.tts_cache_map_file))
+        except Exception as e:
+            print(f"[TTS] _save_cache failed: {e!r}")
+            try:
+                if tmp.exists():
+                    tmp.unlink()
+            except Exception:
+                pass

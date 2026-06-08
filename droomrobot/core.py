@@ -3,7 +3,7 @@ import json
 import queue
 import re
 import wave
-from concurrent.futures import TimeoutError
+from concurrent.futures import TimeoutError, ThreadPoolExecutor
 from os import environ, fsync
 from os.path import exists
 from pathlib import Path
@@ -154,6 +154,8 @@ class Droomrobot:
 
         # Mini IP address
         self.mini_ip = mini_ip
+        
+        self._executor = ThreadPoolExecutor(max_workers=2)
 
         print('complete')
 
@@ -349,8 +351,16 @@ class Droomrobot:
 
             # Save to cache before playback so live-generated speech is not lost
             # if the robot speaker request times out.
-            self.tts_cacher.save_audio_file(tts_key, audio_bytes, sample_rate)
-            print(f"[TTS] Saved generated audio to cache for: {chunk!r}")
+            #self.tts_cacher.save_audio_file(tts_key, audio_bytes, sample_rate)
+            #print(f"[TTS] Saved generated audio to cache for: {chunk!r}")
+            
+            self._executor.submit(
+                self.tts_cacher.save_audio_file,
+                tts_key,
+                audio_bytes,
+                sample_rate
+            )
+
 
             if self._send_audio_to_speaker(audio_bytes, sample_rate, text=chunk):
                 self.log_utterance(speaker='robot', text=chunk)
@@ -1141,6 +1151,13 @@ class Droomrobot:
         if isinstance(self.tts_conf, ElevenLabsTTSConf):
             disconnect_elevenlabs_future = asyncio.run_coroutine_threadsafe(self.tts.disconnect(), self.background_loop)
             disconnect_elevenlabs_future.result()
+
+        # Drain any in-flight async TTS cache saves so we don't drop wavs
+        # mid-write when the process exits.
+        try:
+            self._executor.shutdown(wait=True)
+        except Exception as e:
+            print(f"[TTS] Executor shutdown failed: {e!r}")
 
         # Schedule loop shutdown
         if self.background_loop.is_running():
