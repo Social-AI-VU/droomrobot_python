@@ -351,6 +351,7 @@ class Droomrobot:
 
             # Save to cache before playback so live-generated speech is not lost
             # if the robot speaker request times out.
+
             #self.tts_cacher.save_audio_file(tts_key, audio_bytes, sample_rate)
             #print(f"[TTS] Saved generated audio to cache for: {chunk!r}")
             
