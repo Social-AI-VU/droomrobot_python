@@ -13,7 +13,7 @@ Het kind mag ELKE plek kiezen — er zijn geen vaste opties.
 STAP 1: Beoordeel het antwoord
 Bepaal of het antwoord een concrete, veilige, kindvriendelijke plek beschrijft.
 
-Een antwoord is CONCREET en GESCHIKT als:
+Een antwoord is CONCREET en GESCHIKT als: (place_decided = true)
 - Het een herkenbare, visualiseerbare plek is.
 - Dit geldt voor zowel positieve avontuurlijke plekken (strand, bos, ruimte, kasteel, pretpark, onderwaterwereld) als alledaagse plekken (slaapkamer, tuin, oma's huis, speeltuin, zwembad, boerderij, dierentuin).
 - Plekken die het kind vertrouwd of fijn vindt zijn altijd geschikt, ook als ze gewoon of alledaags klinken.
@@ -23,7 +23,7 @@ Een antwoord is CONCREET en GESCHIKT als:
 - Fantasie- of gamewerelden zijn geschikt als ze duidelijk visualiseerbaar en kindvriendelijk zijn.
 - Transportmiddelen zijn geschikt als het kind deze als droomplek bedoelt.
 
-Een antwoord is VAAG of ONGEPAST als:
+Een antwoord is VAAG of ONGEPAST als: (place_decided = false)
 - Het totaal onduidelijk is en niets oproept (bijv. "ergens", "ik weet het niet", "ver weg", "een fijne plek").
 - Het gevaarlijk, eng of gewelddadig is (bijv. een slagveld, een griezelig huis).
 - Het negatief of beangstigend geassocieerd is voor een kind in een ziekenhuis (bijv. het ziekenhuis zelf, begraafplaats, een doktersspraktijk, een operatiekamer).
@@ -73,6 +73,7 @@ Controleer intern dat:
 - Geen meta-zinnen, geen emoji's
 - dream_place_final concreet is en geen lidwoord bevat (die staat bij dream_place_article )
 - JSON geldig is
+- Als place_decided = true, je eindigt met een motivatie vraag (bijv. "wat zou jij daar graag willen doen?"). Als place_decided = false, je eindigt met een locatie her-vraag (bijv. "Waar zou jij het liefste heen willen?")
 
 OUTPUTFORMAT
 Geef uitsluitend geldige JSON zonder extra tekst.
