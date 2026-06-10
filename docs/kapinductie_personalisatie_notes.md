@@ -133,6 +133,54 @@ Prompt files live in `droomrobot/resources/prompts/`.
   compliment, place+safety, lightness, control) that repeats with pauses to
   cover whatever real time the induction takes.
 
+### 3.1 The expected story arc of Prompt D (7 phases / 17 sentences)
+
+Prompt D is the heart of the intervention. It must reproduce the expert-validated
+guided-imagery arc exactly — 17 sentences across 7 phases — while personalising
+every detail to the child's dream place, preferences and motivation. The diagram
+below shows the fixed arc, how it maps onto the `setting_context` / `start_analogy`
+split, the operator skip point, and the looping filler block.
+
+```mermaid
+flowchart TD
+    classDef prep fill:#e3f2fd,stroke:#1565c0,color:#0d2b45;
+    classDef proc fill:#e8f5e9,stroke:#2e7d32,color:#13351a;
+    classDef loop fill:#fff3e0,stroke:#ef6c00,color:#4a2c00;
+    classDef skip fill:#fce4ec,stroke:#c2185b,color:#4a0d27;
+
+    subgraph SC["setting_context — zin 1-3 — played in PREPARATION phase"]
+      direction TB
+      P1["<b>FASE 1 · Terugkeer naar de droomplek</b><br/>zin 1: 'Stel je maar voor dat je weer …' (+ motivatie, voorzetsel)<br/>zin 2: rondkijken in verbeelding + metgezel/'alleen of iemand bij je'"]
+      P2["<b>FASE 2 · Zintuiglijke verankering</b><br/>zin 3: één concreet zintuiglijk detail (ondergrond/lucht/warmte/geur/geluid/textuur)"]
+    end
+
+    subgraph SA["start_analogy — zin 4-17 — played in PROCEDURE phase"]
+      direction TB
+      P3["<b>FASE 3 · Kind-bekende object-analogie (de masker-reframe)</b><br/>zin 4: ontdek object in de plek (duikbril/ruimtehelm/schommel…)<br/>zin 5: kleur & materiaal (lievelingskleur concreet)<br/>zin 6: vrijwillig gebruiken — 'Je mag…', 'zacht/fijn/lekker', gezicht<br/>zin 7: veiligheid/bescherming — 'veilig/beschermt/sterk' + plekdetail"]
+      P4["<b>FASE 4 · Ritmische verdieping</b><br/>zin 8: ritme 'heen en weer, heen en weer'<br/>zin 9: regie — 'jij bent de baas' / 'alle controle' / 'jij bepaalt'<br/>zin 10: prettige lichamelijke sensatie (licht/warm/tinteling)<br/>zin 11: ritme + omgeving (wind/licht/geluid)"]
+      P5["<b>FASE 5 · Veilige cocon</b><br/>zin 12: 'rustig' + 'veilig' + droomplek bij naam<br/>zin 13: lievelingsdier verschijnt — kalm & beschermend<br/>zin 14: rustig omgevingsgeluid<br/>zin 15: warmte als 'deken'"]
+      P6["<b>FASE 6 · Lichter worden</b><br/>zin 16: 'steeds lichter' + plek-specifieke reden<br/>zin 17 (vast): 'Steeds lichter, steeds rustiger, helemaal ontspannen.'"]
+    end
+
+    FL["<b>filler_sentences (4) · herhaallus tijdens de echte inductie</b><br/>1 ademhaling+compliment · 2 droomplek+veiligheid · 3 lichtheid · 4 controle"]
+    SKIP[["operator drukt PROCEDURE → sla setting_context over,<br/>spring direct naar zin 4"]]
+
+    P1 --> P2 --> P3
+    P3 --> P4 --> P5 --> P6 --> FL
+    FL -. herhaalt met pauzes tot de operator stopt .-> FL
+    SKIP -.-> P3
+
+    class P1,P2 prep;
+    class P3,P4,P5,P6 proc;
+    class FL loop;
+    class SKIP skip;
+```
+
+> *Phase 7 in the written source ("afronding / terugkeer") is handled outside
+> prompt D — by the fixed wrap-up moves and the operator ending the session —
+> which is why D itself ends at the fully-relaxed state (zin 17) and then loops
+> the fillers.*
+
 ---
 
 ## 4. Script changes & personalisation decisions
@@ -222,6 +270,60 @@ generation (prompts C and D especially) and TTS synthesis are both slow, and a
 guided-imagery session cannot tolerate dead air or awkward pauses. The solution
 is **aggressive pre-generation and careful ordering**, so that by the time the
 robot needs to *speak* something, both the text and its audio are already ready.
+
+### 5.0 Diagram: prompt-sending & TTS pre-generation architecture
+
+The sequence below shows how the four prompts are fired, awaited and masked
+during the introduction, and how TTS pre-generation is chained C → D so it
+always runs in the idle window behind cached speech. Time flows downward;
+everything on the `BG`/`GPT`/`TTS` lanes happens off the main thread while the
+child keeps hearing speech on the `Robot` lane.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant K as Child
+    participant S as Script (main thread)
+    participant R as Robot speech (TTS)
+    participant BG as Background threads
+    participant GPT as GPT service (serialised queue)
+    participant T as TTS + audio cache
+
+    K->>S: motivation answer (droomplek_motivatie)
+    S->>BG: fire Prompt B
+    BG->>GPT: B request
+    S->>R: say CACHED filler "Wat een leuk idee {naam}!"
+    Note over R: masks B's latency
+    GPT-->>BG: B result
+    S->>S: await B · promote effective_motivatie
+
+    rect rgb(232,245,233)
+    Note over S,GPT: ORDER MATTERS — GPT queue is serialised
+    S->>BG: fire Prompt C  (queued FIRST)
+    BG->>GPT: C request
+    S->>BG: fire Prompt D  (queued BEHIND C)
+    BG->>GPT: D request
+    end
+
+    S->>R: speak B (motivatie_reactie + transitie_zin)
+
+    GPT-->>BG: C result
+    BG->>T: pre-generate C audio (TTS idle)
+    BG->>BG: set C-pregen-done event ✔
+
+    S->>R: fixed scaffold — position + breathing (cached wav)
+    Note over R,T: TTS otherwise idle here → C pregen runs free
+
+    GPT-->>BG: D result
+    BG->>BG: wait for C-pregen-done event
+    BG->>T: pre-generate D audio (chained strictly after C)
+
+    S->>S: await C
+    S->>R: play Prompt C — 11 sentences (all cache hits)
+    S->>R: fixed wrap-up (cached) — D pregen finishing in background
+    S->>S: await D · save prompt_d_payload to user model
+    Note over S: persisted to disk → reloaded in the OR session
+```
 
 ### 5.1 Background prompt firing + filler masking
 
@@ -439,9 +541,196 @@ INTERVENTION (OR)
 
 ---
 
-## 9. Ideas for future improvements
+## 9. Timeline of development
 
-### 9.1 Streaming
+Derived from the branch commit history (`main..kapinductie-personalisatie`).
+Dates grouped into phases; useful as a narrative of *how* the design converged
+for the final report.
+
+| Phase | Period | Focus & milestones |
+|-------|--------|--------------------|
+| **0 · Foundation** | late Apr 2026 | Basic personalisation: extra name + open location, removal of a duplicate question. Prompts and the first location-conversation function ported from the *bloedafname* (blood-draw) interaction as a starting point. Computer-test safeguards so `self.mini` calls don't fail when no robot is connected. |
+| **1 · Pipeline up** | early–mid May 2026 | Imagery prompt adapted to kapinductie. Lambdas added so the basic script runs. First working end-to-end pipeline. Motivation fallback; **GPT-request timeouts** introduced (max_tokens capped). ElevenLabs error fixes. Prompt A switched to an open question. |
+| **2 · Prompt & robustness iteration** | mid May 2026 | Iterative rewrites of prompts A–D. Pre-generation scaffolding for user-model sentences and prompt text. All-ages personalisation + beach fallback. droomplek-sentence pre-generation. Chunking widened to avoid awkward splits. **Lidwoord (de/het) protection** + extended GPT timeout. |
+| **3 · Hospital-fit** | mid–late May 2026 | Updates for the real hospital visits. Timeouts lengthened, wrong resource paths fixed, comma-aware chunking fixed. The two extra introduction questions (colour + companion) uncommented/enabled. |
+| **4 · Latency & UX hardening** | early Jun 2026 | Re-ordered prompt firing (C + D fired as soon as motivation known); pre-generate C speech; **extra filler sentence for B**. GUI **debug-prints toggle** + no-emoji enforcement. GUI **intro-length toggle** (only-animal). **Prompt D split** into prep/procedure for fast-forward. Unclear-motivation → "spelen" fallback + immediate D pregen after C. D schommel fallback. **Caching order change** + cache robustness (atomic writes, write lock). Location re-ask check when first answer unclear. |
+| **5 · Deliverable** | 10 Jun 2026 | This documentation. |
+
+*(For the report, this table reads as: a working pipeline came first, then most
+of the effort went into prompt fidelity, fallbacks, and latency-hiding — the
+engineering that makes a generative system usable in a clinical setting.)*
+
+---
+
+## 10. Models, parameters & configuration (reproducibility)
+
+For the research paper and for anyone reproducing or porting the system. Values
+are the defaults found in the code on this branch.
+
+**Language model (prompts A–D + helpers)**
+- Provider: OpenAI GPT via the SIC framework's `GPTConf` (API key from
+  `conf/.env` / `OPENAI_API_KEY`); model id is the SIC default (not overridden
+  in this repo — confirm and pin the exact model id for the paper).
+- `max_tokens`: A = 1000 (default), B = 300, C = 900, D = larger (full arc).
+- GPT call timeout: 15s default; 8s for short helpers (`get_article`,
+  `ask_entity_llm`). On timeout → scripted fallback.
+- Temperature / top-p: SIC defaults (not set here — pin for reproducibility).
+- Output contract: strict JSON; tolerant extraction + repair in
+  `_extract_json_object`.
+
+**Text-to-speech**
+- Primary: **ElevenLabs**, model `eleven_flash_v2_5` (the low-latency "Flash"
+  model — chosen specifically to reduce per-sentence latency), voice id
+  `yO6w2xlECAQRFP6pX7Hw`, streaming websocket, PCM **22 050 Hz**, 16-bit mono.
+  Per-call timeout 30s.
+- Fallback: **Google TTS** `nl-NL-Standard-D` (female).
+- Speech delivery: imagery `speaking_rate = 0.75` (slow/calm), `sleep_time` ≈
+  0.5s between moves, 0.2s speaker-playback padding.
+- On-disk audio cache (wav + JSON map), keyed by normalised text + TTS config.
+
+**Speech recognition / NLU**
+- Dialogflow CX, language `nl`, 44 100 Hz. Open introduction answers (animal,
+  colour, companion) use an **LLM-based extractor** (`ask_entity_llm`) instead
+  of fixed Dialogflow entities.
+
+**Background-await timeouts (script side)**
+- Prompt B: 20s · Prompt C: 45s · Prompt D: 90s · generic await: 60s.
+
+**Pacing constants**
+- `say` text chunking `max_len` = 120 chars; per-sentence prompt limits 60/75/100
+  chars; `ThreadPoolExecutor(max_workers=2)` for async cache writes.
+
+---
+
+## 11. User model & cross-session data flow
+
+The **user model** is a per-participant dict persisted as
+`droomrobot/user_models/user_model_{participant_id}.json` (`load_user_model` /
+`save_user_model` in `core.py`). It is the single source of truth that carries
+state **across the two sessions**.
+
+**Key fields**
+
+| Field | Set by | Meaning |
+|-------|--------|---------|
+| `child_name`, `child_age` | GUI / addendum | identity & age band |
+| `only_animal_intro` | GUI (kapinductie) | skip colour + companion |
+| `dier`, `kleur`, `metgezel` | introduction Q&A | personalisation anchors |
+| `droomplek_raw_answer` | open place question | child's first raw answer |
+| `prompt_a_payload`, `droomplek_candidate(_lidwoord)`, `place_decided` (+ `second_*`) | Prompt A | validation result(s) |
+| `droomplek`, `droomplek_lidwoord` | promotion / fallback | final place + article |
+| `droomplek_motivatie` | Prompt B `effective_motivatie` / default "spelen" | cleaned activity |
+| `prompt_b_payload`, `prompt_c_payload`, `prompt_d_payload` | prompts B/C/D | generated speech payloads |
+| `zit_goed`, `positie` | comfortable-position choice | posture branch |
+
+**Cross-session handover (important architectural point).** Prompt D is
+generated and pre-synthesised during the **introduction** (practice) session and
+written into `prompt_d_payload` on disk. In the **intervention** (OR) session,
+`prepare()` reloads the same user model from disk, so the OR replay uses the
+journey already generated and largely cached in the holding area — no
+generation latency at the most time-critical moment.
+
+---
+
+## 12. Safety, ethics & data considerations
+
+For the subsidy report and the paper's ethics section.
+
+**Clinical-content safety**
+- Hard **forbidden-word list** (pijn, dokter, masker, narcose, …) enforced in
+  prompts C and D output, so the medical reality is reframed, never named.
+- **Prompt A as a safety gate**: rejects scary, violent, or hospital-adjacent
+  places (operatiekamer, begraafplaats, the hospital itself) and vague answers.
+- **No questions** inside imagery (eyes closed), permissive/suggestive language
+  only, fixed verbatim closing sentence — all mirroring the expert-validated
+  written script.
+- **Scripted, expert-derived fallbacks** for every generative step, so a model
+  failure degrades to clinically-approved content rather than breaking.
+
+**Human-in-the-loop**
+- An operator runs the GUI throughout, can choose introduction length, skip /
+  advance phases, and stop the session. The robot supports the clinician; it is
+  not autonomous.
+
+**Data protection (AVG/GDPR)**
+- Child data (name, age, preferences, free-text answers) is stored **locally**
+  as per-participant JSON, addressed by `participant_id`.
+- LLM and TTS calls transmit name/age/answers to **third parties** (OpenAI,
+  ElevenLabs). This should be covered by data-processing agreements and parental
+  consent, and is worth an explicit note in the report. By design **no medical
+  data** is sent in prompts.
+- Open follow-up: data-retention policy for the JSON user models and the audio
+  cache; pseudonymisation review.
+
+**Content governance (gap)**
+- Generated scripts are currently **not reviewed before delivery** to the child.
+  A dry-run/preview mode for clinician review is listed under future work.
+
+---
+
+## 13. Evaluation status & limitations
+
+State honestly for the paper; the team should fill in clinical-testing
+specifics.
+
+- **Functional status:** the full pipeline (both sessions, all four prompts,
+  fallbacks, pre-generation, phase control) is implemented and was exercised in
+  development and hospital-visit preparation. *Formal/clinical evaluation
+  results to be supplied by the project team.*
+- **Latency:** masked in the common path, but dependent on network and API
+  responsiveness; a **cold cache** on the very first run still incurs generation
+  time.
+- **ASR over-listening:** in noisy rooms the recogniser can keep listening after
+  the child has answered, causing awkward waits (see future work — this is the
+  most-noticed UX issue).
+- **LLM non-determinism:** output varies run-to-run; the prompts' internal-check
+  is *self-reported* by the model, not yet enforced in code.
+- **Environment sensitivity:** a SIC/Dialogflow update once caused a
+  question-repetition bug (recorded in the commit history) — the stack is
+  sensitive to dependency versions; pin them.
+- **Not yet implemented:** streaming, automated output validation, per-child
+  generation reuse/caching across runs, content preview for clinicians.
+
+---
+
+## 14. Reusability & relevance to other projects (incl. NarDial)
+
+Much of this branch is **generic** and was deliberately kept context-agnostic.
+
+**Directly reusable components**
+- `DroomrobotScript` — the move/choice engine (`InteractionMove`,
+  `InteractionChoice`, conditions, phases) for building branching spoken scripts.
+- The **background-prompt registry + filler-masking** pattern
+  (`_fire_background_prompt` / `_await_background_prompt`) and the **chained TTS
+  pre-generation** technique — a reusable recipe for hiding LLM/TTS latency in any
+  real-time spoken agent.
+- The **thread-safe atomic TTS cache** (`TTSCacher`), tolerant **JSON
+  extraction**, **text chunker**, and the **GPT/TTS timeout wrappers**.
+- The **age-banded factory** pattern (`IntroductionFactory`).
+
+**Reusable methodology**
+- "Validated written script → structured per-sentence prompt + internal-check +
+  strict JSON contract + scripted fallback" transfers to *any* narrative or
+  therapeutic spoken-agent task where fidelity and safety matter more than
+  free-form creativity.
+- The `InteractionContext` enum already covers SONDE / KAPINDUCTIE / BLOEDAFNAME;
+  a new intervention = a new script subclass + its prompts, reusing all of the
+  above.
+
+**Relevance to NarDial / narrative-dialogue projects**
+- The latency-hiding + pre-generation + streaming roadmap and the
+  "open-ended-but-structured generation" pattern map onto narrative-dialogue
+  systems, where the same tension exists between responsiveness and controlled,
+  on-spec output.
+- The move/choice engine and phase machinery could host branching narrative
+  dialogue with operator control; the user-model + cross-session persistence
+  pattern supports multi-session narrative continuity.
+
+---
+
+## 15. Ideas for future improvements
+
+### 15.1 Streaming
 - **Streaming TTS playback.** Today a sentence is fully synthesised, then
   played. ElevenLabs already streams audio chunks (we accumulate them) — we
   could begin playback as the first chunks arrive, cutting per-sentence latency
@@ -454,7 +743,7 @@ INTERVENTION (OR)
 - **Pipeline the two stages.** Combine the above: GPT streams → TTS streams →
   speaker, as a continuous pipeline rather than discrete await-then-play steps.
 
-### 9.2 Listening / timeout tuning
+### 15.2 Listening / timeout tuning
 - **Re-examine the listening (Dialogflow/VAD) timeout.** Observed problem: the
   robot sometimes keeps listening to ambient hospital noise *after* the child
   has already finished answering, causing long awkward waits. Options:
@@ -467,7 +756,7 @@ INTERVENTION (OR)
     cue.
 - **Adaptive timeouts** based on expected answer type and measured ambient noise.
 
-### 9.3 Generation quality & robustness
+### 15.3 Generation quality & robustness
 - **Validate generated output against the internal-check rules in code** (e.g.
   assert no question marks, sentence length ≤ limit, required phrases present)
   and regenerate/repair automatically instead of trusting the model's
@@ -475,7 +764,7 @@ INTERVENTION (OR)
 - **Schema-constrained decoding** (function-calling / JSON-mode / grammar) to
   eliminate the JSON-repair path entirely.
 
-### 9.4 Personalisation
+### 15.4 Personalisation
 - Use **companion / animal / colour** even more consistently across both
   sessions (currently strongest in C/D; the introduction reactions could
   reference them more?).
@@ -489,14 +778,37 @@ INTERVENTION (OR)
 - Make sure the script focusses on relevant parts of the story (dont care
   about the color of a sword, more about the sea around the ship)
 
-### 9.5 Tooling / ops
+### 15.5 Tooling / ops
 - Surface generation/latency metrics in the GUI (time-to-first-word, cache
   hit-rate) to spot regressions.
 
 
 ---
 
-## 10. File map (where to look)
+## 16. Glossary
+
+For non-specialist readers of the final report.
+
+| Term | Meaning |
+|------|---------|
+| **Kapinductie** | Mask induction — going under anaesthesia by breathing through a face mask. |
+| **Droomreis** | "Dream journey" — the guided-imagery narrative the robot speaks. |
+| **Droomplek** | "Dream place" — the location the child chooses for the journey. |
+| **Motivatie** | What the child wants to *do* at the dream place (drives the imagery). |
+| **Metgezel** | Companion the child would bring along. |
+| **Guided imagery** | A clinical relaxation/distraction technique using vivid, suggestive mental imagery. |
+| **Holding / holding area** | Waiting area before the OR, where the practice session happens. |
+| **Lidwoord** | Dutch article ("de"/"het") — must match the open-ended place name. |
+| **Filler / opvulzin** | Short looping sentences that fill variable real time during induction. |
+| **setting_context / start_analogy** | Prompt D's two output halves; the split is the operator's fast-forward point. |
+| **InteractionMove / InteractionChoice** | Script primitives: a single action, or a branch on a user-model value. |
+| **Phase** | A named segment of the intervention (PREPARATION → PROCEDURE) the operator can jump between. |
+| **SIC** | Social Interaction Cloud — the framework providing GPT, TTS, Dialogflow and robot services. |
+| **TTS / ASR** | Text-to-speech / automatic speech recognition. |
+
+---
+
+## 17. File map (where to look)
 
 | Concern | File |
 |---------|------|
@@ -507,4 +819,3 @@ INTERVENTION (OR)
 | Age-banded introduction (`only_animal`) | `droomrobot/introduction_factory.py` |
 | Operator GUI (debug toggle, only-animal toggle, phase polling) | `droomrobot/droomrobot_gui.py` |
 | Prompts A–D | `droomrobot/resources/prompts/prompt_{a,b,c,d}_*.txt` |
-```
